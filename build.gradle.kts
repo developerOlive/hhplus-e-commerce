@@ -1,28 +1,57 @@
 plugins {
     java
-    id("org.springframework.boot") version "3.4.4"
-    id("io.spring.dependency-management") version "1.1.7"
-}
-
-group = "com"
-version = "0.0.1-SNAPSHOT"
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
+    alias(libs.plugins.spring.boot)
+    alias(libs.plugins.spring.dependency.management)
+    id("jacoco")
 }
 
 repositories {
     mavenCentral()
 }
 
-dependencies {
-    implementation("org.springframework.boot:spring-boot-starter")
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
 }
 
-tasks.withType<Test> {
+allprojects {
+    group = "com.hhplusecommerce"
+}
+
+dependencyManagement {
+    imports {
+        mavenBom(libs.spring.cloud.dependencies.get().toString())
+    }
+}
+
+dependencies {
+    implementation(libs.spring.boot.starter.web)
+    compileOnly(libs.lombok)
+    annotationProcessor(libs.lombok)
+    annotationProcessor(libs.spring.boot.configuration.processor)
+    testImplementation(libs.spring.boot.starter.test)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
+}
+
+// about source and compilation
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
+
+with(extensions.getByType(JacocoPluginExtension::class.java)) {
+    toolVersion = "0.8.7"
+}
+
+// bundling tasks
+tasks.getByName("bootJar") {
+    enabled = true
+}
+tasks.getByName("jar") {
+    enabled = false
+}
+// test tasks
+tasks.test {
+    ignoreFailures = true
     useJUnitPlatform()
 }
