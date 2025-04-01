@@ -84,24 +84,25 @@ sequenceDiagram
     participant 상품DB
     participant 재고
     participant 재고DB
+
     사용자->>상품: 상품 목록 조회 요청
     activate 상품
-    alt 상품 데이터 조회 성공
-        상품->>상품DB: 상품 정보 목록 조회
-        activate 상품DB
+
+    상품->>상품DB: 상품 정보 목록 조회
+    alt [상품 정보 목록 조회 성공]
         상품DB-->>상품: 상품 리스트 반환
-        deactivate 상품DB
         상품->>재고: 상품별 재고 수량 조회
-        activate 재고
         재고->>재고DB: 재고 수량 조회
-        activate 재고DB
-        재고DB-->>재고: 재고 수량 반환
-        deactivate 재고DB
-        재고-->>상품: 상품별 재고 응답
-        deactivate 재고
-        상품-->>사용자: 상품 정보 + 재고 포함 응답
-    else 상품 정보 조회 실패 or 재고 조회 실패
-        상품-->>사용자: 상품 조회 실패 응답 (에러 메시지 포함)
+        alt [재고 수량 조회 성공]
+            재고DB-->>재고: 재고 수량 반환
+        else [재고 수량 조회 실패]
+            재고DB-->>재고: 오류 발생
+        end
+        재고-->>상품: 재고 조회 결과
+        상품-->>사용자: 응답 (성공 or 일부 재고 조회 실패 포함)
+    else [상품 정보 목록 조회 실패]
+        상품DB-->>상품: 오류 발생
+        상품-->>사용자: 상품 정보 조회 실패 응답
     end
     deactivate 상품
 ```
