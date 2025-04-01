@@ -252,7 +252,7 @@ erDiagram
 
 ---
 
-## ✅ 주문 관련 테이블
+## ✅ 결제 관련 테이블
 ```mermaid
 erDiagram
     payment {
