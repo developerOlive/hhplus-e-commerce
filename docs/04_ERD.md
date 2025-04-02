@@ -46,6 +46,15 @@ erDiagram
         DATETIME updated_at "수정일시"
     }
 
+    product_sales_stats {
+        BIGINT id PK "통계 ID"
+        BIGINT ref_product_id FK "상품 ID 참조"
+        DATE sale_date "판매일"
+        INT quantity_sold "판매 수량"
+        DECIMAL total_sales_amount "총 판매 금액"
+        DATETIME updated_at "최종 갱신일"
+    }
+
     coupon {
         BIGINT id PK "쿠폰 ID"
         VARCHAR coupon_name "쿠폰 이름"
@@ -116,6 +125,8 @@ erDiagram
     product ||--|{ order_item : is
     order ||--|| payment : pay
     product ||--|| product_inventory : inventory
+    product ||--o{ product_sales_stats : stats
+
 ```
 
 
@@ -181,7 +192,17 @@ erDiagram
         DATETIME updated_at "수정일시"
     }
 
+    product_sales_stats {
+        BIGINT id PK "통계 ID"
+        BIGINT ref_product_id FK "상품 ID 참조"
+        DATE sale_date "판매일"
+        INT quantity_sold "판매 수량"
+        DECIMAL total_sales_amount "총 판매 금액"
+        DATETIME updated_at "최종 갱신일"
+    }
+
     product ||--|| product_inventory : inventory
+    product ||--o{ product_sales_stats : stats
 
 ```
 
