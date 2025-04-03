@@ -27,7 +27,7 @@ public class CouponController {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = COUPON_LIST_SUCCESS))),
             @ApiResponse(responseCode = "404", description = "사용자 없음", content = @Content(examples = @ExampleObject(value = COUPON_LIST_NOT_FOUND)))
     })
-    public ResponseEntity<ApiResult<List<CouponResponse>>> getUserCoupons(@PathVariable Long userId) {
+    public ResponseEntity<ApiResult<List<CouponResponse>>> getUserCoupons( @PathVariable("userId") Long userId) {
         List<CouponResponse> coupons = List.of(
                 new CouponResponse(1L, "10% 할인 쿠폰", "FIXED_RATE", 10, "AVAILABLE", LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30)),
                 new CouponResponse(2L, "1,000원 할인 쿠폰", "FIXED_AMOUNT", 1000, "AVAILABLE", LocalDate.of(2025, 4, 1), LocalDate.of(2025, 4, 30))
@@ -44,8 +44,8 @@ public class CouponController {
             @ApiResponse(responseCode = "409", description = "이미 발급됨", content = @Content(examples = @ExampleObject(value = COUPON_ISSUE_FAIL_ALREADY)))
     })
     public ResponseEntity<ApiResult<CouponIssueResponse>> issueCoupon(
-            @PathVariable Long userId,
-            @PathVariable Long couponId
+            @PathVariable("userId") Long userId,
+            @PathVariable("couponId") Long couponId
     ) {
 
         return ResponseEntity.ok(ApiResult.success(new CouponIssueResponse(100L)));

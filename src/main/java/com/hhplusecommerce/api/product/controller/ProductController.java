@@ -45,7 +45,7 @@ public class ProductController {
                             @ExampleObject(name = "존재하지 않는 상품", value = PRODUCT_NOT_FOUND),
                             @ExampleObject(name = "잘못된 ID 형식", value = PRODUCT_INVALID_ID)}))
     })
-    public ResponseEntity<ApiResult<ProductDetailResponse>> getProductDetail(@PathVariable Long productId) {
+    public ResponseEntity<ApiResult<ProductDetailResponse>> getProductDetail(@PathVariable("productId") Long productId) {
         ProductDetailResponse detail = ProductDetailResponse.of(
                 productId, "MacBook Pro", "노트북", 2390000L, 10
         );

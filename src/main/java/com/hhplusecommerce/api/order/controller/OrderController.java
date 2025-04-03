@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +31,7 @@ public class OrderController {
                     }
             ))
     })
-    public ResponseEntity<ApiResult<OrderResponse>> placeOrder(@RequestBody OrderRequest request) {
+    public ResponseEntity<ApiResult<OrderResponse>> placeOrder(@RequestBody @Valid OrderRequest request) {
         OrderResponse response = OrderResponse.of(1001L, 25000L, 20000L, "PENDING");
         return ResponseEntity.ok(ApiResult.success(response));
     }

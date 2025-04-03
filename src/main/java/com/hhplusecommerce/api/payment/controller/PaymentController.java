@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +25,7 @@ public class PaymentController {
             @ApiResponse(responseCode = "200", description = "결제 성공", content = @Content(examples = @ExampleObject(value = PAYMENT_SUCCESS))),
             @ApiResponse(responseCode = "500", description = "결제 실패", content = @Content(examples = @ExampleObject(value = PAYMENT_FAILED)))
     })
-    public ResponseEntity<ApiResult<PaymentResponse>> requestPayment(@RequestBody PaymentRequest request) {
+    public ResponseEntity<ApiResult<PaymentResponse>> requestPayment(@RequestBody @Valid PaymentRequest request) {
         PaymentResponse response = PaymentResponse.of(5001L, 20000L, "SUCCESS");
         return ResponseEntity.ok(ApiResult.success(response));
     }

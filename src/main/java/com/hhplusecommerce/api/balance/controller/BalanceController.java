@@ -9,8 +9,12 @@ import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static com.hhplusecommerce.api.balance.docs.BalanceSwaggerDocs.*;
 
@@ -18,18 +22,21 @@ import static com.hhplusecommerce.api.balance.docs.BalanceSwaggerDocs.*;
 @Tag(name = "잔액 API", description = "사용자 잔액 관련 API")
 public class BalanceController {
 
+    private final Map<Long, Long> userBalanceStore = new ConcurrentHashMap<>();
+
     @GetMapping("/api/v1/users/{userId}/balance")
     @Operation(summary = "잔액 조회", description = "사용자의 현재 잔액을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "성공", content = @Content(examples = @ExampleObject(value = BALANCE_SUCCESS))),
             @ApiResponse(responseCode = "404", description = "사용자 없음", content = @Content(examples = @ExampleObject(value = BALANCE_NOT_FOUND)))
     })
-    public ResponseEntity<ApiResult<BalanceResponse>> getBalance(@PathVariable Long userId) {
+    public ResponseEntity<ApiResult<BalanceResponse>> getBalance(@PathVariable("userId") Long userId) {
         if (userId <= 0) {
             return ResponseEntity.status(404).body(ApiResult.fail("존재하지 않는 사용자입니다."));
         }
 
-        return ResponseEntity.ok(ApiResult.success(new BalanceResponse(10_000L)));
+        Long balance = userBalanceStore.getOrDefault(userId, 10_000L);
+        return ResponseEntity.ok(ApiResult.success(new BalanceResponse(balance)));
     }
 
     @PostMapping("/api/v1/users/{userId}/balance/charge")
@@ -42,11 +49,13 @@ public class BalanceController {
             @ApiResponse(responseCode = "500", description = "충전 실패", content = @Content(examples = @ExampleObject(value = BALANCE_CHARGE_FAILED)))
     })
     public ResponseEntity<ApiResult<BalanceResponse>> chargeBalance(
-            @PathVariable Long userId,
-            @RequestBody BalanceChargeRequest request
+            @PathVariable("userId") Long userId,
+            @RequestBody @Valid BalanceChargeRequest request
     ) {
-        Long updatedAmount = 10_000L + request.getAmount();
+        Long current = userBalanceStore.getOrDefault(userId, 10_000L);
+        Long updated = current + request.getAmount();
+        userBalanceStore.put(userId, updated);
 
-        return ResponseEntity.ok(ApiResult.success(new BalanceResponse(updatedAmount)));
+        return ResponseEntity.ok(ApiResult.success(new BalanceResponse(updated)));
     }
 }
