@@ -53,13 +53,13 @@ public final class ProductSwaggerDocs {
         }
         """;
 
-    public static final String PRODUCT_SERVER_ERROR = """
-        {
-          "success": false,
-          "message": "서버 내부 오류가 발생했습니다.",
-          "data": null
-        }
-        """;
+    public static final String PRODUCT_LIST_NOT_FOUND = """
+    {
+      "success": false,
+      "message": "상품을 찾을 수 없습니다.",
+      "data": null
+    }
+    """;
 
     private ProductSwaggerDocs() {}
 }

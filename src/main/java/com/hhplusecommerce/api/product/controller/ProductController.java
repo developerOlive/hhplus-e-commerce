@@ -25,7 +25,7 @@ public class ProductController {
     @Operation(summary = "상품 목록 조회", description = "전체 상품 목록을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS))),
-            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject(value = PRODUCT_SERVER_ERROR)))
+            @ApiResponse(responseCode = "404", description = "상품 없음", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_NOT_FOUND))),
     })
     public ResponseEntity<ApiResult<List<ProductListResponse>>> getAllProducts() {
         List<ProductListResponse> products = List.of(
@@ -43,8 +43,7 @@ public class ProductController {
             @ApiResponse(responseCode = "404", description = "조회 실패", content = @Content(
                     examples = {
                             @ExampleObject(name = "존재하지 않는 상품", value = PRODUCT_NOT_FOUND),
-                            @ExampleObject(name = "잘못된 ID 형식", value = PRODUCT_INVALID_ID)})),
-            @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content(examples = @ExampleObject(value = PRODUCT_SERVER_ERROR)))
+                            @ExampleObject(name = "잘못된 ID 형식", value = PRODUCT_INVALID_ID)}))
     })
     public ResponseEntity<ApiResult<ProductDetailResponse>> getProductDetail(@PathVariable Long productId) {
         ProductDetailResponse detail = ProductDetailResponse.of(
