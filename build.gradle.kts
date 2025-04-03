@@ -31,7 +31,7 @@ dependencies {
     annotationProcessor(libs.lombok)
     annotationProcessor(libs.spring.boot.configuration.processor)
     testImplementation(libs.spring.boot.starter.test)
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.0")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
 }
 
 // about source and compilation
@@ -50,8 +50,10 @@ tasks.getByName("bootJar") {
 tasks.getByName("jar") {
     enabled = false
 }
+
 // test tasks
 tasks.test {
     ignoreFailures = true
     useJUnitPlatform()
 }
+
