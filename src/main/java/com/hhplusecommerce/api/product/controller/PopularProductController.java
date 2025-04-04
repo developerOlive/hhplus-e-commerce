@@ -26,7 +26,6 @@ public class PopularProductController {
     @Operation(summary = "인기 상품 조회", description = "판매량 기준 상위 인기 상품을 조회합니다.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = POPULAR_PRODUCT_SUCCESS))),
-            @ApiResponse(responseCode = "500", description = "조회 실패", content = @Content(examples = @ExampleObject(value = POPULAR_PRODUCT_ERROR)))
     })
     public ResponseEntity<ApiResult<List<PopularProductResponse>>> getPopularProducts() {
         List<PopularProductResponse> mockList = List.of(

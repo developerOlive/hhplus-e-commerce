@@ -53,13 +53,5 @@ public final class ProductSwaggerDocs {
         }
         """;
 
-    public static final String PRODUCT_LIST_NOT_FOUND = """
-    {
-      "success": false,
-      "message": "상품을 찾을 수 없습니다.",
-      "data": null
-    }
-    """;
-
     private ProductSwaggerDocs() {}
 }

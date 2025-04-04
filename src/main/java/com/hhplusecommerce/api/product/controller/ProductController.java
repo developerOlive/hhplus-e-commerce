@@ -24,8 +24,7 @@ public class ProductController {
     @GetMapping
     @Operation(summary = "상품 목록 조회", description = "전체 상품 목록을 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS))),
-            @ApiResponse(responseCode = "404", description = "상품 없음", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_NOT_FOUND))),
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS)))
     })
     public ResponseEntity<ApiResult<List<ProductListResponse>>> getAllProducts() {
         List<ProductListResponse> products = List.of(

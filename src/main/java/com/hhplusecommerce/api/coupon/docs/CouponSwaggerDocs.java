@@ -29,13 +29,13 @@ public final class CouponSwaggerDocs {
         }
     """;
 
-    public static final String COUPON_LIST_NOT_FOUND = """
+    public static final String COUPON_ISSUE_FAIL_NOT_FOUND = """
         {
           "success": false,
-          "message": "사용자가 보유한 쿠폰이 없습니다.",
+          "message": "요청한 쿠폰 또는 사용자를 찾을 수 없습니다.",
           "data": null
         }
-    """;
+        """;
 
     public static final String COUPON_ISSUE_SUCCESS = """
         {
