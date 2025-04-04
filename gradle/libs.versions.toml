@@ -8,9 +8,10 @@ spring_io_dependency_management = "1.1.0"
 spring_mockk = "4.0.2"
 
 lombok = "1.18.22"
+springdoc = "2.1.0"
+rest_assured = "5.4.0"
 
 redisson = "3.25.2"
-# test
 junit = "5.9.3"
 assertj = "3.24.2"
 test_containers = "1.19.3"
@@ -23,12 +24,11 @@ kotlin_spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotl
 kotlin_jpa = { id = "org.jetbrains.kotlin.plugin.jpa", version.ref = "kotlin" }
 
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint_plugin" }
-
 spring_boot = { id = "org.springframework.boot", version.ref = "spring_boot" }
 spring_dependency_management = { id = "io.spring.dependency-management", version.ref = "spring_io_dependency_management" }
+
 [libraries]
 lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
-
 spring_context = { module = "org.springframework:spring-context" }
 spring_cloud_dependencies = { module = "org.springframework.cloud:spring-cloud-dependencies", version.ref = "spring_cloud_dependencies" }
 spring_boot_dependencies = { module = "org.springframework.boot:spring-boot-dependencies" }
@@ -45,15 +45,23 @@ test_containers_mysql = { module = "org.testcontainers:mysql" }
 fixture_monkey_starter_kotlin = { module = "com.navercorp.fixturemonkey:fixture-monkey-starter-kotlin", version.ref = "fixture_monkey" }
 
 mysql_connector = { module = "com.mysql:mysql-connector-j" }
-
 h2 = { module = "com.h2database:h2" }
-
 jackson_kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin" }
-
 micrometer_tracing_bridge_brave = { module = "io.micrometer:micrometer-tracing-bridge-brave" }
 micrometer_registry_prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
-# test
-assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
 spring_mockk = { module = "com.ninja-squad:springmockk", version.ref = "spring_mockk" }
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+springdoc_openapi = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
+rest_assured = { module = "io.rest-assured:rest-assured", version.ref = "rest_assured" }
+rest_assured_json_path = { module = "io.rest-assured:json-path", version.ref = "rest_assured" }
+rest_assured_schema = { module = "io.rest-assured:json-schema-validator", version.ref = "rest_assured" }
+
 [bundles]
-testcontainers_mysql = ["test_containers_mysql", "spring_boot_testcontainers", "test_containers_junit_jupiter","spring_boot_starter_test"]
+testcontainers_mysql = [
+    "test_containers_mysql",
+    "spring_boot_testcontainers",
+    "test_containers_junit_jupiter",
+    "spring_boot_starter_test"
+]
