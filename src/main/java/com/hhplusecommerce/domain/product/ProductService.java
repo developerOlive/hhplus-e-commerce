@@ -1,6 +1,5 @@
 package com.hhplusecommerce.domain.product;
 
-import com.hhplusecommerce.applicatoin.product.criteria.ProductListCriteria;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,7 +11,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public List<Product> findByCriteria(ProductListCriteria criteria) {
-        return productRepository.findByCriteria(criteria);
+    public List<Product> findProductsByCommand(ProductsCommand command) {
+        return productRepository.findProductsByCommand(command);
     }
 }

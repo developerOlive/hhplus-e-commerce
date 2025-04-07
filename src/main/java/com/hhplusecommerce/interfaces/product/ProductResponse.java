@@ -1,11 +1,20 @@
 package com.hhplusecommerce.interfaces.product;
 
+import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.hhplusecommerce.applicatoin.product.result.ProductResult;
+import com.hhplusecommerce.applicatoin.product.ProductsResult;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 public class ProductResponse {
 
-    public static class ProductListResponse {
+    @Getter
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class ProductsResponse {
         @Schema(description = "상품 ID", example = "1")
         private Long productId;
 
@@ -21,22 +30,26 @@ public class ProductResponse {
         @Schema(description = "재고 수량", example = "10")
         private int stock;
 
-        public ProductListResponse(Long productId, String name, String category, Long price, int stock) {
-            this.productId = productId;
-            this.name = name;
-            this.category = category;
-            this.price = price;
-            this.stock = stock;
-        }
-
-        public static ProductListResponse from(ProductResult.ProductListResult result) {
-            return new ProductListResponse(
+        public static ProductsResponse from(ProductsResult result) {
+            return new ProductsResponse(
                     result.productId(),
                     result.name(),
                     result.category(),
                     result.price(),
                     result.stock()
             );
+        }
+    }
+
+    public static class ProductsResponseWrapper {
+        private List<ProductsResponse> items;
+        private int totalCount;
+        private boolean hasNext;
+
+        public ProductsResponseWrapper(List<ProductsResponse> items, int totalCount, boolean hasNext) {
+            this.items = items;
+            this.totalCount = totalCount;
+            this.hasNext = hasNext;
         }
     }
 
@@ -58,6 +71,15 @@ public class ProductResponse {
             this.name = name;
             this.price = price;
             this.totalSold = totalSold;
+        }
+
+        public static PopularProductResponse from(PopularProduct product) {
+            return new PopularProductResponse(
+                    product.getProductId(),
+                    product.getProductName(),
+                    product.getPrice(),
+                    product.getTotalSold()
+            );
         }
     }
 }

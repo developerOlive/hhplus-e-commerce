@@ -1,10 +1,11 @@
-package com.hhplusecommerce.applicatoin.product.criteria;
+package com.hhplusecommerce.domain.product;
 
-public record ProductListCriteria(
+public record ProductsCommand(
         String productName,
         Long minPrice,
         Long maxPrice,
         String category,
         Integer page,
         Integer size
-) {}
+) {
+}

@@ -2,22 +2,26 @@ package com.hhplusecommerce.domain.inventory;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 
 /**
  * 상품 재고 도메인
  */
+@Entity
 public class ProductInventory {
 
-    private final Long productId;
+    @Id
+    private Long productId;
+
     private int quantity;
+
+    protected ProductInventory() {
+    }
 
     public ProductInventory(Long productId, int quantity) {
         this.productId = productId;
-        this.quantity = Math.max(quantity, 0); // 음수로 세팅 방지
-    }
-
-    public Long getProductId() {
-        return productId;
+        this.quantity = Math.max(quantity, 0);
     }
 
     public int getQuantity() {

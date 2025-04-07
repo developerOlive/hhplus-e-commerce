@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 
 public enum ErrorType {
     // Product
-    INSUFFICIENT_INVENTORY(HttpStatus.BAD_REQUEST, "Not enough stock available for this product."),
-    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "Invalid quantity specified. Quantity must be positive.");
+    INSUFFICIENT_INVENTORY(HttpStatus.BAD_REQUEST, "상품의 재고가 부족합니다."),
+    INVALID_QUANTITY(HttpStatus.BAD_REQUEST, "수량은 1 이상이어야 합니다.");
 
     private final HttpStatus status;
     private final String message;

@@ -89,4 +89,13 @@ class ProductInventoryTest {
             assertThat(currentQuantity).isEqualTo(INITIAL_QUANTITY);
         }
     }
+
+    @Test
+    void 초기_수량이_음수일_경우_0으로_설정된다() {
+        // given & when
+        ProductInventory inventory = new ProductInventory(1L, -50);
+
+        // then
+        assertThat(inventory.getQuantity()).isEqualTo(0);
+    }
 }

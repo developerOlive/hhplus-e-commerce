@@ -1,10 +1,11 @@
 package com.hhplusecommerce.applicatoin.product;
 
-import com.hhplusecommerce.applicatoin.product.criteria.ProductListCriteria;
-import com.hhplusecommerce.applicatoin.product.result.ProductResult.ProductListResult;
 import com.hhplusecommerce.domain.inventory.ProductInventoryService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductService;
+import com.hhplusecommerce.domain.product.ProductsCommand;
+import com.hhplusecommerce.interfaces.product.ProductResponse.ProductsResponse;
+import com.hhplusecommerce.interfaces.product.ProductResponse.ProductsResponseWrapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -16,23 +17,25 @@ import java.util.Map;
 public class ProductFacade {
 
     private final ProductService productService;
-    private final ProductInventoryService productInventoryService;
+    private final ProductInventoryService inventoryService;
 
-    public List<ProductListResult> getProducts(ProductListCriteria criteria) {
-        List<Product> products = productService.findByCriteria(criteria);
+    public ProductsResponseWrapper getProducts(ProductsCommand command) {
+        List<Product> products = productService.findProductsByCommand(command);
 
-        List<Long> ids = products.stream().map(Product::getId).toList();
+        boolean hasNext = products.size() > command.size();
+        List<Product> paginated = hasNext
+                ? products.subList(0, command.size())
+                : products;
 
-        Map<Long, Integer> stockMap = productInventoryService.getStockMap(ids);
+        List<Long> productIds = paginated.stream().map(Product::getId).toList();
+        Map<Long, Integer> stockMap = inventoryService.getStockMap(productIds);
 
-        return products.stream()
-                .map(product -> new ProductListResult(
-                        product.getId(),
-                        product.getName(),
-                        product.getCategory(),
-                        product.getPrice(),
-                        stockMap.getOrDefault(product.getId(), 0)
+        List<ProductsResponse> responses = paginated.stream()
+                .map(product -> ProductsResponse.from(
+                        ProductsResult.of(product, stockMap.getOrDefault(product.getId(), 0))
                 ))
                 .toList();
+
+        return new ProductsResponseWrapper(responses, responses.size(), hasNext);
     }
 }
