@@ -4,7 +4,7 @@ import com.hhplusecommerce.applicatoin.product.ProductFacade;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductService;
 import com.hhplusecommerce.interfaces.product.ProductResponse.PopularProductResponse;
-import com.hhplusecommerce.interfaces.product.ProductResponse.ProductsResponseWrapper;
+import com.hhplusecommerce.interfaces.product.ProductResponse.ProductsResponse;
 import com.hhplusecommerce.support.response.ApiResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,9 +38,9 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS)))
     })
-    public ResponseEntity<ApiResult<ProductsResponseWrapper>> getProducts(@Valid ProductSearchRequest productSearchRequest) {
-        ProductsResponseWrapper wrapper = productFacade.getProducts(productSearchRequest.toCommand());
-        return ResponseEntity.ok(ApiResult.success(wrapper));
+    public ResponseEntity<ApiResult<Page<ProductsResponse>>> getProducts(@Valid ProductSearchRequest request) {
+        Page<ProductsResponse> productsPage = productFacade.getProducts(request.toCommand(), request.toPageable());
+        return ResponseEntity.ok(ApiResult.success(productsPage));
     }
 
     @GetMapping("/api/v1/products/popular")

@@ -1,7 +1,8 @@
 package com.hhplusecommerce.domain.product;
 
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface ProductRepository {
-    List<Product> findProductsByCommand(ProductsCommand command);
+    Page<Product> findProducts(ProductsCommand command, Pageable pageable);
 }

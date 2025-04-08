@@ -1,13 +1,11 @@
 package com.hhplusecommerce.interfaces.product;
 
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
+import com.hhplusecommerce.domain.product.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
-import com.hhplusecommerce.applicatoin.product.ProductsResult;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 public class ProductResponse {
 
@@ -30,26 +28,14 @@ public class ProductResponse {
         @Schema(description = "재고 수량", example = "10")
         private int stock;
 
-        public static ProductsResponse from(ProductsResult result) {
+        public static ProductsResponse from(Product product, int stock) {
             return new ProductsResponse(
-                    result.productId(),
-                    result.name(),
-                    result.category(),
-                    result.price(),
-                    result.stock()
+                    product.getId(),
+                    product.getName(),
+                    product.getCategory(),
+                    product.getPrice(),
+                    stock
             );
-        }
-    }
-
-    public static class ProductsResponseWrapper {
-        private List<ProductsResponse> items;
-        private int totalCount;
-        private boolean hasNext;
-
-        public ProductsResponseWrapper(List<ProductsResponse> items, int totalCount, boolean hasNext) {
-            this.items = items;
-            this.totalCount = totalCount;
-            this.hasNext = hasNext;
         }
     }
 
