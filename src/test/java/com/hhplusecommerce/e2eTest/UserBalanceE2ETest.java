@@ -12,7 +12,7 @@ import static io.restassured.RestAssured.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-public class BalanceE2ETest {
+public class UserBalanceE2ETest {
 
     @LocalServerPort
     int port;

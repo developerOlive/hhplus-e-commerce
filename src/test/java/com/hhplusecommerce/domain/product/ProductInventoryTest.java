@@ -1,6 +1,5 @@
-package com.hhplusecommerce.domain.inventory;
+package com.hhplusecommerce.domain.product;
 
-import com.hhplusecommerce.domain.product.ProductInventory;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
