@@ -1,3 +1,3 @@
-package com.hhplusecommerce.interfaces.coupon.dto;
+package com.hhplusecommerce.interfaces.coupon;
 
 public record CouponIssueResponse(Long couponIssueId) {}

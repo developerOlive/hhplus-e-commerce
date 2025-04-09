@@ -1,4 +1,4 @@
-package com.hhplusecommerce.interfaces.coupon.docs;
+package com.hhplusecommerce.interfaces.coupon;
 
 public final class CouponSwaggerDocs {
 
