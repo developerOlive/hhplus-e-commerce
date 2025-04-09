@@ -1,17 +1,19 @@
 package com.hhplusecommerce.interfaces.product;
 
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
+import com.hhplusecommerce.domain.product.Product;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.math.BigDecimal;
 
 public class ProductResponse {
 
-    @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ProductsResponse {
+
         @Schema(description = "상품 ID", example = "1")
         private Long productId;
 
@@ -22,10 +24,20 @@ public class ProductResponse {
         private String category;
 
         @Schema(description = "상품 가격", example = "2390000")
-        private Long price;
+        private BigDecimal price;
 
         @Schema(description = "재고 수량", example = "10")
         private int stock;
+
+        public static ProductsResponse from(Product product) {
+            ProductsResponse response = new ProductsResponse();
+            response.productId = product.getId();
+            response.name = product.getName();
+            response.category = product.getCategory();
+            response.price = product.getPrice();
+
+            return response;
+        }
     }
 
     public static class PopularProductResponse {

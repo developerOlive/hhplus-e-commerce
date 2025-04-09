@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
@@ -21,12 +22,12 @@ public class Product {
     private Long id;
     private String name;
     private String category;
-    private Long price;
+    private BigDecimal price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @Builder
-    public Product(Long id, String name, String category, Long price) {
+    public Product(Long id, String name, String category, BigDecimal price) {
         this.id = id;
         this.name = name;
         this.category = category;
