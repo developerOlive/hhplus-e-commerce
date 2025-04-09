@@ -14,7 +14,7 @@ public class PopularProductService {
 
     private final PopularProductRepository popularProductRepository;
 
-    public List<PopularProduct> getPopularProducts(int limit) {
-        return popularProductRepository.findTopProductsBySales(limit);
+    public List<PopularProduct> getPopularProducts(PopularProductCommand command) {
+        return popularProductRepository.findTopByCommand(command);
     }
 }

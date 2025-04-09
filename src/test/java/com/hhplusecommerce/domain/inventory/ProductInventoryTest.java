@@ -1,5 +1,6 @@
 package com.hhplusecommerce.domain.inventory;
 
+import com.hhplusecommerce.domain.product.ProductInventory;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,36 +15,38 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class ProductInventoryTest {
 
     private ProductInventory productInventory;
+
     private static final long PRODUCT_ID = 1L;
-    private static final int INITIAL_QUANTITY = 100; // 초기 재고 수량
-    private static final int AMOUNT_TO_ADD = 50;  // 추가할 수량
-    private static final int AMOUNT_TO_DEDUCT = 30;  // 차감할 수량
-    private static final int AMOUNT_TO_DEDUCT_EXCESS = 200; // 차감할 초과 수량2
+    private static final int INITIAL_STOCK = 100;
+    private static final int VALID_ADD_AMOUNT = 50;
+    private static final int VALID_DEDUCT_AMOUNT = 30;
+    private static final int EXCESS_DEDUCT_AMOUNT = 200;
+
+    static ProductInventory 기본재고() {
+        return new ProductInventory(PRODUCT_ID, INITIAL_STOCK);
+    }
 
     @BeforeEach
     void setUp() {
-        productInventory = new ProductInventory(PRODUCT_ID, INITIAL_QUANTITY);  // 기본적으로 100개의 재고를 가진 상품 생성
+        productInventory = 기본재고();
     }
 
     @Nested
     class 재고_증가 {
 
         @Test
-        void 정상적으로_수량을_증가시킨다() {
-            // given & when
-            productInventory.increaseQuantity(AMOUNT_TO_ADD);
+        void 정상적으로_재고를_증가시킨다() {
+            productInventory.increaseStock(VALID_ADD_AMOUNT);
 
-            // then
-            assertThat(productInventory.getQuantity()).isEqualTo(INITIAL_QUANTITY + AMOUNT_TO_ADD);
+            assertThat(productInventory.getStock()).isEqualTo(INITIAL_STOCK + VALID_ADD_AMOUNT);
         }
 
         @ParameterizedTest
         @ValueSource(ints = {0, -1})
-        void 음수_또는_0_수량으로_증가하면_InvalidQuantityException이_발생한다(int amount) {
-            // given & when & then
-            assertThatThrownBy(() -> productInventory.increaseQuantity(amount))
+        void 음수_또는_0으로_증가하면_예외가_발생한다(int amount) {
+            assertThatThrownBy(() -> productInventory.increaseStock(amount))
                     .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.INVALID_QUANTITY.getMessage());
+                    .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
         }
     }
 
@@ -51,29 +54,25 @@ class ProductInventoryTest {
     class 재고_차감 {
 
         @Test
-        void 재고가_충분할_때_정상적으로_수량을_차감한다() {
-            // given & when
-            productInventory.decreaseQuantity(AMOUNT_TO_DEDUCT);
+        void 정상적으로_재고를_차감한다() {
+            productInventory.decreaseStock(VALID_DEDUCT_AMOUNT);
 
-            // then
-            assertThat(productInventory.getQuantity()).isEqualTo(INITIAL_QUANTITY - AMOUNT_TO_DEDUCT);
+            assertThat(productInventory.getStock()).isEqualTo(INITIAL_STOCK - VALID_DEDUCT_AMOUNT);
         }
 
         @ParameterizedTest
         @ValueSource(ints = {0, -1})
-        void 재고_차감_시_0이하_값으로_차감_하려_하면_InvalidQuantityException이_발생한다(int amountToDeduct) {
-            // given & when & then
-            assertThatThrownBy(() -> productInventory.decreaseQuantity(amountToDeduct))
+        void 수량이_0_이하이면_예외가_발생한다(int amount) {
+            assertThatThrownBy(() -> productInventory.decreaseStock(amount))
                     .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.INVALID_QUANTITY.getMessage());
+                    .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
         }
 
         @Test
-        void 재고보다_많은_수량을_차감하려_하면_InsufficientInventoryException이_발생한다() {
-            // given & when & then
-            assertThatThrownBy(() -> productInventory.decreaseQuantity(AMOUNT_TO_DEDUCT_EXCESS))
+        void 재고보다_많은_수량을_차감하면_예외가_발생한다() {
+            assertThatThrownBy(() -> productInventory.decreaseStock(EXCESS_DEDUCT_AMOUNT))
                     .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.INSUFFICIENT_INVENTORY.getMessage());
+                    .hasMessage(ErrorType.INSUFFICIENT_STOCK.getMessage());
         }
     }
 
@@ -81,21 +80,17 @@ class ProductInventoryTest {
     class 재고_조회 {
 
         @Test
-        void 재고_수량을_정상적으로_조회한다() {
-            // given & when
-            int currentQuantity = productInventory.getQuantity();
+        void 재고를_정상적으로_조회한다() {
+            int stock = productInventory.getStock();
 
-            // then
-            assertThat(currentQuantity).isEqualTo(INITIAL_QUANTITY);
+            assertThat(stock).isEqualTo(INITIAL_STOCK);
         }
     }
 
     @Test
-    void 초기_수량이_음수일_경우_0으로_설정된다() {
-        // given & when
-        ProductInventory inventory = new ProductInventory(1L, -50);
-
-        // then
-        assertThat(inventory.getQuantity()).isEqualTo(0);
+    void 초기_재고가_음수면_예외가_발생한다() {
+        assertThatThrownBy(() -> new ProductInventory(PRODUCT_ID, -50))
+                .isInstanceOf(CustomException.class)
+                .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
     }
 }

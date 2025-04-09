@@ -1,8 +1,10 @@
 package com.hhplusecommerce.interfaces.product;
 
-import com.hhplusecommerce.applicatoin.product.ProductFacade;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductService;
+import com.hhplusecommerce.domain.product.ProductService;
+import com.hhplusecommerce.interfaces.product.ProductRequest.PopularProductSearchRequest;
+import com.hhplusecommerce.interfaces.product.ProductRequest.ProductSearchRequest;
 import com.hhplusecommerce.interfaces.product.ProductResponse.PopularProductResponse;
 import com.hhplusecommerce.interfaces.product.ProductResponse.ProductsResponse;
 import com.hhplusecommerce.support.response.ApiResult;
@@ -17,7 +19,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -30,7 +31,7 @@ import static com.hhplusecommerce.interfaces.product.ProductSwaggerDocs.PRODUCT_
 @Tag(name = "상품 API", description = "상품 관련 API")
 public class ProductController {
 
-    private final ProductFacade productFacade;
+    private final ProductService productService;
     private final PopularProductService popularProductService;
 
     @GetMapping("/api/v1/products")
@@ -39,18 +40,18 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS)))
     })
     public ResponseEntity<ApiResult<Page<ProductsResponse>>> getProducts(@Valid ProductSearchRequest request) {
-        Page<ProductsResponse> productsPage = productFacade.getProducts(request.toCommand(), request.toPageable());
-        return ResponseEntity.ok(ApiResult.success(productsPage));
+        Page<ProductsResponse> products = productService.getProducts(request.toCommand(), request.toPageable());
+
+        return ResponseEntity.ok(ApiResult.success(products));
     }
 
     @GetMapping("/api/v1/products/popular")
-    @Operation(summary = "인기 상품 조회", description = "판매량 기준 상위 인기 상품을 조회합니다.")
+    @Operation(summary = "인기 상품 조회", description = "조건에 맞는 인기 상품을 조회합니다.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = POPULAR_PRODUCT_SUCCESS))),
+            @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = POPULAR_PRODUCT_SUCCESS)))
     })
-    public ResponseEntity<ApiResult<List<PopularProductResponse>>> getPopularProducts(@RequestParam(defaultValue = "5") int limit) {
-        List<PopularProduct> products = popularProductService.getPopularProducts(limit);
-
+    public ResponseEntity<ApiResult<List<PopularProductResponse>>> getPopularProducts(@Valid PopularProductSearchRequest request) {
+        List<PopularProduct> products = popularProductService.getPopularProducts(request.toCommand());
         List<PopularProductResponse> response = products.stream()
                 .map(PopularProductResponse::from)
                 .toList();

@@ -6,5 +6,5 @@ import java.util.List;
 
 @Repository
 public interface PopularProductRepository {
-    List<PopularProduct> findTopProductsBySales(int limit);
+    List<PopularProduct> findTopByCommand(PopularProductCommand command);
 }
