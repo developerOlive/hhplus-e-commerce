@@ -6,9 +6,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+/**
+ * 쿠폰 정책
+ *
+ * - 쿠폰의 할인 조건 및 정책 정보 관리
+ * - 유효한 쿠폰인지 판단 (기간, 상태 등)
+ * - 발급 수량 관리
+ * - 주문 금액에 대한 할인 금액 계산
+ */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -32,9 +41,7 @@ public class Coupon {
 
     @Builder
     public Coupon(String couponName, CouponDiscountType discountType, BigDecimal discountValue, int maxQuantity, LocalDate validStartDate, LocalDate validEndDate) {
-        if (discountValue == null || discountValue.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new CustomException(ErrorType.INVALID_COUPON_VALUE);
-        }
+        validateDiscountValue(discountValue);
         this.couponName = couponName;
         this.discountType = discountType;
         this.discountValue = discountValue;
@@ -64,5 +71,37 @@ public class Coupon {
         }
         this.issuedQuantity++;
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 쿠폰을 적용한 할인 금액 계산
+     */
+    public BigDecimal calculateDiscount(BigDecimal totalAmount) {
+        validateDiscountValue(this.discountValue);
+
+        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+
+        if (discountType == CouponDiscountType.FIXED_RATE) {
+            return totalAmount
+                    .multiply(discountValue)
+                    .divide(BigDecimal.valueOf(100), 0, RoundingMode.FLOOR);
+        }
+
+        if (discountType == CouponDiscountType.FIXED_AMOUNT) {
+            return discountValue.min(totalAmount);
+        }
+
+        return BigDecimal.ZERO;
+    }
+
+    /**
+     * 할인 금액 유효성 검증
+     */
+    private void validateDiscountValue(BigDecimal value) {
+        if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new CustomException(ErrorType.INVALID_COUPON_VALUE);
+        }
     }
 }

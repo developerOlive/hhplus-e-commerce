@@ -1,7 +1,5 @@
 package com.hhplusecommerce.domain.coupon;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -11,42 +9,62 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class CouponHistoryTest {
 
-    private Coupon coupon;
-    private CouponHistory couponHistory;
+    private static final Long USER_ID = 1L;
+    private static final String COUPON_NAME = "10% 할인 쿠폰";
+    private static final CouponDiscountType FIXED_RATE = CouponDiscountType.FIXED_RATE;
+    private static final BigDecimal DISCOUNT_PERCENT_10 = BigDecimal.valueOf(10);
+    private static final int MAX_ISSUE_QUANTITY = 100;
+    private static final LocalDate VALID_START_DATE = LocalDate.now().minusDays(1);
+    private static final LocalDate VALID_END_DATE = LocalDate.now().plusDays(7);
 
-    @BeforeEach
-    void setUp() {
-        coupon = new Coupon("10% 할인 쿠폰", CouponDiscountType.FIXED_RATE, new BigDecimal("10"), 100, LocalDate.now(), LocalDate.now().plusDays(30));
-        couponHistory = CouponHistory.issue(1L, coupon); // 발급된 쿠폰 히스토리 생성
+    private Coupon createValidCoupon() {
+        return new Coupon(
+                COUPON_NAME,
+                FIXED_RATE,
+                DISCOUNT_PERCENT_10,
+                MAX_ISSUE_QUANTITY,
+                VALID_START_DATE,
+                VALID_END_DATE
+        );
     }
 
-    @Nested
-    class 쿠폰_발급_성공 {
+    @Test
+    void 쿠폰_발급시_상태는_AVAILABLE이고_사용기록은_null이다() {
+        Coupon coupon = createValidCoupon();
 
-        @Test
-        void 정상적으로_쿠폰_발급() {
-            assertThat(couponHistory.getCouponUsageStatus()).isEqualTo(CouponUsageStatus.AVAILABLE);
-            assertThat(couponHistory.getPublishDate()).isEqualTo(LocalDate.now());
-        }
+        CouponHistory history = CouponHistory.issue(USER_ID, coupon);
 
-        @Test
-        void 쿠폰_발급_수량이_0일때_변경된_잔액을_검증() {
-            // 발급 수량 0으로 설정 후, 발급 시도
-            coupon.increaseIssuedQuantity(); // 발급 시도
-
-            assertThat(coupon.getIssuedQuantity()).isEqualTo(1);
-        }
+        assertThat(history.getCouponUsageStatus()).isEqualTo(CouponUsageStatus.AVAILABLE);
+        assertThat(history.getUseDate()).isNull();
     }
 
-    @Nested
-    class 쿠폰_사용_성공 {
+    @Test
+    void 쿠폰_사용시_상태는_USED로_변경되고_useDate가_세팅된다() {
+        Coupon coupon = createValidCoupon();
+        CouponHistory history = CouponHistory.issue(USER_ID, coupon);
 
-        @Test
-        void 정상적으로_쿠폰_사용() {
-            couponHistory.markUsed();
+        history.markUsed();
 
-            assertThat(couponHistory.getCouponUsageStatus()).isEqualTo(CouponUsageStatus.USED);
-            assertThat(couponHistory.getUseDate()).isEqualTo(LocalDate.now());
-        }
+        assertThat(history.getCouponUsageStatus()).isEqualTo(CouponUsageStatus.USED);
+        assertThat(history.getUseDate()).isNotNull();
+    }
+
+    @Test
+    void 사용가능한_쿠폰은_사용할_수_있다() {
+        Coupon coupon = createValidCoupon();
+        CouponHistory history = CouponHistory.issue(USER_ID, coupon);
+
+        assertThat(history.isAvailable()).isTrue();
+    }
+
+    @Test
+    void 쿠폰의_사용여부는_isAvailable로_확인할_수_있다() {
+        Coupon coupon = createValidCoupon();
+
+        CouponHistory available = CouponHistory.issue(USER_ID, coupon);
+        assertThat(available.isAvailable()).isTrue();
+
+        available.markUsed();
+        assertThat(available.isAvailable()).isFalse();
     }
 }

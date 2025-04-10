@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,17 +33,65 @@ public class CouponService {
 
     @Transactional
     public Long issueCoupon(CouponCommand command) {
-        // 해당 쿠폰 조회
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
 
-        // 발급 수량 체크 및 발급 수량 증가
         coupon.increaseIssuedQuantity();
 
-        // 쿠폰 발급 내역 생성
         CouponHistory couponHistory = CouponHistory.issue(command.userId(), coupon);
         couponHistoryRepository.save(couponHistory);
 
         return couponHistory.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public BigDecimal calculateDiscount(Long userId, Long couponIssueId, BigDecimal totalAmount) {
+        if (couponIssueId == null) {
+            return BigDecimal.ZERO;
+        }
+
+        CouponHistory couponHistory = getCouponHistory(userId, couponIssueId);
+        Coupon coupon = getCoupon(couponHistory.getCouponId());
+
+        CouponValidator.validateUsableCoupon(coupon, couponHistory);
+
+        return coupon.calculateDiscount(totalAmount);
+    }
+
+    /**
+     * 유저의 쿠폰 이력을 조회하고, 본인 소유인지 검증
+     */
+    @Transactional(readOnly = true)
+    public CouponHistory getCouponHistory(Long userId, Long couponIssueId) {
+        CouponHistory couponHistory = couponHistoryRepository.findById(couponIssueId)
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+
+        if (!couponHistory.getUserId().equals(userId)) {
+            throw new CustomException(ErrorType.UNAUTHORIZED_COUPON_ACCESS);
+        }
+
+        return couponHistory;
+    }
+
+    /**
+     * 쿠폰 정책(할인 정보 등)을 조회
+     */
+    @Transactional(readOnly = true)
+    public Coupon getCoupon(Long couponId) {
+        return couponRepository.findById(couponId)
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+    }
+
+    /**
+     * 쿠폰 사용 처리 (결제 성공 시)
+     */
+    @Transactional
+    public void markUsed(Long userId, Long couponIssueId) {
+        CouponHistory couponHistory = getCouponHistory(userId, couponIssueId);
+        Coupon coupon = getCoupon(couponHistory.getCouponId());
+
+        CouponValidator.validateUsableCoupon(coupon, couponHistory);
+
+        couponHistory.markUsed();
     }
 }
