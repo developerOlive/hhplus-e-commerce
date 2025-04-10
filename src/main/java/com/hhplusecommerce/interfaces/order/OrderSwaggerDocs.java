@@ -1,4 +1,4 @@
-package com.hhplusecommerce.interfaces.order.docs;
+package com.hhplusecommerce.interfaces.order;
 
 public final class OrderSwaggerDocs {
 
@@ -23,7 +23,7 @@ public final class OrderSwaggerDocs {
         }
     """;
 
-    public static final String INVALID_COUPON = """
+    public static final String COUPON_INACTIVE = """
         {
           "success": false,
           "message": "유효하지 않은 쿠폰입니다.",
@@ -31,7 +31,7 @@ public final class OrderSwaggerDocs {
         }
     """;
 
-    public static final String OUT_OF_STOCK = """
+    public static final String INSUFFICIENT_STOCK = """
         {
           "success": false,
           "message": "상품 재고가 부족합니다.",
