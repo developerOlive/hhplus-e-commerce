@@ -50,11 +50,10 @@ public class BalanceHistory {
     }
 
     private BigDecimal calculateAmount(BigDecimal beforeBalance, BigDecimal afterBalance) {
-        BigDecimal amount = afterBalance.subtract(beforeBalance);
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+        if (afterBalance.compareTo(beforeBalance) < 0 && afterBalance.compareTo(BigDecimal.ZERO) < 0) {
             throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
         }
 
-        return amount;
+        return afterBalance.subtract(beforeBalance);
     }
 }

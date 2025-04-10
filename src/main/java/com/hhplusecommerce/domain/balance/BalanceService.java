@@ -50,4 +50,14 @@ public class BalanceService {
 
         return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());
     }
+
+    @Transactional(readOnly = true)
+    public void validateEnough(Long userId, BigDecimal requiredAmount) {
+        UserBalance userBalance = balanceRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
+
+        if (userBalance.getAmount().compareTo(requiredAmount) < 0) {
+            throw new CustomException(ErrorType.INSUFFICIENT_BALANCE);
+        }
+    }
 }

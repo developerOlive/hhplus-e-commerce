@@ -15,6 +15,6 @@ public class BalanceResponse {
     private BigDecimal balance;
 
     public static BalanceResponse from(BalanceResult balanceResult) {
-        return new BalanceResponse(balanceResult.getUserId(), balanceResult.getBalance());
+        return new BalanceResponse(balanceResult.userId(), balanceResult.balance());
     }
 }
