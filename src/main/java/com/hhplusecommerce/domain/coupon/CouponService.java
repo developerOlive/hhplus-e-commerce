@@ -36,7 +36,7 @@ public class CouponService {
         Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
 
-        coupon.increaseIssuedQuantity();
+        coupon.confirmCouponIssue();
 
         CouponHistory couponHistory = CouponHistory.issue(command.userId(), coupon);
         couponHistoryRepository.save(couponHistory);

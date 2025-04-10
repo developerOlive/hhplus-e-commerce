@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 /**
  * 쿠폰 정책
  *
- * - 쿠폰의 할인 조건 및 정책 정보 관리
+ * - 쿠폰의 할인 조건 및 정책 관리
  * - 유효한 쿠폰인지 판단 (기간, 상태 등)
  * - 발급 수량 관리
  * - 주문 금액에 대한 할인 금액 계산
@@ -36,6 +36,8 @@ public class Coupon {
     private CouponStatus couponStatus = CouponStatus.ACTIVE;
     private LocalDate validStartDate;
     private LocalDate validEndDate;
+    @Enumerated(EnumType.STRING)
+    private CouponType couponType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -103,5 +105,29 @@ public class Coupon {
         if (value == null || value.compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(ErrorType.INVALID_COUPON_VALUE);
         }
+    }
+
+    /**
+     * 쿠폰 발급 처리
+     * - 발급 가능 여부를 확인 후 수량 감소
+     * - 실제 사용자에게 발급된 쿠폰 이력은 CouponHistory에서 관리
+     */
+    public void confirmCouponIssue() {
+        if (!isIssuable()) {
+            throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
+        }
+        this.issuedQuantity++;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 쿠폰 발급 가능 여부 판단
+     */
+    public boolean isIssuable() {
+        if (couponType == CouponType.LIMITED) {
+            return this.issuedQuantity < this.maxQuantity;
+        }
+
+        return true;
     }
 }
