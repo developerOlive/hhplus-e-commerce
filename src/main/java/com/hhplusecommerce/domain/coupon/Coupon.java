@@ -42,7 +42,7 @@ public class Coupon {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Coupon(String couponName, CouponDiscountType discountType, BigDecimal discountValue, int maxQuantity, LocalDate validStartDate, LocalDate validEndDate) {
+    public Coupon(String couponName, CouponDiscountType discountType, BigDecimal discountValue, int maxQuantity, LocalDate validStartDate, LocalDate validEndDate, int issuedQuantity, CouponType couponType) {
         validateDiscountValue(discountValue);
         this.couponName = couponName;
         this.discountType = discountType;
@@ -50,6 +50,8 @@ public class Coupon {
         this.maxQuantity = maxQuantity;
         this.validStartDate = validStartDate;
         this.validEndDate = validEndDate;
+        this.issuedQuantity = issuedQuantity;
+        this.couponType = couponType;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }

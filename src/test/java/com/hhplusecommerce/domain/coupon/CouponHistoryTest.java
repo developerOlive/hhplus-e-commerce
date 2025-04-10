@@ -18,14 +18,16 @@ class CouponHistoryTest {
     private static final LocalDate VALID_END_DATE = LocalDate.now().plusDays(7);
 
     private Coupon createValidCoupon() {
-        return new Coupon(
-                COUPON_NAME,
-                FIXED_RATE,
-                DISCOUNT_PERCENT_10,
-                MAX_ISSUE_QUANTITY,
-                VALID_START_DATE,
-                VALID_END_DATE
-        );
+        return Coupon.builder()
+                .couponName(COUPON_NAME)
+                .discountType(FIXED_RATE)
+                .discountValue(DISCOUNT_PERCENT_10)
+                .maxQuantity(MAX_ISSUE_QUANTITY)
+                .validStartDate(VALID_START_DATE)
+                .validEndDate(VALID_END_DATE)
+                .issuedQuantity(0)
+                .couponType(CouponType.LIMITED)
+                .build();
     }
 
     @Test
