@@ -49,15 +49,15 @@ public class CouponController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "발급 성공", content = @Content(examples = @ExampleObject(value = COUPON_ISSUE_SUCCESS))),
             @ApiResponse(responseCode = "400", description = "쿠폰 소진", content = @Content(examples = @ExampleObject(value = COUPON_ISSUE_FAIL_NO_STOCK))),
-            @ApiResponse(responseCode = "409", description = "이미 발급됨", content = @Content(examples = @ExampleObject(value = COUPON_ISSUE_FAIL_ALREADY)))
+            @ApiResponse(responseCode = "409", description = "이미 발급된 쿠폰", content = @Content(examples = @ExampleObject(value = COUPON_ISSUE_FAIL_ALREADY)))
     })
     public ResponseEntity<ApiResult<Issue>> issueCoupon(
             @PathVariable("userId") Long userId,
             @PathVariable("couponId") Long couponId
     ) {
         CouponCommand command = new CouponCommand(userId, couponId);
-        Long couponIssueId = couponService.issueCoupon(command);
+        Long couponHistoryId = couponService.issueCoupon(command);
 
-        return ResponseEntity.ok(ApiResult.success(new Issue(couponIssueId)));
+        return ResponseEntity.ok(ApiResult.success(Issue.from(couponHistoryId)));
     }
 }

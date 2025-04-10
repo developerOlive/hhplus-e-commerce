@@ -31,7 +31,7 @@ public class CouponResponse {
         @Schema(description = "할인 값", example = "10")
         private BigDecimal discountValue;
 
-        @Schema(description = "쿠폰 상태", example = "AVAILABLE")
+        @Schema(description = "쿠폰 상태", example = "ACTIVE")
         private CouponStatus couponStatus;
 
         @Schema(description = "쿠폰 사용 상태", example = "AVAILABLE")
@@ -58,5 +58,12 @@ public class CouponResponse {
     }
 
     @Schema(description = "쿠폰 발급 응답")
-    public record Issue(Long couponIssueId) {}
+    public record Issue(
+            @Schema(description = "쿠폰 발급 이력 ID", example = "1001")
+            Long couponHistoryId
+    ) {
+        public static Issue from(Long couponHistoryId) {
+            return new Issue(couponHistoryId);
+        }
+    }
 }
