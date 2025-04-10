@@ -3,6 +3,7 @@ package com.hhplusecommerce.interfaces.product;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.product.Product;
+import com.hhplusecommerce.domain.product.ProductResult;
 import com.hhplusecommerce.domain.product.ProductService;
 import com.hhplusecommerce.interfaces.product.ProductRequest.PopularProductSearchRequest;
 import com.hhplusecommerce.interfaces.product.ProductRequest.ProductSearchRequest;
@@ -41,10 +42,10 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS)))
     })
     public ResponseEntity<ApiResult<Page<ProductsResponse>>> getProducts(@Valid ProductSearchRequest request) {
-        Page<Product> products = productService.getProducts(request.toCommand(), request.toPageable());
-        Page<ProductsResponse> response = products.map(ProductsResponse::from);
+        Page<ProductResult> productPage = productService.getProductsWithInventory(request.toCommand(), request.toPageable());
+        Page<ProductsResponse> responsePage = productPage.map(ProductsResponse::from);
 
-        return ResponseEntity.ok(ApiResult.success(response));
+        return ResponseEntity.ok(ApiResult.success(responsePage));
     }
 
     @GetMapping("/api/v1/products/popular")

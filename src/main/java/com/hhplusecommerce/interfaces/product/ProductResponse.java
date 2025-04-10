@@ -2,14 +2,17 @@ package com.hhplusecommerce.interfaces.product;
 
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.product.Product;
+import com.hhplusecommerce.domain.product.ProductResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 public class ProductResponse {
 
+    @Getter
     @AllArgsConstructor
     @NoArgsConstructor
     public static class ProductsResponse {
@@ -29,12 +32,12 @@ public class ProductResponse {
         @Schema(description = "재고 수량", example = "10")
         private int stock;
 
-        public static ProductsResponse from(Product product) {
+        public static ProductsResponse from(ProductResult ProductResult) {
             ProductsResponse response = new ProductsResponse();
-            response.productId = product.getId();
-            response.name = product.getName();
-            response.category = product.getCategory();
-            response.price = product.getPrice();
+            response.productId = ProductResult.productId();
+            response.name = ProductResult.name();
+            response.category = ProductResult.category();
+            response.price = ProductResult.price();
 
             return response;
         }
