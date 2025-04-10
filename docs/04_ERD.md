@@ -55,6 +55,8 @@ erDiagram
         DATETIME updated_at "최종 갱신일"
     }
 
+erDiagram
+
     coupon {
         BIGINT id PK "쿠폰 ID"
         VARCHAR coupon_name "쿠폰 이름"
@@ -63,6 +65,8 @@ erDiagram
         INT max_quantity "최대 발행 가능 수량"
         INT issued_quantity "현재까지 발행된 수량"
         VARCHAR status "상태 (ACTIVE, INACTIVE)"
+        DATE valid_start_date "유효 시작일"
+        DATE valid_end_date "유효 종료일"
         DATETIME created_at "생성일시"
         DATETIME updated_at "수정일시"
     }
@@ -71,12 +75,9 @@ erDiagram
         BIGINT id PK "발행 쿠폰 ID"
         BIGINT ref_coupon_id FK "쿠폰 ID 참조"
         BIGINT ref_user_id FK "사용자 ID 참조"
-        DATE publish_date "발급일"
+        DATE issue_date "발급일"
         DATE use_date "사용일"
-        DATE valid_start_date "시작일"
-        DATE valid_end_date "종료일"
         VARCHAR status "상태 (AVAILABLE, EXPIRED, USED)"
-        VARCHAR issue_status "발급 처리 상태 (PENDING, ISSUED, FAILED)"
         DATETIME created_at "생성일시"
         DATETIME updated_at "수정일시"
     }
@@ -84,7 +85,7 @@ erDiagram
     order {
         BIGINT id PK "주문 ID"
         BIGINT ref_user_id FK "사용자 ID 참조"
-        BIGINT ref_coupon_publish_id FK "쿠폰 발급 ID 참조"
+        BIGINT ref_coupon_issue_id FK "쿠폰 발급 ID 참조"
         DATE order_date "주문일"
         DECIMAL total_amount "총 금액"
         DECIMAL final_amount "최종 금액"
