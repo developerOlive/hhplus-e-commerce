@@ -25,7 +25,7 @@ public class PaymentService {
                 .paymentStatus(PaymentStatus.PENDING)
                 .build();
 
-        payment.markSuccess();
+        payment.complete();
         return paymentRepository.save(payment);
     }
 
@@ -40,7 +40,7 @@ public class PaymentService {
                 .paymentStatus(PaymentStatus.PENDING)
                 .build();
 
-        payment.markFail();
+        payment.fail();
         return paymentRepository.save(payment);
     }
 

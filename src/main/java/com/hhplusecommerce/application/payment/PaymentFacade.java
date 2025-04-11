@@ -50,7 +50,7 @@ public class PaymentFacade {
         }
 
         // 주문 상태 완료 처리
-        order.completeOrder();
+        order.complete();
 
         // 결제 정보 저장
         Payment payment = paymentService.pay(order.getId(), finalAmount);

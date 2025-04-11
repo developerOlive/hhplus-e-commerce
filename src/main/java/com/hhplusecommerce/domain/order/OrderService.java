@@ -70,18 +70,9 @@ public class OrderService {
     public void completeOrder(Long orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new CustomException(ErrorType.ORDER_NOT_FOUND));
-        order.completeOrder();
+        order.complete();
     }
 
-    /**
-     * 주문 취소 처리
-     */
-    @Transactional
-    public void cancelOrder(Long orderId) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new CustomException(ErrorType.ORDER_NOT_FOUND));
-        order.cancelOrder();
-    }
 
     /**
      * 주문 만료 처리
@@ -92,7 +83,7 @@ public class OrderService {
         List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PAYMENT_WAIT, thirtyMinutesAgo);
 
         for (Order order : expiredOrders) {
-            order.expireOrder();
+            order.expire();
         }
     }
 }

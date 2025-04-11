@@ -35,7 +35,7 @@ class ProductInventoryTest {
 
         @Test
         void 정상적으로_재고를_증가시킨다() {
-            productInventory.increaseStock(VALID_ADD_AMOUNT);
+            productInventory.increase(VALID_ADD_AMOUNT);
 
             assertThat(productInventory.getStock()).isEqualTo(INITIAL_STOCK + VALID_ADD_AMOUNT);
         }
@@ -43,7 +43,7 @@ class ProductInventoryTest {
         @ParameterizedTest
         @ValueSource(ints = {0, -1})
         void 음수_또는_0으로_증가하면_예외가_발생한다(int amount) {
-            assertThatThrownBy(() -> productInventory.increaseStock(amount))
+            assertThatThrownBy(() -> productInventory.increase(amount))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
         }
@@ -54,7 +54,7 @@ class ProductInventoryTest {
 
         @Test
         void 정상적으로_재고를_차감한다() {
-            productInventory.decreaseStock(VALID_DEDUCT_AMOUNT);
+            productInventory.decrease(VALID_DEDUCT_AMOUNT);
 
             assertThat(productInventory.getStock()).isEqualTo(INITIAL_STOCK - VALID_DEDUCT_AMOUNT);
         }
@@ -62,14 +62,14 @@ class ProductInventoryTest {
         @ParameterizedTest
         @ValueSource(ints = {0, -1})
         void 수량이_0_이하이면_예외가_발생한다(int amount) {
-            assertThatThrownBy(() -> productInventory.decreaseStock(amount))
+            assertThatThrownBy(() -> productInventory.decrease(amount))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
         }
 
         @Test
         void 재고보다_많은_수량을_차감하면_예외가_발생한다() {
-            assertThatThrownBy(() -> productInventory.decreaseStock(EXCESS_DEDUCT_AMOUNT))
+            assertThatThrownBy(() -> productInventory.decrease(EXCESS_DEDUCT_AMOUNT))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INSUFFICIENT_STOCK.getMessage());
         }

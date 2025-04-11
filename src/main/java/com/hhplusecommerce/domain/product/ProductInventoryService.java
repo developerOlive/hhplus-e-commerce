@@ -57,7 +57,7 @@ public class ProductInventoryService {
         ProductInventory inventory = productInventoryRepository.findInventoryByProductId(productId)
                 .orElseThrow(() -> new CustomException(ErrorType.PRODUCT_NOT_FOUND));
 
-        inventory.decreaseStock(quantity);
+        inventory.decrease(quantity);
     }
 }
 

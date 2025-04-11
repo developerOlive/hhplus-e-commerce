@@ -76,7 +76,7 @@ public class Coupon {
     /**
      * 쿠폰을 적용한 할인 금액 계산
      */
-    public BigDecimal calculateDiscount(BigDecimal totalAmount) {
+    public BigDecimal discountFor(BigDecimal totalAmount) {
         validateDiscountValue(this.discountValue);
 
         if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {

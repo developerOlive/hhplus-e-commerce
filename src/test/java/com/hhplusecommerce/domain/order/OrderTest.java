@@ -60,20 +60,13 @@ class OrderTest {
 
         @Test
         void 결제_대기_상태에서_주문이_완료_상태로_변경된다() {
-            order.completeOrder();
+            order.complete();
             assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
         }
-
-        @Test
-        void 결제_대기_상태에서_주문이_취소_상태로_변경된다() {
-            order.cancelOrder();
-            assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
-        }
-
         @Test
         void 결제_대기_상태에서_주문이_만료상태로_변경된다() {
             order = new Order(USER_ID, COUPON_ISSUE_ID, ORDER_DATE, TOTAL_AMOUNT, FINAL_AMOUNT, OrderStatus.PAYMENT_WAIT);
-            order.expireOrder();
+            order.expire();
             assertThat(order.getStatus()).isEqualTo(OrderStatus.EXPIRED);
         }
     }
@@ -82,45 +75,34 @@ class OrderTest {
     class 주문_상태_변경_실패 {
 
         @Test
-        void 결제_완료_상태에서_취소처리하면_예외가_발생한다() {
-            // given
-            order = new Order(USER_ID, COUPON_ISSUE_ID, ORDER_DATE, TOTAL_AMOUNT, FINAL_AMOUNT, OrderStatus.COMPLETED);
-
-            // when & then
-            assertThatThrownBy(order::cancelOrder)
-                    .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.INVALID_ORDER_STATUS_TO_CANCEL.getMessage());
-        }
-
-        @Test
-        void 결제_취소_상태에서_완료처리하면_예외가_발생한다() {
+        void  주문_취소_상태에서_완료처리하면_예외가_발생한다() {
             // given
             order = new Order(USER_ID, COUPON_ISSUE_ID, ORDER_DATE, TOTAL_AMOUNT, FINAL_AMOUNT, OrderStatus.CANCELED);
 
             // when & then
-            assertThatThrownBy(order::completeOrder)
+            assertThatThrownBy(order::complete)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_ORDER_STATUS_TO_COMPLETE.getMessage());
         }
 
         @Test
-        void 결제_만료_상태에서_완료처리하면_예외가_발생한다() {
+        void 주문_만료_상태에서_완료처리하면_예외가_발생한다() {
             // given
             order = new Order(USER_ID, COUPON_ISSUE_ID, ORDER_DATE, TOTAL_AMOUNT, FINAL_AMOUNT, OrderStatus.EXPIRED);
 
             // when & then
-            assertThatThrownBy(order::completeOrder)
+            assertThatThrownBy(order::complete)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_ORDER_STATUS_TO_COMPLETE.getMessage());
         }
 
         @Test
-        void 결제_완료_상태에서_만료처리하면_예외가_발생한다() {
+        void 주문_완료_상태에서_만료처리하면_예외가_발생한다() {
             // given
             order = new Order(USER_ID, COUPON_ISSUE_ID, ORDER_DATE, TOTAL_AMOUNT, FINAL_AMOUNT, OrderStatus.COMPLETED);
 
             // when & then
-            assertThatThrownBy(order::expireOrder)
+            assertThatThrownBy(order::expire)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_ORDER_STATUS_TO_EXPIRE.getMessage());
         }
@@ -131,7 +113,7 @@ class OrderTest {
             order = new Order(USER_ID, COUPON_ISSUE_ID, ORDER_DATE, TOTAL_AMOUNT, FINAL_AMOUNT, OrderStatus.CANCELED);
 
             // when & then
-            assertThatThrownBy(order::expireOrder)
+            assertThatThrownBy(order::expire)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_ORDER_STATUS_TO_EXPIRE.getMessage());
         }

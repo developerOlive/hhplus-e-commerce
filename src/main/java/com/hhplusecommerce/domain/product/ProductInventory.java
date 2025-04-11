@@ -31,7 +31,7 @@ public class ProductInventory {
     @Builder
     public ProductInventory(Long productId, int stock) {
         this.productId = productId;
-        this.stock = validateInitialStock(stock);
+        this.stock = validatePositive(stock);
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -41,7 +41,7 @@ public class ProductInventory {
      * 재고 증가
      * @param amount 증가할 수량 (양수)
      */
-    public void increaseStock(int amount) {
+    public void increase(int amount) {
         validateAmount(amount);
 
         stock += amount;
@@ -52,7 +52,7 @@ public class ProductInventory {
      * 재고를 차감
      * @param amount 차감할 수량 (양수)
      */
-    public void decreaseStock(int amount) {
+    public void decrease(int amount) {
         validateAmount(amount);
 
         if (amount > stock) {
@@ -68,7 +68,7 @@ public class ProductInventory {
         }
     }
 
-    private int validateInitialStock(int stock) {
+    private int validatePositive(int stock) {
         if (stock < 0) {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }

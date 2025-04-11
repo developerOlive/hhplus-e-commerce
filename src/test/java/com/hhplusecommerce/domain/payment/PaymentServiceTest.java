@@ -61,7 +61,7 @@ class PaymentServiceTest {
                     .build();
 
             // then
-            assertThatThrownBy(alreadySuccess::markSuccess)
+            assertThatThrownBy(alreadySuccess::complete)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_COMPLETE.getMessage());
         }
@@ -95,7 +95,7 @@ class PaymentServiceTest {
                     .build();
 
             // then
-            assertThatThrownBy(alreadyFailed::markFail)
+            assertThatThrownBy(alreadyFailed::fail)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_FAIL.getMessage());
         }

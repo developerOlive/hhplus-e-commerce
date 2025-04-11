@@ -32,7 +32,7 @@ public class BalanceService {
         BigDecimal beforeBalance = userBalance.getAmount();
         userBalance.charge(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.createBalanceHistory(userBalance.getUserId(), beforeBalance, userBalance.getAmount(), CHARGE);
+        BalanceHistory balanceHistory = BalanceHistory.create(userBalance.getUserId(), beforeBalance, userBalance.getAmount(), CHARGE);
         balanceHistoryRepository.save(balanceHistory);
 
         return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());
@@ -45,7 +45,7 @@ public class BalanceService {
         BigDecimal beforeBalance = userBalance.getAmount();
         userBalance.deduct(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.createBalanceHistory(userBalance.getUserId(), beforeBalance, userBalance.getAmount(), DEDUCT);
+        BalanceHistory balanceHistory = BalanceHistory.create(userBalance.getUserId(), beforeBalance, userBalance.getAmount(), DEDUCT);
         balanceHistoryRepository.save(balanceHistory);
 
         return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());

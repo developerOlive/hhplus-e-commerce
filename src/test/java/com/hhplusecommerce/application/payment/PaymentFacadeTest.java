@@ -2,7 +2,6 @@ package com.hhplusecommerce.application.payment;
 
 import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceService;
-import com.hhplusecommerce.domain.coupon.CouponService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderService;
@@ -68,7 +67,7 @@ class PaymentFacadeTest {
         // then
         verify(balanceService).deduct(eq(USER_ID), any(BalanceCommand.class));
         verify(inventoryService).decreaseStocks(orderItems);
-        verify(order).completeOrder();
+        verify(order).complete();
         verify(paymentService).pay(ORDER_ID, FINAL_AMOUNT);
         verify(productSalesStatsService).recordSales(orderItems, LocalDate.now());
 

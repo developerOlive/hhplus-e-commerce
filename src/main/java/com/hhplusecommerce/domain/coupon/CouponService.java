@@ -55,7 +55,7 @@ public class CouponService {
 
         CouponValidator.validateUsableCoupon(coupon, couponHistory);
 
-        return coupon.calculateDiscount(totalAmount);
+        return coupon.discountFor(totalAmount);
     }
 
     /**
@@ -92,6 +92,6 @@ public class CouponService {
 
         CouponValidator.validateUsableCoupon(coupon, couponHistory);
 
-        couponHistory.markUsed();
+        couponHistory.use();
     }
 }

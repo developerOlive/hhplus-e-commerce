@@ -95,7 +95,7 @@ class CouponTest {
         void 정액_할인은_총금액을_초과하지_않는다() {
             Coupon coupon = new Coupon(NAME, FIXED_AMOUNT, FIXED_DISCOUNT_500_WON, MAX_QUANTITY, START, END);
 
-            BigDecimal discount = coupon.calculateDiscount(ORDER_TOTAL_400_WON);
+            BigDecimal discount = coupon.discountFor(ORDER_TOTAL_400_WON);
 
             assertThat(discount).isEqualTo(ORDER_TOTAL_400_WON); // 할인액은 주문 금액을 초과하지 않음
         }
@@ -104,7 +104,7 @@ class CouponTest {
         void 총금액이_0이면_할인금액은_0() {
             Coupon coupon = new Coupon(NAME, FIXED_AMOUNT, FIXED_DISCOUNT_500_WON, MAX_QUANTITY, START, END);
 
-            BigDecimal discount = coupon.calculateDiscount(ZERO_AMOUNT);
+            BigDecimal discount = coupon.discountFor(ZERO_AMOUNT);
 
             assertThat(discount).isEqualTo(ZERO_AMOUNT);
         }
@@ -113,7 +113,7 @@ class CouponTest {
         void 총금액이_null이면_할인금액은_0() {
             Coupon coupon = new Coupon(NAME, FIXED_AMOUNT, FIXED_DISCOUNT_500_WON, MAX_QUANTITY, START, END);
 
-            BigDecimal discount = coupon.calculateDiscount(null);
+            BigDecimal discount = coupon.discountFor(null);
 
             assertThat(discount).isEqualTo(ZERO_AMOUNT);
         }
