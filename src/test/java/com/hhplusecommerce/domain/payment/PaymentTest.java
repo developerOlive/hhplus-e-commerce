@@ -34,7 +34,7 @@ class PaymentTest {
         @Test
         void 결제_대기_상태에서_결제_성공으로_변경된다() {
             // when
-            payment.markSuccess();
+            payment.complete();
             // then
             assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.SUCCESS);
         }
@@ -42,7 +42,7 @@ class PaymentTest {
         @Test
         void 결제_대기_상태에서_결제_실패로_변경된다() {
             // when
-            payment.markFail();
+            payment.fail();
             // then
             assertThat(payment.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);
         }
@@ -54,10 +54,10 @@ class PaymentTest {
         @Test
         void 결제_실패_상태에서_결제_성공_처리하려고_하면_예외가_발생한다() {
             // given
-            payment.markFail();
+            payment.fail();
 
             // when & then
-            assertThatThrownBy(payment::markSuccess)
+            assertThatThrownBy(payment::complete)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_COMPLETE.getMessage());
         }
@@ -65,35 +65,14 @@ class PaymentTest {
         @Test
         void 결제_성공_상태에서_결제_실패_처리하려고_하면_예외가_발생한다() {
             // given
-            payment.markSuccess();
+            payment.complete();
 
             // when & then
-            assertThatThrownBy(payment::markFail)
+            assertThatThrownBy(payment::fail)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_FAIL.getMessage());
         }
 
-        @Test
-        void 결제_취소_상태에서_결제_성공_처리하려고_하면_예외가_발생한다() {
-            // given
-            payment = new Payment(ORDER_ID, BigDecimal.valueOf(100), PaymentStatus.CANCELLED);
-
-            // when & then
-            assertThatThrownBy(payment::markSuccess)
-                    .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_COMPLETE.getMessage());
-        }
-
-        @Test
-        void 결제_취소_상태에서_결제_실패_처리하려고_하면_예외가_발생한다() {
-            // given
-            payment = new Payment(ORDER_ID, BigDecimal.valueOf(100.00), PaymentStatus.CANCELLED);
-
-            // when & then
-            assertThatThrownBy(payment::markFail)
-                    .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_FAIL.getMessage());
-        }
     }
 
     @Nested

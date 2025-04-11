@@ -42,7 +42,7 @@ class PaymentServiceTest {
             when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            Payment savedPayment = paymentService.pay(orderId, payAmount);
+            Payment savedPayment = paymentService.completePayment(orderId, payAmount);
 
             // then
             assertThat(savedPayment.getPaymentStatus()).isEqualTo(PaymentStatus.SUCCESS);
@@ -61,7 +61,7 @@ class PaymentServiceTest {
                     .build();
 
             // then
-            assertThatThrownBy(alreadySuccess::markSuccess)
+            assertThatThrownBy(alreadySuccess::complete)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_COMPLETE.getMessage());
         }
@@ -77,7 +77,7 @@ class PaymentServiceTest {
             when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            Payment savedPayment = paymentService.fail(orderId, payAmount);
+            Payment savedPayment = paymentService.failPayment(orderId, payAmount);
 
             // then
             assertThat(savedPayment.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);
@@ -95,7 +95,7 @@ class PaymentServiceTest {
                     .build();
 
             // then
-            assertThatThrownBy(alreadyFailed::markFail)
+            assertThatThrownBy(alreadyFailed::fail)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_PAYMENT_STATUS_TO_FAIL.getMessage());
         }

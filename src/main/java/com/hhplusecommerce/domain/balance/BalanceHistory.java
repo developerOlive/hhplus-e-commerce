@@ -27,9 +27,9 @@ public class BalanceHistory {
     private BalanceChangeType changeType;
     private LocalDateTime createdAt;
 
-    public static BalanceHistory createBalanceHistory(Long userId, BigDecimal beforeBalance, BigDecimal afterBalance, BalanceChangeType changeType) {
+    public static BalanceHistory create(Long userId, BigDecimal beforeBalance, BigDecimal afterBalance, BalanceChangeType changeType) {
         BalanceHistory balanceHistory = new BalanceHistory();
-        balanceHistory.validateChangeType(changeType);
+        balanceHistory.validateType(changeType);
         BigDecimal amount = balanceHistory.calculateAmount(beforeBalance, afterBalance);
 
         return new BalanceHistory(
@@ -43,7 +43,7 @@ public class BalanceHistory {
         );
     }
 
-    private void validateChangeType(BalanceChangeType changeType) {
+    private void validateType(BalanceChangeType changeType) {
         if (changeType == null || !BalanceChangeType.isValid(changeType.name())) {
             throw new CustomException(ErrorType.INVALID_BALANCE_CHANGE_TYPE);
         }

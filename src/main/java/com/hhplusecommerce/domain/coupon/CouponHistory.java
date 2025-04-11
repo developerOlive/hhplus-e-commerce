@@ -2,7 +2,10 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,7 +15,7 @@ import java.time.LocalDateTime;
 
 /**
  * 사용자의 쿠폰 발급 및 사용 이력
- *
+ * <p>
  * - 유저가 어떤 쿠폰을 발급받았는지 관리
  * - 쿠폰의 사용 가능 여부 확인
  * - 쿠폰 사용 처리
@@ -61,7 +64,7 @@ public class CouponHistory {
     /**
      * 쿠폰 사용 처리
      */
-    public void markUsed() {
+    public void use() {
         if (!isAvailable()) {
             throw new CustomException(ErrorType.COUPON_ALREADY_USED);
         }

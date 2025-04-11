@@ -45,7 +45,7 @@ class CouponHistoryTest {
         Coupon coupon = createValidCoupon();
         CouponHistory history = CouponHistory.issue(USER_ID, coupon);
 
-        history.markUsed();
+        history.use();
 
         assertThat(history.getCouponUsageStatus()).isEqualTo(CouponUsageStatus.USED);
         assertThat(history.getUseDate()).isNotNull();
@@ -66,7 +66,7 @@ class CouponHistoryTest {
         CouponHistory available = CouponHistory.issue(USER_ID, coupon);
         assertThat(available.isAvailable()).isTrue();
 
-        available.markUsed();
+        available.use();
         assertThat(available.isAvailable()).isFalse();
     }
 }

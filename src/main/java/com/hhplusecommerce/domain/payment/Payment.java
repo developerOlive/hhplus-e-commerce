@@ -40,17 +40,19 @@ public class Payment {
         this.createdAt = LocalDateTime.now();
     }
 
-    public void markSuccess() {
-        if (this.paymentStatus != PaymentStatus.PENDING) {
-            throw new CustomException(ErrorType.INVALID_PAYMENT_STATUS_TO_COMPLETE);
-        }
-        this.paymentStatus = PaymentStatus.SUCCESS;
+    public static Payment createPending(Long orderId, BigDecimal amount) {
+        return Payment.builder()
+                .orderId(orderId)
+                .paidAmount(amount)
+                .paymentStatus(PaymentStatus.PENDING)
+                .build();
     }
 
-    public void markFail() {
-        if (this.paymentStatus != PaymentStatus.PENDING) {
-            throw new CustomException(ErrorType.INVALID_PAYMENT_STATUS_TO_FAIL);
-        }
-        this.paymentStatus = PaymentStatus.FAILED;
+    public void complete() {
+        this.paymentStatus = this.paymentStatus.complete();
+    }
+
+    public void fail() {
+        this.paymentStatus = this.paymentStatus.fail();
     }
 }

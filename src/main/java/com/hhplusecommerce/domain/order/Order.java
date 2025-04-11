@@ -2,11 +2,10 @@ package com.hhplusecommerce.domain.order;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import lombok.*;
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
@@ -50,7 +49,7 @@ public class Order {
     /**
      * 주문 완료 처리
      */
-    public void completeOrder() {
+    public void complete() {
         if (this.status != OrderStatus.PAYMENT_WAIT) {
             throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_COMPLETE);
         }
@@ -59,20 +58,9 @@ public class Order {
     }
 
     /**
-     * 주문 취소 처리
-     */
-    public void cancelOrder() {
-        if (this.status != OrderStatus.PAYMENT_WAIT) {
-            throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_CANCEL);
-        }
-        this.status = OrderStatus.CANCELED;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    /**
      * 주문 기한 만료 처리
      */
-    public void expireOrder() {
+    public void expire() {
         if (this.status != OrderStatus.PAYMENT_WAIT) {
             throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_EXPIRE);
         }

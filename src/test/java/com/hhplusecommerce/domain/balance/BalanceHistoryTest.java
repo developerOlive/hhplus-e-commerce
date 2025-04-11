@@ -20,7 +20,7 @@ class BalanceHistoryTest {
     private static final BalanceChangeType CHARGE = BalanceChangeType.CHARGE;
 
     static BalanceHistory 정상적인_잔액_변경_이력() {
-        return BalanceHistory.createBalanceHistory(USER_ID, BEFORE_BALANCE, AFTER_BALANCE, CHARGE);
+        return BalanceHistory.create(USER_ID, BEFORE_BALANCE, AFTER_BALANCE, CHARGE);
     }
 
     @Nested
@@ -42,7 +42,7 @@ class BalanceHistoryTest {
 
         @Test
         void 기존_잔액과_차감하려는_잔액이_동일하면_변경액은_0이며_예외없이_생성된다() {
-            BalanceHistory history = BalanceHistory.createBalanceHistory(USER_ID, BEFORE_BALANCE, BEFORE_BALANCE, CHARGE);
+            BalanceHistory history = BalanceHistory.create(USER_ID, BEFORE_BALANCE, BEFORE_BALANCE, CHARGE);
             assertThat(history.getAmount()).isEqualTo(BigDecimal.ZERO);
         }
     }
@@ -52,7 +52,7 @@ class BalanceHistoryTest {
 
         @Test
         void changeType이_NULL이면_예외가_발생한다() {
-            assertThatThrownBy(() -> BalanceHistory.createBalanceHistory(USER_ID, BEFORE_BALANCE, AFTER_BALANCE, null))
+            assertThatThrownBy(() -> BalanceHistory.create(USER_ID, BEFORE_BALANCE, AFTER_BALANCE, null))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_BALANCE_CHANGE_TYPE.getMessage());
         }

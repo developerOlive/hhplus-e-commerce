@@ -38,7 +38,7 @@ public class PaymentFacade {
         BigDecimal finalAmount = order.getFinalAmount();
 
         // 잔액 차감
-        balanceService.deduct(userId, new BalanceCommand(finalAmount));
+        balanceService.deductBalance(userId, new BalanceCommand(finalAmount));
 
         // 주문 항목 조회 및 재고 차감
         List<OrderItem> orderItems = orderService.getOrderItems(order.getId());
@@ -46,14 +46,14 @@ public class PaymentFacade {
 
         // 쿠폰 사용 처리
         if (order.getCouponIssueId() != null) {
-            couponService.markUsed(userId, order.getCouponIssueId());
+            couponService.useCoupon(userId, order.getCouponIssueId());
         }
 
         // 주문 상태 완료 처리
-        order.completeOrder();
+        order.complete();
 
         // 결제 정보 저장
-        Payment payment = paymentService.pay(order.getId(), finalAmount);
+        Payment payment = paymentService.completePayment(order.getId(), finalAmount);
 
         // 판매 통계 반영
         productSalesStatsService.recordSales(orderItems, LocalDate.now());

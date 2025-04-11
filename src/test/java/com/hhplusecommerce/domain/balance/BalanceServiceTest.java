@@ -75,7 +75,7 @@ class BalanceServiceTest {
 
             // when
             BalanceCommand balanceCommand = new BalanceCommand(CHARGE_AMOUNT);
-            BalanceResult result = balanceService.charge(USER_ID, balanceCommand);
+            BalanceResult result = balanceService.chargeBalance(USER_ID, balanceCommand);
 
             // then
             // 충전 후 잔액은 0 + CHARGE_AMOUNT 이므로 result.balance()는 CHARGE_AMOUNT와 같아야 한다
@@ -90,7 +90,7 @@ class BalanceServiceTest {
             when(balanceRepository.findByUserId(USER_ID)).thenReturn(Optional.of(userBalance));
 
             // when & then
-            assertThatThrownBy(() -> balanceService.charge(USER_ID, new BalanceCommand(BigDecimal.valueOf(-100))))
+            assertThatThrownBy(() -> balanceService.chargeBalance(USER_ID, new BalanceCommand(BigDecimal.valueOf(-100))))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_BALANCE_AMOUNT.getMessage());
         }
@@ -113,7 +113,7 @@ class BalanceServiceTest {
             when(balanceRepository.findByUserId(USER_ID)).thenReturn(Optional.of(userBalance));
 
             // when
-            BalanceResult result = balanceService.deduct(USER_ID, new BalanceCommand(DEDUCT_AMOUNT));
+            BalanceResult result = balanceService.deductBalance(USER_ID, new BalanceCommand(DEDUCT_AMOUNT));
 
             // then
             assertThat(result.balance()).isEqualTo(INITIAL_AMOUNT.subtract(DEDUCT_AMOUNT));  // 잔액이 500으로 차감된 값 확인
@@ -128,7 +128,7 @@ class BalanceServiceTest {
             when(balanceRepository.findByUserId(USER_ID)).thenReturn(Optional.of(userBalance));
 
             // when & then
-            assertThatThrownBy(() -> balanceService.deduct(USER_ID, new BalanceCommand(BigDecimal.valueOf(2000))))
+            assertThatThrownBy(() -> balanceService.deductBalance(USER_ID, new BalanceCommand(BigDecimal.valueOf(2000))))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INSUFFICIENT_BALANCE.getMessage());
         }

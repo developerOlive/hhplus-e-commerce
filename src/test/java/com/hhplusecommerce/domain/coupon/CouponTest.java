@@ -168,7 +168,7 @@ class CouponTest {
                     .issuedQuantity(0)
                     .build();
 
-            BigDecimal discount = coupon.calculateDiscount(ORDER_TOTAL_400_WON);
+            BigDecimal discount = coupon.discountFor(ORDER_TOTAL_400_WON);
 
             assertThat(discount).isEqualTo(ORDER_TOTAL_400_WON); // 할인액은 주문 금액을 초과하지 않음
         }
@@ -185,7 +185,7 @@ class CouponTest {
                     .issuedQuantity(0)
                     .build();
 
-            BigDecimal discount = coupon.calculateDiscount(ZERO_AMOUNT);
+            BigDecimal discount = coupon.discountFor(ZERO_AMOUNT);
 
             assertThat(discount).isEqualTo(ZERO_AMOUNT);
         }
@@ -202,7 +202,7 @@ class CouponTest {
                     .issuedQuantity(0)
                     .build();
 
-            BigDecimal discount = coupon.calculateDiscount(null);
+            BigDecimal discount = coupon.discountFor(null);
 
             assertThat(discount).isEqualTo(ZERO_AMOUNT);
         }

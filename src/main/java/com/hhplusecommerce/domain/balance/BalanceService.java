@@ -26,26 +26,26 @@ public class BalanceService {
     }
 
     @Transactional
-    public BalanceResult charge(Long userId, BalanceCommand balanceCommand) {
+    public BalanceResult chargeBalance(Long userId, BalanceCommand balanceCommand) {
         UserBalance userBalance = balanceRepository.findByUserId(userId).orElseGet(() -> UserBalance.initialize(userId));
 
-        BigDecimal beforeBalance = userBalance.getAmount();
+        BigDecimal previousBalance = userBalance.getAmount();
         userBalance.charge(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.createBalanceHistory(userBalance.getUserId(), beforeBalance, userBalance.getAmount(), CHARGE);
+        BalanceHistory balanceHistory = BalanceHistory.create(userBalance.getUserId(), previousBalance, userBalance.getAmount(), CHARGE);
         balanceHistoryRepository.save(balanceHistory);
 
         return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());
     }
 
     @Transactional
-    public BalanceResult deduct(Long userId, BalanceCommand balanceCommand) {
+    public BalanceResult deductBalance(Long userId, BalanceCommand balanceCommand) {
         UserBalance userBalance = balanceRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
 
-        BigDecimal beforeBalance = userBalance.getAmount();
+        BigDecimal previousBalance = userBalance.getAmount();
         userBalance.deduct(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.createBalanceHistory(userBalance.getUserId(), beforeBalance, userBalance.getAmount(), DEDUCT);
+        BalanceHistory balanceHistory = BalanceHistory.create(userBalance.getUserId(), previousBalance, userBalance.getAmount(), DEDUCT);
         balanceHistoryRepository.save(balanceHistory);
 
         return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());

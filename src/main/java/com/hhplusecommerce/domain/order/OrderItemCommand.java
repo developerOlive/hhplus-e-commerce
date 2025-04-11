@@ -6,4 +6,8 @@ public record OrderItemCommand(
         Long productId,
         int quantity,
         BigDecimal price
-) {}
+) {
+    public BigDecimal totalAmount() {
+        return price.multiply(BigDecimal.valueOf(quantity));
+    }
+}
