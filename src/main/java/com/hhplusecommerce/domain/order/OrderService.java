@@ -78,7 +78,7 @@ public class OrderService {
      * 주문 만료 처리
      */
     @Transactional
-    public void updateExpiredOrders() {
+    public void expireOverdueOrders() {
         LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minus(30, ChronoUnit.MINUTES);
         List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PAYMENT_WAIT, thirtyMinutesAgo);
 

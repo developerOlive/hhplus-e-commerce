@@ -18,13 +18,8 @@ public class PaymentService {
      * 결제 성공 처리
      */
     @Transactional
-    public Payment pay(Long orderId, BigDecimal payAmount) {
-        Payment payment = Payment.builder()
-                .orderId(orderId)
-                .paidAmount(payAmount)
-                .paymentStatus(PaymentStatus.PENDING)
-                .build();
-
+    public Payment completePayment(Long orderId, BigDecimal amount) {
+        Payment payment = Payment.createPending(orderId, amount);
         payment.complete();
         return paymentRepository.save(payment);
     }
@@ -33,13 +28,8 @@ public class PaymentService {
      * 결제 실패 처리
      */
     @Transactional
-    public Payment fail(Long orderId, BigDecimal payAmount) {
-        Payment payment = Payment.builder()
-                .orderId(orderId)
-                .paidAmount(payAmount)
-                .paymentStatus(PaymentStatus.PENDING)
-                .build();
-
+    public Payment failPayment(Long orderId, BigDecimal amount) {
+        Payment payment = Payment.createPending(orderId, amount);
         payment.fail();
         return paymentRepository.save(payment);
     }

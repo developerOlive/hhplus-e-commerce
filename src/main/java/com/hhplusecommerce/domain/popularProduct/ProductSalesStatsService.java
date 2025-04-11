@@ -14,6 +14,9 @@ public class ProductSalesStatsService {
 
     private final ProductSalesStatsRepository statsRepository;
 
+    /**
+     * 일자별 상품 판매 통계를 누적 기록
+     */
     public void recordSales(List<OrderItem> orderItems, LocalDate saleDate) {
         for (OrderItem item : orderItems) {
             Long productId = item.getProductId();

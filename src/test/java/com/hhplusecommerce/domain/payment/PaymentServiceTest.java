@@ -42,7 +42,7 @@ class PaymentServiceTest {
             when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            Payment savedPayment = paymentService.pay(orderId, payAmount);
+            Payment savedPayment = paymentService.completePayment(orderId, payAmount);
 
             // then
             assertThat(savedPayment.getPaymentStatus()).isEqualTo(PaymentStatus.SUCCESS);
@@ -77,7 +77,7 @@ class PaymentServiceTest {
             when(paymentRepository.save(any(Payment.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
             // when
-            Payment savedPayment = paymentService.fail(orderId, payAmount);
+            Payment savedPayment = paymentService.failPayment(orderId, payAmount);
 
             // then
             assertThat(savedPayment.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);

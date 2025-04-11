@@ -122,7 +122,7 @@ class CouponServiceTest {
             when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(coupon));
 
             // when
-            couponService.markUsed(USER_ID, COUPON_ISSUE_ID);
+            couponService.useCoupon(USER_ID, COUPON_ISSUE_ID);
 
             // then
             assertThat(history.isAvailable()).isFalse();
@@ -168,7 +168,7 @@ class CouponServiceTest {
             when(couponHistoryRepository.findById(COUPON_ISSUE_ID)).thenReturn(Optional.of(history));
 
             // when & then
-            assertThatThrownBy(() -> couponService.markUsed(USER_ID, COUPON_ISSUE_ID))
+            assertThatThrownBy(() -> couponService.useCoupon(USER_ID, COUPON_ISSUE_ID))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.UNAUTHORIZED_COUPON_ACCESS.getMessage());
         }

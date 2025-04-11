@@ -86,7 +86,7 @@ public class CouponService {
      * 쿠폰 사용 처리 (결제 성공 시)
      */
     @Transactional
-    public void markUsed(Long userId, Long couponIssueId) {
+    public void useCoupon(Long userId, Long couponIssueId) {
         CouponHistory couponHistory = getCouponHistory(userId, couponIssueId);
         Coupon coupon = getCoupon(couponHistory.getCouponId());
 

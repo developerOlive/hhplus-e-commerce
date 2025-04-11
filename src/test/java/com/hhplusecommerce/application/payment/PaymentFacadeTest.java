@@ -59,16 +59,16 @@ class PaymentFacadeTest {
         when(orderService.getOrderItems(ORDER_ID)).thenReturn(orderItems);
 
         Payment payment = new Payment(ORDER_ID, FINAL_AMOUNT, PaymentStatus.PENDING);
-        when(paymentService.pay(ORDER_ID, FINAL_AMOUNT)).thenReturn(payment);
+        when(paymentService.completePayment(ORDER_ID, FINAL_AMOUNT)).thenReturn(payment);
 
         // when
         PaymentResult result = paymentFacade.completePayment(command);
 
         // then
-        verify(balanceService).deduct(eq(USER_ID), any(BalanceCommand.class));
+        verify(balanceService).deductBalance(eq(USER_ID), any(BalanceCommand.class));
         verify(inventoryService).decreaseStocks(orderItems);
         verify(order).complete();
-        verify(paymentService).pay(ORDER_ID, FINAL_AMOUNT);
+        verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
         verify(productSalesStatsService).recordSales(orderItems, LocalDate.now());
 
         assertThat(result.paymentId()).isEqualTo(payment.getId());
@@ -86,7 +86,7 @@ class PaymentFacadeTest {
 
         // 잔액 부족
         doThrow(new CustomException(ErrorType.INSUFFICIENT_BALANCE))
-                .when(balanceService).deduct(eq(USER_ID), any(BalanceCommand.class));
+                .when(balanceService).deductBalance(eq(USER_ID), any(BalanceCommand.class));
 
         // when & then
         assertThatThrownBy(() -> paymentFacade.completePayment(command))
@@ -95,7 +95,7 @@ class PaymentFacadeTest {
 
         // 이후 로직 호출되지 않는지 확인
         verify(inventoryService, never()).decreaseStocks(any());
-        verify(paymentService, never()).pay(anyLong(), any());
+        verify(paymentService, never()).completePayment(anyLong(), any());
         verify(productSalesStatsService, never()).recordSales(any(), any());
     }
 

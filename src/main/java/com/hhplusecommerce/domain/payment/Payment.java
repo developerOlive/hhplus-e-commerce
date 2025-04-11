@@ -40,6 +40,14 @@ public class Payment {
         this.createdAt = LocalDateTime.now();
     }
 
+    public static Payment createPending(Long orderId, BigDecimal amount) {
+        return Payment.builder()
+                .orderId(orderId)
+                .paidAmount(amount)
+                .paymentStatus(PaymentStatus.PENDING)
+                .build();
+    }
+
     public void complete() {
         this.paymentStatus = this.paymentStatus.complete();
     }
