@@ -37,3 +37,8 @@ out/
 .vscode/
 
 data
+
+# Gradle 관련 파일 무시
+.gradle/
+build/
+generated/

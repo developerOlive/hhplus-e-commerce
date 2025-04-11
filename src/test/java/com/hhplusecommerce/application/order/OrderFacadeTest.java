@@ -1,0 +1,118 @@
+package com.hhplusecommerce.application.order;
+
+import com.hhplusecommerce.domain.balance.BalanceService;
+import com.hhplusecommerce.domain.coupon.CouponService;
+import com.hhplusecommerce.domain.order.OrderCommand;
+import com.hhplusecommerce.domain.order.OrderItemCommand;
+import com.hhplusecommerce.domain.order.OrderService;
+import com.hhplusecommerce.domain.order.OrderStatus;
+import com.hhplusecommerce.domain.product.ProductInventoryService;
+import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.Mockito.*;
+
+@ExtendWith(MockitoExtension.class)
+class OrderFacadeTest {
+
+    private static final Long USER_ID = 1L;
+    private static final Long COUPON_ISSUE_ID = 99L;
+    private static final Long ORDER_ID = 123L;
+    private static final BigDecimal TOTAL_AMOUNT = new BigDecimal("10000");
+    private static final BigDecimal DISCOUNT_AMOUNT = new BigDecimal("3000");
+    private static final BigDecimal FINAL_AMOUNT = TOTAL_AMOUNT.subtract(DISCOUNT_AMOUNT);
+    private static final List<OrderItemCommand> ITEMS = List.of(
+            new OrderItemCommand(10L, 2, new BigDecimal("5000"))
+    );
+
+    @InjectMocks
+    private OrderFacade orderFacade;
+
+    @Mock private ProductInventoryService inventoryService;
+    @Mock private BalanceService balanceService;
+    @Mock private CouponService couponService;
+    @Mock private OrderService orderService;
+
+    @Nested
+    class 주문_성공 {
+
+        @Test
+        void 주문을_정상적으로_생성한다() {
+            OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+            doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
+            when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT)).thenReturn(DISCOUNT_AMOUNT);
+            doNothing().when(balanceService).validateEnough(USER_ID, FINAL_AMOUNT);
+            when(orderService.createOrder(command, TOTAL_AMOUNT, FINAL_AMOUNT)).thenReturn(ORDER_ID);
+
+            OrderResult result = orderFacade.placeOrder(command);
+
+            verify(inventoryService).validateAllProductStocks(ITEMS);
+            verify(couponService).calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT);
+            verify(balanceService).validateEnough(USER_ID, FINAL_AMOUNT);
+            verify(orderService).createOrder(command, TOTAL_AMOUNT, FINAL_AMOUNT);
+
+            assertThat(result.orderId()).isEqualTo(ORDER_ID);
+            assertThat(result.totalAmount()).isEqualTo(TOTAL_AMOUNT);
+            assertThat(result.finalAmount()).isEqualTo(FINAL_AMOUNT);
+            assertThat(result.orderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);
+        }
+    }
+
+    @Nested
+    class 주문_실패 {
+
+        @Test
+        void 재고가_부족하면_예외가_발생한다() {
+            OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+            doThrow(new CustomException(ErrorType.INSUFFICIENT_STOCK))
+                    .when(inventoryService).validateAllProductStocks(ITEMS);
+
+            assertThatThrownBy(() -> orderFacade.placeOrder(command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.INSUFFICIENT_STOCK.getMessage());
+
+            verifyNoInteractions(couponService, balanceService, orderService);
+        }
+
+        @Test
+        void 유효하지_않은_쿠폰이면_예외가_발생한다() {
+            OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+            doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
+            when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT))
+                    .thenThrow(new CustomException(ErrorType.COUPON_NOT_FOUND));
+
+            assertThatThrownBy(() -> orderFacade.placeOrder(command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.COUPON_NOT_FOUND.getMessage());
+
+            verifyNoInteractions(balanceService, orderService);
+        }
+
+        @Test
+        void 잔액이_부족하면_예외가_발생한다() {
+            OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+            doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
+            when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT))
+                    .thenReturn(DISCOUNT_AMOUNT);
+            doThrow(new CustomException(ErrorType.INSUFFICIENT_BALANCE))
+                    .when(balanceService).validateEnough(USER_ID, FINAL_AMOUNT);
+
+            assertThatThrownBy(() -> orderFacade.placeOrder(command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.INSUFFICIENT_BALANCE.getMessage());
+
+            verifyNoInteractions(orderService);
+        }
+    }
+}
