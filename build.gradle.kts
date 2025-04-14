@@ -82,3 +82,8 @@ tasks.test {
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
 }
+
+sourceSets["main"].java.srcDirs("build/generated")
+tasks.withType<JavaCompile> {
+    options.annotationProcessorGeneratedSourcesDirectory = file("build/generated")
+}
