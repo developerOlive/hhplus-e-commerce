@@ -1,8 +1,30 @@
 package com.hhplusecommerce.domain.balance;
 
+import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+
 public enum BalanceChangeType {
-    CHARGE("충전"),
-    DEDUCT("차감");
+
+    CHARGE("충전") {
+        @Override
+        public void validate(BigDecimal amount) {
+            if (amount.compareTo(BigDecimal.ZERO) < 0) {
+                throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
+            }
+        }
+    },
+
+    DEDUCT("차감") {
+        @Override
+        public void validate(BigDecimal amount) {
+            if (amount.compareTo(BigDecimal.ZERO) > 0) {
+                throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
+            }
+        }
+    };
 
     private final String description;
 
@@ -14,13 +36,9 @@ public enum BalanceChangeType {
         return description;
     }
 
-    public static boolean isValid(String value) {
-        for (BalanceChangeType type : BalanceChangeType.values()) {
-            if (type.name().equals(value)) {
-                return true;
-            }
-        }
+    public abstract void validate(BigDecimal amount);
 
-        return false;
+    public static boolean isValid(String value) {
+        return Arrays.stream(values()).anyMatch(type -> type.name().equals(value));
     }
 }

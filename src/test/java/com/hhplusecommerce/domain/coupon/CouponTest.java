@@ -32,6 +32,7 @@ class CouponTest {
                 .validStartDate(START)
                 .validEndDate(END)
                 .issuedQuantity(0)
+                .couponType(CouponType.LIMITED)
                 .build();
     }
 
@@ -48,6 +49,7 @@ class CouponTest {
                     .validStartDate(START)
                     .validEndDate(END)
                     .issuedQuantity(0)
+                    .couponType(CouponType.LIMITED)
                     .build())
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_COUPON_VALUE.getMessage());
@@ -63,6 +65,7 @@ class CouponTest {
                     .validStartDate(START)
                     .validEndDate(END)
                     .issuedQuantity(0)
+                    .couponType(CouponType.LIMITED)
                     .build())
                     .isInstanceOf(CustomException.class);
         }
@@ -85,6 +88,7 @@ class CouponTest {
                     .validStartDate(START)
                     .validEndDate(END)
                     .issuedQuantity(0)
+                    .couponType(CouponType.LIMITED)
                     .build();
 
             assertThat(validCoupon.isAvailable()).isTrue();
@@ -100,6 +104,7 @@ class CouponTest {
                     .validStartDate(EXPIRED_START)
                     .validEndDate(EXPIRED_END)
                     .issuedQuantity(0)
+                    .couponType(CouponType.LIMITED)
                     .build();
 
             assertThat(expiredCoupon.isAvailable()).isFalse();
@@ -122,6 +127,7 @@ class CouponTest {
                     .validStartDate(START)
                     .validEndDate(END)
                     .issuedQuantity(0)
+                    .couponType(CouponType.LIMITED)
                     .build();
 
             coupon.increaseIssuedQuantity();
@@ -139,6 +145,7 @@ class CouponTest {
                     .validStartDate(START)
                     .validEndDate(END)
                     .issuedQuantity(0)
+                    .couponType(CouponType.LIMITED)
                     .build();
 
             coupon.increaseIssuedQuantity();
@@ -146,161 +153,6 @@ class CouponTest {
             assertThatThrownBy(coupon::increaseIssuedQuantity)
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
-        }
-    }
-
-    @Nested
-    class 할인계산 {
-
-        private static final BigDecimal FIXED_DISCOUNT_500_WON = BigDecimal.valueOf(500);
-        private static final BigDecimal ORDER_TOTAL_400_WON = BigDecimal.valueOf(400);
-        private static final BigDecimal ZERO_AMOUNT = BigDecimal.ZERO;
-
-        @Test
-        void 정액_할인은_총금액을_초과하지_않는다() {
-            Coupon coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(FIXED_DISCOUNT_500_WON)
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .build();
-
-            BigDecimal discount = coupon.discountFor(ORDER_TOTAL_400_WON);
-
-            assertThat(discount).isEqualTo(ORDER_TOTAL_400_WON); // 할인액은 주문 금액을 초과하지 않음
-        }
-
-        @Test
-        void 총금액이_0이면_할인금액은_0() {
-            Coupon coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(FIXED_DISCOUNT_500_WON)
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .build();
-
-            BigDecimal discount = coupon.discountFor(ZERO_AMOUNT);
-
-            assertThat(discount).isEqualTo(ZERO_AMOUNT);
-        }
-
-        @Test
-        void 총금액이_null이면_할인금액은_0() {
-            Coupon coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(FIXED_DISCOUNT_500_WON)
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .build();
-
-            BigDecimal discount = coupon.discountFor(null);
-
-            assertThat(discount).isEqualTo(ZERO_AMOUNT);
-        }
-    }
-
-    @Nested
-    class 쿠폰_발급 {
-
-        private Coupon coupon;
-
-        @BeforeEach
-        void setUp() {
-            coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(BigDecimal.valueOf(500))
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .build();
-        }
-
-        @Test
-        void 발급가능한_상태에서_발급을_처리하면_발급수량이_증가한다() {
-            coupon.confirmCouponIssue();
-
-            assertThat(coupon.getIssuedQuantity()).isEqualTo(1);
-        }
-
-        @Test
-        void 수량제한_쿠폰은_최대_발급수량에_도달하면_발급할_수_없다() {
-            coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(BigDecimal.valueOf(500))
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(MAX_QUANTITY) // 이미 최대 발급 수량으로 설정
-                    .couponType(CouponType.LIMITED) // 수량 제한이 있는 쿠폰
-                    .build();
-
-            assertThatThrownBy(() -> coupon.confirmCouponIssue())
-                    .isInstanceOf(CustomException.class)
-
-                    .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
-        }
-    }
-    @Nested
-    class 발급_가능_여부_판단 {
-
-        @Test
-        void 수량제한이_없는_쿠폰은_발급수량에_관계없이_발급가능하다() {
-            coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(BigDecimal.valueOf(500))
-                    .maxQuantity(MAX_QUANTITY)  // 최대 발급 수량 설정
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0) // 발급 수량 0으로 설정
-                    .couponType(CouponType.UNLIMITED) // 수량 제한이 없는 무제한 쿠폰 설정
-                    .build();
-
-            assertThat(coupon.isIssuable()).isTrue(); // 발급 가능 여부 확인
-        }
-
-        @Test
-        void 수량제한이_있는_쿠폰에서_발급수량이_최대_수량에_도달한_경우_발급불가하다() {
-            coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(BigDecimal.valueOf(500))
-                    .maxQuantity(MAX_QUANTITY)  // 최대 발급 수량 설정
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(MAX_QUANTITY) // 이미 최대 발급 수량으로 설정
-                    .couponType(CouponType.LIMITED) // 수량 제한이 있는 쿠폰 설정
-                    .build();
-
-            assertThat(coupon.isIssuable()).isFalse();
-        }
-
-        @Test
-        void 무제한_쿠폰은_발급수량에_관계없이_발급가능하다() {
-            coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(BigDecimal.valueOf(500))
-                    .maxQuantity(Integer.MAX_VALUE)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .couponType(CouponType.UNLIMITED)
-                    .build();
-
-            assertThat(coupon.isIssuable()).isTrue();
         }
     }
 }

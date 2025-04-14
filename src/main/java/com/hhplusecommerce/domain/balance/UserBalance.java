@@ -24,9 +24,13 @@ public class UserBalance {
 
     @Builder
     public UserBalance(Long userId, BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) < 0) {
+        if (userId == null) {
+            throw new CustomException(ErrorType.USER_BALANCE_NOT_FOUND);
+        }
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
         }
+
         this.userId = userId;
         this.amount = amount;
         this.updatedAt = LocalDateTime.now();
@@ -34,16 +38,6 @@ public class UserBalance {
 
     public static UserBalance initialize(Long userId) {
         return new UserBalance(userId, BigDecimal.ZERO);
-    }
-
-    /**
-     * 결제 또는 차감을 위해 충분한 잔액을 보유하고 있는지 검증
-     */
-    public void validateEnoughAmount(BigDecimal requiredAmount) {
-        validatePositiveAmount(requiredAmount);
-        if (this.amount.compareTo(requiredAmount) < 0) {
-            throw new CustomException(ErrorType.INSUFFICIENT_BALANCE);
-        }
     }
 
     /**
@@ -65,6 +59,16 @@ public class UserBalance {
         }
         this.amount = this.amount.subtract(deductAmount);
         this.updatedAt = LocalDateTime.now();
+    }
+
+    /**
+     * 결제 또는 차감을 위해 충분한 잔액을 보유하고 있는지 검증
+     */
+    public void validateEnoughAmount(BigDecimal requiredAmount) {
+        validatePositiveAmount(requiredAmount);
+        if (this.amount.compareTo(requiredAmount) < 0) {
+            throw new CustomException(ErrorType.INSUFFICIENT_BALANCE);
+        }
     }
 
     /**

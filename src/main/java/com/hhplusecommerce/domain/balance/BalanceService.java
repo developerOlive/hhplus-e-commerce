@@ -26,30 +26,37 @@ public class BalanceService {
     }
 
     @Transactional
-    public BalanceResult chargeBalance(Long userId, BalanceCommand balanceCommand) {
-        UserBalance userBalance = balanceRepository.findByUserId(userId).orElseGet(() -> UserBalance.initialize(userId));
+    public BalanceResult chargeBalance(BalanceCommand balanceCommand) {
+        Long userId = balanceCommand.userId();
+
+        UserBalance userBalance = balanceRepository.findByUserId(userId)
+                .orElseGet(() -> UserBalance.initialize(userId));
 
         BigDecimal previousBalance = userBalance.getAmount();
         userBalance.charge(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.create(userBalance.getUserId(), previousBalance, userBalance.getAmount(), CHARGE);
+        BalanceHistory balanceHistory = BalanceHistory.create(userId, previousBalance, userBalance.getAmount(), CHARGE);
         balanceHistoryRepository.save(balanceHistory);
 
-        return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());
+        return new BalanceResult(userId, userBalance.getAmount());
     }
 
     @Transactional
-    public BalanceResult deductBalance(Long userId, BalanceCommand balanceCommand) {
-        UserBalance userBalance = balanceRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
+    public BalanceResult deductBalance(BalanceCommand balanceCommand) {
+        Long userId = balanceCommand.userId();
+
+        UserBalance userBalance = balanceRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
 
         BigDecimal previousBalance = userBalance.getAmount();
         userBalance.deduct(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.create(userBalance.getUserId(), previousBalance, userBalance.getAmount(), DEDUCT);
+        BalanceHistory balanceHistory = BalanceHistory.create(userId, previousBalance, userBalance.getAmount(), DEDUCT);
         balanceHistoryRepository.save(balanceHistory);
 
-        return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());
+        return new BalanceResult(userId, userBalance.getAmount());
     }
+
 
     @Transactional(readOnly = true)
     public void validateEnough(Long userId, BigDecimal requiredAmount) {

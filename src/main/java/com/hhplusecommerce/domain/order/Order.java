@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 
 /**
  * 주문 정보 관리
- *
+ * <p>
  * - 사용자 주문서 생성 및 상태 관리
  * - 총 금액 및 최종 결제 금액 저장
  * - 주문 완료/취소/만료 상태 처리
@@ -35,7 +35,25 @@ public class Order {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Order(Long userId, Long couponIssueId, LocalDateTime orderDate, BigDecimal totalAmount, BigDecimal finalAmount, OrderStatus status) {
+    public Order(Long userId, Long couponIssueId, LocalDateTime orderDate,
+                 BigDecimal totalAmount, BigDecimal finalAmount, OrderStatus status) {
+
+        if (userId == null) {
+            throw new CustomException(ErrorType.INVALID_USER_ID);
+        }
+        if (orderDate == null) {
+            throw new CustomException(ErrorType.INVALID_ORDER_DATE);
+        }
+        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException(ErrorType.INVALID_ORDER_TOTAL_AMOUNT);
+        }
+        if (finalAmount == null || finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException(ErrorType.INVALID_ORDER_FINAL_AMOUNT);
+        }
+        if (status == null) {
+            throw new CustomException(ErrorType.INVALID_ORDER_STATUS);
+        }
+
         this.userId = userId;
         this.couponIssueId = couponIssueId;
         this.orderDate = orderDate;

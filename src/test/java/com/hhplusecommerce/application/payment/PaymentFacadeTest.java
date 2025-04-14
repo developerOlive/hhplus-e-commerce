@@ -65,7 +65,7 @@ class PaymentFacadeTest {
         PaymentResult result = paymentFacade.completePayment(command);
 
         // then
-        verify(balanceService).deductBalance(eq(USER_ID), any(BalanceCommand.class));
+        verify(balanceService).deductBalance(any(BalanceCommand.class));
         verify(inventoryService).decreaseStocks(orderItems);
         verify(order).complete();
         verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
@@ -86,7 +86,7 @@ class PaymentFacadeTest {
 
         // 잔액 부족
         doThrow(new CustomException(ErrorType.INSUFFICIENT_BALANCE))
-                .when(balanceService).deductBalance(eq(USER_ID), any(BalanceCommand.class));
+                .when(balanceService).deductBalance(any(BalanceCommand.class));
 
         // when & then
         assertThatThrownBy(() -> paymentFacade.completePayment(command))

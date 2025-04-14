@@ -1,6 +1,7 @@
 package com.hhplusecommerce.domain.coupon;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -18,7 +19,7 @@ class CouponHistoryTest {
     private static final LocalDate VALID_END_DATE = LocalDate.now().plusDays(7);
 
     private Coupon createValidCoupon() {
-        return Coupon.builder()
+        Coupon coupon = Coupon.builder()
                 .couponName(COUPON_NAME)
                 .discountType(FIXED_RATE)
                 .discountValue(DISCOUNT_PERCENT_10)
@@ -28,6 +29,9 @@ class CouponHistoryTest {
                 .issuedQuantity(0)
                 .couponType(CouponType.LIMITED)
                 .build();
+
+        ReflectionTestUtils.setField(coupon, "id", 1L); // ID 수동 세팅
+        return coupon;
     }
 
     @Test

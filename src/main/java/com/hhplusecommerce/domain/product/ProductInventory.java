@@ -30,15 +30,22 @@ public class ProductInventory {
 
     @Builder
     public ProductInventory(Long productId, int stock) {
+        if (productId == null || productId <= 0) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_ID);
+        }
+        if (stock < 0) {
+            throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
+        }
+
         this.productId = productId;
-        this.stock = validatePositive(stock);
+        this.stock = stock;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-
     /**
      * 재고 증가
+     *
      * @param amount 증가할 수량 (양수)
      */
     public void increase(int amount) {
@@ -50,6 +57,7 @@ public class ProductInventory {
 
     /**
      * 재고를 차감
+     *
      * @param amount 차감할 수량 (양수)
      */
     public void decrease(int amount) {

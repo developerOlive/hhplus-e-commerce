@@ -66,9 +66,7 @@ public class CouponService {
         CouponHistory couponHistory = couponHistoryRepository.findById(couponIssueId)
                 .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
 
-        if (!couponHistory.getUserId().equals(userId)) {
-            throw new CustomException(ErrorType.UNAUTHORIZED_COUPON_ACCESS);
-        }
+        couponHistory.validateOwner(userId);
 
         return couponHistory;
     }
