@@ -58,6 +58,8 @@ class CouponServiceTest {
                 .issuedQuantity(0)
                 .couponType(CouponType.LIMITED)  // 기본적으로 LIMITED로 설정
                 .build();
+
+        ReflectionTestUtils.setField(coupon, "id", COUPON_ID);
     }
 
     @Nested

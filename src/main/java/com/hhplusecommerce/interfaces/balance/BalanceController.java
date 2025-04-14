@@ -43,7 +43,7 @@ public class BalanceController {
     })
     public ResponseEntity<ApiResult<BalanceResponse>> chargeBalance(@PathVariable Long userId,
                                                                     @Valid @RequestBody BalanceRequest request) {
-        BalanceResult balanceResult = balanceService.chargeBalance(userId, request.toCommand());
+        BalanceResult balanceResult = balanceService.chargeBalance(request.toCommand(userId));
         return ResponseEntity.ok(ApiResult.success(BalanceResponse.from(balanceResult)));
     }
 
@@ -59,7 +59,7 @@ public class BalanceController {
     })
     public ResponseEntity<ApiResult<BalanceResponse>> deductBalance(@PathVariable Long userId,
                                                                     @Valid @RequestBody BalanceRequest request) {
-        BalanceResult balanceResult = balanceService.deductBalance(userId, request.toCommand());
+        BalanceResult balanceResult = balanceService.deductBalance(request.toCommand(userId));
         return ResponseEntity.ok(ApiResult.success(BalanceResponse.from(balanceResult)));
     }
 }

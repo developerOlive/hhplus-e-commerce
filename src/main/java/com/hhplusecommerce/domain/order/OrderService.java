@@ -24,27 +24,9 @@ public class OrderService {
      */
     @Transactional
     public Long createOrder(OrderCommand command, BigDecimal totalAmount, BigDecimal finalAmount) {
-        Order order = Order.builder()
-                .userId(command.userId())
-                .couponIssueId(command.couponIssueId())
-                .orderDate(LocalDateTime.now())
-                .totalAmount(totalAmount)
-                .finalAmount(finalAmount)
-                .status(OrderStatus.PAYMENT_WAIT)
-                .build();
-
+        Order order = Order.create(command, totalAmount, finalAmount);
         orderRepository.save(order);
-
-        List<OrderItem> orderItems = command.orderItems().stream()
-                .map(item -> OrderItem.builder()
-                        .orderId(order.getId())
-                        .productId(item.productId())
-                        .quantity(item.quantity())
-                        .price(item.price())
-                        .build())
-                .collect(Collectors.toList());
-
-        orderItemRepository.saveAll(orderItems);
+        orderItemRepository.saveAll(order.getOrderItems());
 
         return order.getId();
     }
@@ -72,7 +54,6 @@ public class OrderService {
                 .orElseThrow(() -> new CustomException(ErrorType.ORDER_NOT_FOUND));
         order.complete();
     }
-
 
     /**
      * 주문 만료 처리

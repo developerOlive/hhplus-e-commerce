@@ -18,7 +18,7 @@ public class BalanceRequest {
         return amount;
     }
 
-    public BalanceCommand toCommand() {
-        return new BalanceCommand(amount);
+    public BalanceCommand toCommand(Long userId) {
+        return new BalanceCommand(userId, amount);
     }
 }

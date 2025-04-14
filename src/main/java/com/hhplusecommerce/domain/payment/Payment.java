@@ -1,16 +1,16 @@
 package com.hhplusecommerce.domain.payment;
 
-import jakarta.persistence.*;
-import lombok.*;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 /**
  * 결제 정보 (결제 금액, 상태 등)를 관리
- *
+ * <p>
  * - 주문에 대한 결제 금액 및 상태 저장
  * - 결제 성공/실패 상태 처리
  */
@@ -31,9 +31,16 @@ public class Payment {
 
     @Builder
     public Payment(Long orderId, BigDecimal paidAmount, PaymentStatus paymentStatus) {
-        if (paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (orderId == null) {
+            throw new CustomException(ErrorType.INVALID_PAYMENT_ORDER_ID);
+        }
+        if (paidAmount == null || paidAmount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(ErrorType.INVALID_PAYMENT_AMOUNT);
         }
+        if (paymentStatus == null) {
+            throw new CustomException(ErrorType.INVALID_PAYMENT_STATUS);
+        }
+
         this.orderId = orderId;
         this.paidAmount = paidAmount;
         this.paymentStatus = paymentStatus;

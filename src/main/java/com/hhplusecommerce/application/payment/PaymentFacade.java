@@ -38,7 +38,7 @@ public class PaymentFacade {
         BigDecimal finalAmount = order.getFinalAmount();
 
         // 잔액 차감
-        balanceService.deductBalance(userId, new BalanceCommand(finalAmount));
+        balanceService.deductBalance(new BalanceCommand(userId, finalAmount));
 
         // 주문 항목 조회 및 재고 차감
         List<OrderItem> orderItems = orderService.getOrderItems(order.getId());

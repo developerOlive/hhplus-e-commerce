@@ -23,14 +23,28 @@ public class BalanceHistory {
     private BigDecimal amount;
     private BigDecimal beforeBalance;
     private BigDecimal afterBalance;
+
     @Enumerated(EnumType.STRING)
     private BalanceChangeType changeType;
+
     private LocalDateTime createdAt;
 
     public static BalanceHistory create(Long userId, BigDecimal beforeBalance, BigDecimal afterBalance, BalanceChangeType changeType) {
-        BalanceHistory balanceHistory = new BalanceHistory();
-        balanceHistory.validateType(changeType);
-        BigDecimal amount = balanceHistory.calculateAmount(beforeBalance, afterBalance);
+        if (userId == null) {
+            throw new CustomException(ErrorType.USER_BALANCE_NOT_FOUND);
+        }
+        if (beforeBalance == null || afterBalance == null) {
+            throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
+        }
+        if (beforeBalance.compareTo(BigDecimal.ZERO) < 0 || afterBalance.compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
+        }
+        if (changeType == null || !BalanceChangeType.isValid(changeType.name())) {
+            throw new CustomException(ErrorType.INVALID_BALANCE_CHANGE_TYPE);
+        }
+
+        BigDecimal amount = afterBalance.subtract(beforeBalance);
+        changeType.validate(amount);
 
         return new BalanceHistory(
                 null,
@@ -41,19 +55,5 @@ public class BalanceHistory {
                 changeType,
                 LocalDateTime.now()
         );
-    }
-
-    private void validateType(BalanceChangeType changeType) {
-        if (changeType == null || !BalanceChangeType.isValid(changeType.name())) {
-            throw new CustomException(ErrorType.INVALID_BALANCE_CHANGE_TYPE);
-        }
-    }
-
-    private BigDecimal calculateAmount(BigDecimal beforeBalance, BigDecimal afterBalance) {
-        if (afterBalance.compareTo(beforeBalance) < 0 && afterBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
-        }
-
-        return afterBalance.subtract(beforeBalance);
     }
 }

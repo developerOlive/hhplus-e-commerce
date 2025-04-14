@@ -1,5 +1,7 @@
 package com.hhplusecommerce.domain.popularProduct;
 
+import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
@@ -26,6 +28,19 @@ public class PopularProduct {
 
     @Builder
     public PopularProduct(Long productId, String productName, Long price, int totalSold) {
+        if (productId == null || productId <= 0) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_ID);
+        }
+        if (productName == null || productName.isBlank()) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_NAME);
+        }
+        if (price == null || price < 0) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_PRICE);
+        }
+        if (totalSold < 0) {
+            throw new CustomException(ErrorType.INVALID_TOTAL_SOLD_COUNT);
+        }
+
         this.productId = productId;
         this.productName = productName;
         this.price = price;

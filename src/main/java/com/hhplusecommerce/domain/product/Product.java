@@ -1,5 +1,7 @@
 package com.hhplusecommerce.domain.product;
 
+import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
@@ -28,6 +30,16 @@ public class Product {
 
     @Builder
     public Product(Long id, String name, String category, BigDecimal price) {
+        if (name == null || name.isBlank()) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_NAME);
+        }
+        if (category == null || category.isBlank()) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_CATEGORY);
+        }
+        if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_PRICE);
+        }
+
         this.id = id;
         this.name = name;
         this.category = category;

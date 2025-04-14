@@ -10,7 +10,6 @@ import java.time.LocalDateTime;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class BalanceHistoryTest {
 
@@ -42,7 +41,7 @@ class BalanceHistoryTest {
 
         @Test
         void 기존_잔액과_차감하려는_잔액이_동일하면_변경액은_0이며_예외없이_생성된다() {
-            BalanceHistory history = BalanceHistory.create(USER_ID, BEFORE_BALANCE, BEFORE_BALANCE, CHARGE);
+            BalanceHistory history = BalanceHistory.create(USER_ID, BEFORE_BALANCE, BEFORE_BALANCE, BalanceChangeType.CHARGE);
             assertThat(history.getAmount()).isEqualTo(BigDecimal.ZERO);
         }
     }

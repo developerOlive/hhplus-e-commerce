@@ -2,17 +2,19 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * 쿠폰 정책
- *
+ * <p>
  * - 쿠폰의 할인 조건 및 정책 관리
  * - 유효한 쿠폰인지 판단 (기간, 상태 등)
  * - 발급 수량 관리
@@ -42,16 +44,46 @@ public class Coupon {
     private LocalDateTime updatedAt;
 
     @Builder
-    public Coupon(String couponName, CouponDiscountType discountType, BigDecimal discountValue, int maxQuantity, LocalDate validStartDate, LocalDate validEndDate, int issuedQuantity, CouponType couponType) {
+    public Coupon(String couponName,
+                  CouponDiscountType discountType,
+                  BigDecimal discountValue,
+                  int maxQuantity,
+                  LocalDate validStartDate,
+                  LocalDate validEndDate,
+                  int issuedQuantity,
+                  CouponType couponType) {
+
+        if (couponName == null || couponName.isBlank()) {
+            throw new CustomException(ErrorType.INVALID_COUPON_NAME);
+        }
+
+        if (discountType == null) {
+            throw new CustomException(ErrorType.INVALID_COUPON_DISCOUNT_TYPE);
+        }
+
         validateDiscountValue(discountValue);
+
+        if (maxQuantity < 1) {
+            throw new CustomException(ErrorType.INVALID_COUPON_QUANTITY);
+        }
+
+        if (validStartDate == null || validEndDate == null || !validStartDate.isBefore(validEndDate)) {
+            throw new CustomException(ErrorType.INVALID_COUPON_DATE_RANGE);
+        }
+
+        if (couponType == null) {
+            throw new CustomException(ErrorType.INVALID_COUPON_TYPE);
+        }
+
         this.couponName = couponName;
         this.discountType = discountType;
         this.discountValue = discountValue;
         this.maxQuantity = maxQuantity;
+        this.issuedQuantity = issuedQuantity;
         this.validStartDate = validStartDate;
         this.validEndDate = validEndDate;
-        this.issuedQuantity = issuedQuantity;
         this.couponType = couponType;
+        this.couponStatus = CouponStatus.ACTIVE;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -83,21 +115,7 @@ public class Coupon {
     public BigDecimal discountFor(BigDecimal totalAmount) {
         validateDiscountValue(this.discountValue);
 
-        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
-        }
-
-        if (discountType == CouponDiscountType.FIXED_RATE) {
-            return totalAmount
-                    .multiply(discountValue)
-                    .divide(BigDecimal.valueOf(100), 0, RoundingMode.FLOOR);
-        }
-
-        if (discountType == CouponDiscountType.FIXED_AMOUNT) {
-            return discountValue.min(totalAmount);
-        }
-
-        return BigDecimal.ZERO;
+        return discountType.discount(totalAmount, discountValue);
     }
 
     /**
