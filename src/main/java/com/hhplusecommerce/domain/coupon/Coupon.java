@@ -2,11 +2,13 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
 import lombok.*;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -83,21 +85,7 @@ public class Coupon {
     public BigDecimal discountFor(BigDecimal totalAmount) {
         validateDiscountValue(this.discountValue);
 
-        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) <= 0) {
-            return BigDecimal.ZERO;
-        }
-
-        if (discountType == CouponDiscountType.FIXED_RATE) {
-            return totalAmount
-                    .multiply(discountValue)
-                    .divide(BigDecimal.valueOf(100), 0, RoundingMode.FLOOR);
-        }
-
-        if (discountType == CouponDiscountType.FIXED_AMOUNT) {
-            return discountValue.min(totalAmount);
-        }
-
-        return BigDecimal.ZERO;
+        return discountType.discount(totalAmount, discountValue);
     }
 
     /**

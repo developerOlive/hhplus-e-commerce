@@ -56,8 +56,6 @@ public class BalanceService {
         UserBalance userBalance = balanceRepository.findByUserId(userId)
                 .orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
 
-        if (userBalance.getAmount().compareTo(requiredAmount) < 0) {
-            throw new CustomException(ErrorType.INSUFFICIENT_BALANCE);
-        }
+        userBalance.validateEnoughAmount(requiredAmount);
     }
 }

@@ -50,7 +50,7 @@ public class Order {
      * 주문 완료 처리
      */
     public void complete() {
-        if (this.status != OrderStatus.PAYMENT_WAIT) {
+        if (!this.status.canComplete()) {
             throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_COMPLETE);
         }
         this.status = OrderStatus.COMPLETED;
@@ -61,7 +61,7 @@ public class Order {
      * 주문 기한 만료 처리
      */
     public void expire() {
-        if (this.status != OrderStatus.PAYMENT_WAIT) {
+        if (!this.status.canExpire()) {
             throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_EXPIRE);
         }
         this.status = OrderStatus.EXPIRED;

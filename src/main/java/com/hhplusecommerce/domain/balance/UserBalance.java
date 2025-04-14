@@ -37,6 +37,16 @@ public class UserBalance {
     }
 
     /**
+     * 결제 또는 차감을 위해 충분한 잔액을 보유하고 있는지 검증
+     */
+    public void validateEnoughAmount(BigDecimal requiredAmount) {
+        validatePositiveAmount(requiredAmount);
+        if (this.amount.compareTo(requiredAmount) < 0) {
+            throw new CustomException(ErrorType.INSUFFICIENT_BALANCE);
+        }
+    }
+
+    /**
      * 잔액 충전
      */
     public void charge(BigDecimal chargeAmount) {
@@ -57,6 +67,9 @@ public class UserBalance {
         this.updatedAt = LocalDateTime.now();
     }
 
+    /**
+     * 0보다 큰 금액인지 검증
+     */
     private void validatePositiveAmount(BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
             throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
