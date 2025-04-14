@@ -67,6 +67,7 @@ erDiagram
         VARCHAR status "상태 (ACTIVE, INACTIVE)"
         DATE valid_start_date "유효 시작일"
         DATE valid_end_date "유효 종료일"
+        VARCHAR coupon_type "쿠폰 유형 (LIMITED: 수량 제한, UNLIMITED: 무제한)"
         DATETIME created_at "생성일시"
         DATETIME updated_at "수정일시"
     }
@@ -261,6 +262,7 @@ erDiagram
         INT max_quantity "최대 발행 가능 수량"
         INT issued_quantity "현재까지 발행된 수량"
         VARCHAR status "상태 (ACTIVE, INACTIVE)"
+        VARCHAR coupon_type "쿠폰 유형 (LIMITED: 수량 제한, UNLIMITED: 무제한)"
         DATETIME created_at "생성일시"
         DATETIME updated_at "수정일시"
     }
