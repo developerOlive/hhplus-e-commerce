@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,10 +22,12 @@ public class OrderService {
      * 주문 생성 (결제 전 상태)
      */
     @Transactional
-    public Long createOrder(OrderCommand command, BigDecimal totalAmount, BigDecimal finalAmount) {
-        Order order = Order.create(command, totalAmount, finalAmount);
+    public Long createOrder(OrderCommand command, BigDecimal discountAmount) {
+        Order order = Order.create(command);
+        BigDecimal finalAmount = order.getTotalAmount().subtract(discountAmount).max(BigDecimal.ZERO);
+        order.applyFinalAmount(finalAmount);
+
         orderRepository.save(order);
-        orderItemRepository.saveAll(order.getOrderItems());
 
         return order.getId();
     }

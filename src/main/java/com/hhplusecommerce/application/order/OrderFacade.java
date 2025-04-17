@@ -2,8 +2,8 @@ package com.hhplusecommerce.application.order;
 
 import com.hhplusecommerce.domain.balance.BalanceService;
 import com.hhplusecommerce.domain.coupon.CouponService;
+import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderCommand;
-import com.hhplusecommerce.domain.order.OrderItemCommand;
 import com.hhplusecommerce.domain.order.OrderService;
 import com.hhplusecommerce.domain.order.OrderStatus;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
@@ -12,9 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
 
-import static com.hhplusecommerce.domain.order.OrderAmountCalculator.calculateTotalAmount;
 
 @Service
 @RequiredArgsConstructor
@@ -28,24 +26,27 @@ public class OrderFacade {
     public OrderResult placeOrder(OrderCommand command) {
         Long userId = command.userId();
         Long couponIssueId = command.couponIssueId();
-        List<OrderItemCommand> items = command.orderItems();
 
         // 재고 확인
-        inventoryService.validateAllProductStocks(items);
+        inventoryService.validateAllProductStocks(command.orderItems());
 
         // 총액 계산
-        BigDecimal totalAmount = calculateTotalAmount(items);
+        Order order = Order.create(command);
+        BigDecimal totalAmount = order.getTotalAmount();
 
-        // 할인 계산
+        // 할인 금액 계산
         BigDecimal discountAmount = couponService.calculateDiscount(userId, couponIssueId, totalAmount);
+
+        // 최종 결제 금액 계산
         BigDecimal finalAmount = totalAmount.subtract(discountAmount).max(BigDecimal.ZERO);
 
         // 잔액 확인
         balanceService.validateEnough(userId, finalAmount);
 
-        // 주문 생성
-        Long orderId = orderService.createOrder(command, totalAmount, finalAmount);
+        // 할인 금액 적용 및 저장
+        Long orderId = orderService.createOrder(command, discountAmount);
+
+        // 결과 반환
         return new OrderResult(orderId, totalAmount, finalAmount, OrderStatus.PAYMENT_WAIT);
     }
-
 }

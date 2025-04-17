@@ -24,16 +24,21 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class OrderFacadeTest {
+class OrderFacadeUnitTest {
 
     private static final Long USER_ID = 1L;
     private static final Long COUPON_ISSUE_ID = 99L;
     private static final Long ORDER_ID = 123L;
-    private static final BigDecimal TOTAL_AMOUNT = new BigDecimal("10000");
+
+    private static final Long PRODUCT_ID = 10L;
+    private static final int QUANTITY = 2;
+    private static final BigDecimal ITEM_PRICE = new BigDecimal("5000");
+    private static final BigDecimal TOTAL_AMOUNT = ITEM_PRICE.multiply(BigDecimal.valueOf(QUANTITY));
     private static final BigDecimal DISCOUNT_AMOUNT = new BigDecimal("3000");
     private static final BigDecimal FINAL_AMOUNT = TOTAL_AMOUNT.subtract(DISCOUNT_AMOUNT);
+
     private static final List<OrderItemCommand> ITEMS = List.of(
-            new OrderItemCommand(10L, 2, new BigDecimal("5000"))
+            new OrderItemCommand(PRODUCT_ID, QUANTITY, ITEM_PRICE)
     );
 
     @InjectMocks
@@ -49,19 +54,18 @@ class OrderFacadeTest {
 
         @Test
         void 주문을_정상적으로_생성한다() {
+            // given
             OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+
             doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
             when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT)).thenReturn(DISCOUNT_AMOUNT);
             doNothing().when(balanceService).validateEnough(USER_ID, FINAL_AMOUNT);
-            when(orderService.createOrder(command, TOTAL_AMOUNT, FINAL_AMOUNT)).thenReturn(ORDER_ID);
+            when(orderService.createOrder(command, DISCOUNT_AMOUNT)).thenReturn(ORDER_ID);
 
+            // when
             OrderResult result = orderFacade.placeOrder(command);
 
-            verify(inventoryService).validateAllProductStocks(ITEMS);
-            verify(couponService).calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT);
-            verify(balanceService).validateEnough(USER_ID, FINAL_AMOUNT);
-            verify(orderService).createOrder(command, TOTAL_AMOUNT, FINAL_AMOUNT);
-
+            // then
             assertThat(result.orderId()).isEqualTo(ORDER_ID);
             assertThat(result.totalAmount()).isEqualTo(TOTAL_AMOUNT);
             assertThat(result.finalAmount()).isEqualTo(FINAL_AMOUNT);
@@ -88,6 +92,7 @@ class OrderFacadeTest {
         @Test
         void 유효하지_않은_쿠폰이면_예외가_발생한다() {
             OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+
             doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
             when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT))
                     .thenThrow(new CustomException(ErrorType.COUPON_NOT_FOUND));
@@ -102,6 +107,7 @@ class OrderFacadeTest {
         @Test
         void 잔액이_부족하면_예외가_발생한다() {
             OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
+
             doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
             when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT))
                     .thenReturn(DISCOUNT_AMOUNT);

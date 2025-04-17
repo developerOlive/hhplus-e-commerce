@@ -5,10 +5,9 @@ import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.test.util.ReflectionTestUtils; // ✅ import 추가
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,20 +17,24 @@ class OrderTest {
 
     private static final Long USER_ID = 1L;
     private static final Long COUPON_ISSUE_ID = 100L;
-    private static final BigDecimal TOTAL_AMOUNT = new BigDecimal("30000");
+    private static final Long PRODUCT_ID = 1L;
+    private static final int QUANTITY = 2;
+    private static final BigDecimal PRICE_PER_ITEM = new BigDecimal("15000");
+    private static final BigDecimal TOTAL_AMOUNT = PRICE_PER_ITEM.multiply(BigDecimal.valueOf(QUANTITY));
     private static final BigDecimal FINAL_AMOUNT = new BigDecimal("25000");
 
     private Order order;
 
     static Order 주문_생성(OrderStatus status) {
-        Order order = Order.create(
-                new OrderCommand(USER_ID, COUPON_ISSUE_ID, List.of()),
-                TOTAL_AMOUNT,
-                FINAL_AMOUNT
+        List<OrderItemCommand> items = List.of(
+                new OrderItemCommand(PRODUCT_ID, QUANTITY, PRICE_PER_ITEM)
         );
 
-        ReflectionTestUtils.setField(order, "status", status);
-
+        Order order = Order.create(
+                new OrderCommand(USER_ID, COUPON_ISSUE_ID, items)
+        );
+        order.applyFinalAmount(FINAL_AMOUNT);
+        ReflectionTestUtils.setField(order, "orderStatus", status);
         return order;
     }
 
@@ -48,7 +51,7 @@ class OrderTest {
             assertThat(order.getCouponIssueId()).isEqualTo(COUPON_ISSUE_ID);
             assertThat(order.getTotalAmount()).isEqualByComparingTo(TOTAL_AMOUNT);
             assertThat(order.getFinalAmount()).isEqualByComparingTo(FINAL_AMOUNT);
-            assertThat(order.getStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);
+            assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);
         }
     }
 
@@ -57,13 +60,13 @@ class OrderTest {
         @Test
         void 결제_대기_상태에서_주문이_완료_상태로_변경된다() {
             order.complete();
-            assertThat(order.getStatus()).isEqualTo(OrderStatus.COMPLETED);
+            assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.COMPLETED);
         }
 
         @Test
         void 결제_대기_상태에서_주문이_만료상태로_변경된다() {
             order.expire();
-            assertThat(order.getStatus()).isEqualTo(OrderStatus.EXPIRED);
+            assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.EXPIRED);
         }
     }
 
