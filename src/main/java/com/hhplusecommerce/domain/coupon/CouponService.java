@@ -1,8 +1,8 @@
 package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
-import com.hhplusecommerce.support.exception.ErrorType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.hhplusecommerce.domain.coupon.CouponUsageStatus.AVAILABLE;
+import static com.hhplusecommerce.support.exception.ErrorType.COUPON_NOT_FOUND;
+
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CouponService {
@@ -17,24 +21,32 @@ public class CouponService {
     private final CouponRepository couponRepository;
     private final CouponHistoryRepository couponHistoryRepository;
 
+    /**
+     * 사용 가능한 유저의 쿠폰 목록 조회
+     */
     @Transactional(readOnly = true)
     public List<CouponResult> getUserCoupons(Long userId) {
-        List<CouponHistory> couponHistories = couponHistoryRepository.findCouponsByUserIdAndStatus(userId, CouponUsageStatus.AVAILABLE);
+        List<CouponHistory> couponHistories = couponHistoryRepository.findCouponsByUserIdAndStatus(userId, AVAILABLE);
 
         return couponHistories.stream()
                 .map(couponHistory -> {
-                    Coupon coupon = couponRepository.findById(couponHistory.getCouponId())
-                            .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+                    Coupon coupon = couponHistory.getCoupon();
+                    if (coupon == null) {
+                        throw new CustomException(COUPON_NOT_FOUND);
+                    }
 
                     return CouponResult.from(couponHistory, coupon);
                 })
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 쿠폰을 유저에게 발급하고 발급 이력을 저장
+     */
     @Transactional
     public Long issueCoupon(CouponCommand command) {
         Coupon coupon = couponRepository.findById(command.couponId())
-                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(COUPON_NOT_FOUND));
 
         coupon.confirmCouponIssue();
 
@@ -44,6 +56,9 @@ public class CouponService {
         return couponHistory.getId();
     }
 
+    /**
+     * 쿠폰 할인 금액을 계산
+     */
     @Transactional(readOnly = true)
     public BigDecimal calculateDiscount(Long userId, Long couponIssueId, BigDecimal totalAmount) {
         if (couponIssueId == null) {
@@ -51,8 +66,7 @@ public class CouponService {
         }
 
         CouponHistory couponHistory = getCouponHistory(userId, couponIssueId);
-        Coupon coupon = getCoupon(couponHistory.getCouponId());
-
+        Coupon coupon = couponHistory.getCoupon();
         CouponValidator.validateUsableCoupon(coupon, couponHistory);
 
         return coupon.discountFor(totalAmount);
@@ -64,20 +78,11 @@ public class CouponService {
     @Transactional(readOnly = true)
     public CouponHistory getCouponHistory(Long userId, Long couponIssueId) {
         CouponHistory couponHistory = couponHistoryRepository.findById(couponIssueId)
-                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+                .orElseThrow(() -> new CustomException(COUPON_NOT_FOUND));
 
         couponHistory.validateOwner(userId);
 
         return couponHistory;
-    }
-
-    /**
-     * 쿠폰 정책(할인 정보 등)을 조회
-     */
-    @Transactional(readOnly = true)
-    public Coupon getCoupon(Long couponId) {
-        return couponRepository.findById(couponId)
-                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
     }
 
     /**
@@ -86,7 +91,11 @@ public class CouponService {
     @Transactional
     public void useCoupon(Long userId, Long couponIssueId) {
         CouponHistory couponHistory = getCouponHistory(userId, couponIssueId);
-        Coupon coupon = getCoupon(couponHistory.getCouponId());
+        Coupon coupon = couponHistory.getCoupon();
+
+        if (coupon == null) {
+            throw new CustomException(COUPON_NOT_FOUND);
+        }
 
         CouponValidator.validateUsableCoupon(coupon, couponHistory);
 

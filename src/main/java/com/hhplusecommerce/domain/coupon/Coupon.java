@@ -2,15 +2,14 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 쿠폰 정책
@@ -24,9 +23,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
+@Table(name = "coupon")
 public class Coupon {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String couponName;
     @Enumerated(EnumType.STRING)
@@ -42,6 +43,9 @@ public class Coupon {
     private CouponType couponType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
+    private List<CouponHistory> couponHistories = new ArrayList<>();
 
     @Builder
     public Coupon(String couponName,
