@@ -2,12 +2,8 @@ package com.hhplusecommerce.domain.product;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -17,27 +13,30 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Table(name = "product_inventory")
 public class ProductInventory {
 
     @Id
-    private Long productId;
-
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private int stock;
-
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
+    @OneToOne
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
+    private Product product;
+
     @Builder
-    public ProductInventory(Long productId, int stock) {
-        if (productId == null || productId <= 0) {
+    public ProductInventory(Product product, int stock) {
+        if (product == null) {
             throw new CustomException(ErrorType.INVALID_PRODUCT_ID);
         }
         if (stock < 0) {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
 
-        this.productId = productId;
+        this.product = product;
         this.stock = stock;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -81,5 +80,9 @@ public class ProductInventory {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
         return stock;
+    }
+
+    public void setProduct(Product product) {
+        this.product = product;
     }
 }

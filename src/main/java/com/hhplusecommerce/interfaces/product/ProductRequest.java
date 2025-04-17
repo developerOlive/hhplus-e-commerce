@@ -7,13 +7,17 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+
+import java.math.BigDecimal;
 
 public class ProductRequest {
 
 
     @Getter
+    @Setter
     @NoArgsConstructor
     public static class ProductSearchRequest {
 
@@ -21,10 +25,10 @@ public class ProductRequest {
         private String productName;
 
         @Schema(description = "최소 가격", example = "100000")
-        private Long minPrice;
+        private BigDecimal minPrice;
 
         @Schema(description = "최대 가격", example = "3000000")
-        private Long maxPrice;
+        private BigDecimal maxPrice;
 
         @Schema(description = "카테고리", example = "ELECTRONICS")
         private String category;
@@ -40,7 +44,14 @@ public class ProductRequest {
         private Integer size;
 
         public ProductsCommand toCommand() {
-            return new ProductsCommand(productName, minPrice, maxPrice, category, page, size);
+            return ProductsCommand.builder()
+                    .productName(productName != null && !productName.isBlank() ? productName : null)
+                    .minPrice(minPrice)
+                    .maxPrice(maxPrice)
+                    .category(category != null && !category.isBlank() ? category : null)
+                    .page(page)
+                    .size(size)
+                    .build();
         }
 
         public Pageable toPageable() {
