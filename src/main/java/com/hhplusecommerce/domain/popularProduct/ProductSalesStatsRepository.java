@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 public interface ProductSalesStatsRepository {
-    Optional<ProductSalesStats> findByProductIdAndDate(Long productId, LocalDate date);
     void save(ProductSalesStats stats);
+
+    Optional<ProductSalesStats> findByProductIdAndSaleDate(Long productId, LocalDate date);
 }
