@@ -14,12 +14,17 @@ spring:
   jpa:
     open-in-view: false
     generate-ddl: false
-    show-sql: false
+    show-sql: true
     hibernate:
       ddl-auto: create
     properties:
-      hibernate.timezone.default_storage: NORMALIZE_UTC
-      hibernate.jdbc.time_zone: UTC
+      hibernate:
+        timezone:
+          default_storage: NORMALIZE_UTC
+        jdbc:
+          time_zone: UTC
+        format_sql: true
+        use_sql_comments: true
 
 ---
 spring.config.activate.on-profile: local, test
