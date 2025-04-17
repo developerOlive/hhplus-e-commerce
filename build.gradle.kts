@@ -5,6 +5,8 @@ plugins {
     id("jacoco")
 }
 
+val querydslDir = "build/generated/querydsl"
+
 repositories {
     mavenCentral()
 }
@@ -39,10 +41,15 @@ dependencies {
     testImplementation(libs.spring.boot.starter.test) {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }
-
     testImplementation(libs.rest.assured)
     testImplementation(libs.rest.assured.json.path)
     testImplementation(libs.rest.assured.schema)
+    testImplementation("org.testcontainers:junit-jupiter:1.19.3")
+    testImplementation("org.testcontainers:mysql:1.19.3")
+    testImplementation("org.instancio:instancio-junit:2.15.0")
+    testImplementation("org.instancio:instancio-core:2.15.0")
+    testCompileOnly(libs.lombok)
+    testAnnotationProcessor(libs.lombok)
 
     // DB
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
@@ -56,7 +63,6 @@ dependencies {
     annotationProcessor("com.querydsl:querydsl-apt:5.0.0:jakarta")
 }
 
-// about source and compilation
 java {
     sourceCompatibility = JavaVersion.VERSION_17
 }
@@ -65,25 +71,24 @@ with(extensions.getByType(JacocoPluginExtension::class.java)) {
     toolVersion = "0.8.7"
 }
 
-// bundling tasks
-tasks.getByName("bootJar") {
-    enabled = true
-}
-tasks.getByName("jar") {
-    enabled = false
-}
-
-// test tasks
-tasks.test {
-    ignoreFailures = true
-    useJUnitPlatform()
-}
+sourceSets["main"].java.srcDirs(querydslDir)
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
+    options.annotationProcessorGeneratedSourcesDirectory = file(querydslDir)
 }
 
-sourceSets["main"].java.srcDirs("build/generated")
-tasks.withType<JavaCompile> {
-    options.annotationProcessorGeneratedSourcesDirectory = file("build/generated")
+tasks.test {
+    ignoreFailures = true
+    useJUnitPlatform()
+    testLogging {
+        events("failed", "skipped", "passed")
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+        showStandardStreams = true
+    }
+}
+
+configurations.all {
+    exclude("org.apache.logging.log4j", "log4j-slf4j2-impl")
+    exclude("org.apache.logging.log4j", "log4j-to-slf4j")
 }
