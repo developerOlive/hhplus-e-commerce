@@ -2,31 +2,32 @@ package com.hhplusecommerce.domain.balance;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Entity
+@Table(name = "user_balance")
 public class UserBalance {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long userId;
-
     private BigDecimal amount;
-
     private LocalDateTime updatedAt;
+
+    @OneToMany(mappedBy = "userBalance", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<BalanceHistory> balanceHistories = new ArrayList<>();
 
     @Builder
     public UserBalance(Long userId, BigDecimal amount) {
-        if (userId == null) {
-            throw new CustomException(ErrorType.USER_BALANCE_NOT_FOUND);
-        }
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
         }
@@ -38,6 +39,10 @@ public class UserBalance {
 
     public static UserBalance initialize(Long userId) {
         return new UserBalance(userId, BigDecimal.ZERO);
+    }
+
+    public static UserBalance create(Long userId, BigDecimal amount) {
+        return new UserBalance(userId, amount);
     }
 
     /**

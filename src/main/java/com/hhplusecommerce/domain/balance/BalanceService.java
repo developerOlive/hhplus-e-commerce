@@ -20,7 +20,8 @@ public class BalanceService {
 
     @Transactional(readOnly = true)
     public BalanceResult getBalance(Long userId) {
-        UserBalance userBalance = balanceRepository.findByUserId(userId).orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
+        UserBalance userBalance = balanceRepository.findByUserId(userId)
+                .orElseThrow(() -> new CustomException(ErrorType.USER_BALANCE_NOT_FOUND));
 
         return new BalanceResult(userBalance.getUserId(), userBalance.getAmount());
     }
@@ -30,12 +31,12 @@ public class BalanceService {
         Long userId = balanceCommand.userId();
 
         UserBalance userBalance = balanceRepository.findByUserId(userId)
-                .orElseGet(() -> UserBalance.initialize(userId));
+                .orElseGet(() -> balanceRepository.save(UserBalance.initialize(userId)));
 
         BigDecimal previousBalance = userBalance.getAmount();
         userBalance.charge(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.create(userId, previousBalance, userBalance.getAmount(), CHARGE);
+        BalanceHistory balanceHistory = BalanceHistory.create(userBalance, previousBalance, userBalance.getAmount(), CHARGE);
         balanceHistoryRepository.save(balanceHistory);
 
         return new BalanceResult(userId, userBalance.getAmount());
@@ -51,12 +52,11 @@ public class BalanceService {
         BigDecimal previousBalance = userBalance.getAmount();
         userBalance.deduct(balanceCommand.amount());
 
-        BalanceHistory balanceHistory = BalanceHistory.create(userId, previousBalance, userBalance.getAmount(), DEDUCT);
+        BalanceHistory balanceHistory = BalanceHistory.create(userBalance, previousBalance, userBalance.getAmount(), DEDUCT);
         balanceHistoryRepository.save(balanceHistory);
 
         return new BalanceResult(userId, userBalance.getAmount());
     }
-
 
     @Transactional(readOnly = true)
     public void validateEnough(Long userId, BigDecimal requiredAmount) {
