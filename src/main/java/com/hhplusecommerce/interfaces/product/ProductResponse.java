@@ -51,12 +51,12 @@ public class ProductResponse {
         private String name;
 
         @Schema(description = "가격", example = "2390000")
-        private Long price;
+        private BigDecimal price;
 
         @Schema(description = "총 판매 수량", example = "200")
         private int totalSold;
 
-        public PopularProductResponse(Long productId, String name, Long price, int totalSold) {
+        public PopularProductResponse(Long productId, String name, BigDecimal price, int totalSold) {
             this.productId = productId;
             this.name = name;
             this.price = price;
