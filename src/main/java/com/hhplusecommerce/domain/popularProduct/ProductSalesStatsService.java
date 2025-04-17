@@ -23,7 +23,7 @@ public class ProductSalesStatsService {
             int quantity = item.getQuantity();
             BigDecimal amount = item.getTotalAmount();
 
-            ProductSalesStats stats = statsRepository.findByProductIdAndDate(productId, saleDate)
+            ProductSalesStats stats = statsRepository.findByProductIdAndSaleDate(productId, saleDate)
                     .orElseGet(() -> ProductSalesStats.initialize(productId, saleDate));
 
             stats.record(quantity, amount);

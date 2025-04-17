@@ -2,8 +2,8 @@ package com.hhplusecommerce.domain.popularProduct;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -16,9 +16,14 @@ import java.time.LocalDate;
  * - 생성 시 기본 수치는 0으로 시작하고, 이후 record 메서드를 통해 누적
  */
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Entity
+@Table(name = "product_sales_stats")
 public class ProductSalesStats {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long productId;
     private LocalDate saleDate;

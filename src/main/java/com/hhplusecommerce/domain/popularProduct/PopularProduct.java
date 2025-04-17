@@ -3,6 +3,8 @@ package com.hhplusecommerce.domain.popularProduct;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -18,12 +20,10 @@ import lombok.NoArgsConstructor;
 public class PopularProduct {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productId;
-
     private String productName;
-
     private Long price;
-
     private int totalSold;
 
     @Builder
