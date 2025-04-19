@@ -13,13 +13,13 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "balance_history")
 public class BalanceHistory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long userId;
     private BigDecimal amount;
     private BigDecimal beforeBalance;
     private BigDecimal afterBalance;
@@ -29,8 +29,15 @@ public class BalanceHistory {
 
     private LocalDateTime createdAt;
 
-    public static BalanceHistory create(Long userId, BigDecimal beforeBalance, BigDecimal afterBalance, BalanceChangeType changeType) {
-        if (userId == null) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserBalance userBalance;
+
+    public static BalanceHistory create(UserBalance userBalance,
+                                        BigDecimal beforeBalance,
+                                        BigDecimal afterBalance,
+                                        BalanceChangeType changeType) {
+        if (userBalance == null || userBalance.getUserId() == null) {
             throw new CustomException(ErrorType.USER_BALANCE_NOT_FOUND);
         }
         if (beforeBalance == null || afterBalance == null) {
@@ -48,12 +55,12 @@ public class BalanceHistory {
 
         return new BalanceHistory(
                 null,
-                userId,
                 amount,
                 beforeBalance,
                 afterBalance,
                 changeType,
-                LocalDateTime.now()
+                LocalDateTime.now(),
+                userBalance
         );
     }
 }

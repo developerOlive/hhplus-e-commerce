@@ -2,7 +2,6 @@ package com.hhplusecommerce.interfaces.product;
 
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductService;
-import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductResult;
 import com.hhplusecommerce.domain.product.ProductService;
 import com.hhplusecommerce.interfaces.product.ProductRequest.PopularProductSearchRequest;
@@ -20,7 +19,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -41,7 +42,7 @@ public class ProductController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = PRODUCT_LIST_SUCCESS)))
     })
-    public ResponseEntity<ApiResult<Page<ProductsResponse>>> getProducts(@Valid ProductSearchRequest request) {
+    public ResponseEntity<ApiResult<Page<ProductsResponse>>> getProducts(@ModelAttribute @Validated ProductSearchRequest request) {
         Page<ProductResult> productPage = productService.getProductsWithInventory(request.toCommand(), request.toPageable());
         Page<ProductsResponse> responsePage = productPage.map(ProductsResponse::from);
 

@@ -129,9 +129,13 @@ class BalanceServiceTest {
         void 기존_잔액과_차감_금액이_같으면_0원이고_예외없이_이력이_생성된다() {
             // given
             BigDecimal same = BigDecimal.valueOf(1000);
+            UserBalance userBalance = UserBalance.builder()
+                    .userId(USER_ID)
+                    .amount(same)
+                    .build();
 
             // when
-            BalanceHistory history = BalanceHistory.create(1L, same, same, DEDUCT);
+            BalanceHistory history = BalanceHistory.create(userBalance, same, same, DEDUCT);
 
             // then
             assertThat(history.getAmount()).isEqualTo(BigDecimal.ZERO);

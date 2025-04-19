@@ -45,7 +45,7 @@ public class PaymentFacade {
         inventoryService.decreaseStocks(orderItems);
 
         // 쿠폰 사용 처리
-        if (order.getCouponIssueId() != null) {
+        if (order.hasCoupon()) {
             couponService.useCoupon(userId, order.getCouponIssueId());
         }
 

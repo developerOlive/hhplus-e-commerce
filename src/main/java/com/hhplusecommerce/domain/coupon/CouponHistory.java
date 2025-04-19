@@ -2,49 +2,59 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-/**
- * 사용자의 쿠폰 발급 및 사용 이력
- * <p>
- * - 유저가 어떤 쿠폰을 발급받았는지 관리
- * - 쿠폰의 사용 가능 여부 확인
- * - 쿠폰 사용 처리
- */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
+@Table(name = "coupon_history")
+@EntityListeners(AuditingEntityListener.class)
 public class CouponHistory {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Long userId;
-    private Long couponId;
+
     private LocalDateTime issueDate;
+
     private LocalDateTime useDate;
+
     @Enumerated(EnumType.STRING)
     private CouponUsageStatus couponUsageStatus;
+
+    @CreatedDate
     private LocalDateTime createdAt;
+
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    public CouponHistory(Long id,
-                         Long userId,
-                         Long couponId,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "coupon_id",
+            nullable = false,
+            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
+    )
+    private Coupon coupon;
+
+    public CouponHistory(Long userId,
                          LocalDateTime issueDate,
                          LocalDateTime useDate,
                          CouponUsageStatus couponUsageStatus,
                          LocalDateTime createdAt,
-                         LocalDateTime updatedAt) {
+                         LocalDateTime updatedAt,
+                         Coupon coupon) {
 
-        if (couponId == null) {
+        if (coupon == null) {
             throw new CustomException(ErrorType.INVALID_COUPON_ISSUE_DATA);
         }
 
@@ -52,29 +62,28 @@ public class CouponHistory {
             throw new CustomException(ErrorType.INVALID_COUPON_STATUS);
         }
 
-        this.id = id;
         this.userId = userId;
-        this.couponId = couponId;
         this.issueDate = issueDate;
         this.useDate = useDate;
         this.couponUsageStatus = couponUsageStatus;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.coupon = coupon;
     }
 
     /**
      * 쿠폰 발급 이력 생성
      */
     public static CouponHistory issue(Long userId, Coupon coupon) {
+        LocalDateTime now = LocalDateTime.now();
         return new CouponHistory(
-                null,
                 userId,
-                coupon.getId(),
-                LocalDateTime.now(),
+                now,
                 null,
                 CouponUsageStatus.AVAILABLE,
-                LocalDateTime.now(),
-                LocalDateTime.now()
+                now,
+                now,
+                coupon
         );
     }
 
@@ -95,7 +104,6 @@ public class CouponHistory {
         }
         this.couponUsageStatus = CouponUsageStatus.USED;
         this.useDate = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
     }
 
     /**

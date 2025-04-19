@@ -14,10 +14,10 @@ public record OrderResponse(
 ) {
     public static OrderResponse from(OrderResult result) {
         return new OrderResponse(
-                result.getOrderId(),
-                result.getTotalAmount(),
-                result.getFinalAmount(),
-                result.getOrderStatus()
+                result.orderId(),
+                result.totalAmount(),
+                result.finalAmount(),
+                result.orderStatus()
         );
     }
 }

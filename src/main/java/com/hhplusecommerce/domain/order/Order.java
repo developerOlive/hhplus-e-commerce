@@ -3,87 +3,104 @@ package com.hhplusecommerce.domain.order;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Entity
+@Table(name = "`order`")
 public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long userId;
-
     private Long couponIssueId;
-
     private LocalDateTime orderDate;
-
+    @Column(precision = 10, scale = 0)
     private BigDecimal totalAmount;
-
+    @Column(precision = 10, scale = 0)
     private BigDecimal finalAmount;
-
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
-
+    private OrderStatus orderStatus;
     private LocalDateTime createdAt;
-
     private LocalDateTime updatedAt;
 
-    @Transient
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     private Order(Long userId, Long couponIssueId, LocalDateTime orderDate,
-                  BigDecimal totalAmount, BigDecimal finalAmount, OrderStatus status) {
-        if (userId == null) throw new CustomException(ErrorType.INVALID_USER_ID);
-        if (orderDate == null) throw new CustomException(ErrorType.INVALID_ORDER_DATE);
-        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) < 0)
+                  BigDecimal totalAmount, BigDecimal finalAmount, OrderStatus orderStatus) {
+        if (userId == null) {
+            throw new CustomException(ErrorType.INVALID_USER_ID);
+        }
+
+        if (orderDate == null) {
+            throw new CustomException(ErrorType.INVALID_ORDER_DATE);
+        }
+
+        if (totalAmount == null || totalAmount.compareTo(BigDecimal.ZERO) < 0) {
             throw new CustomException(ErrorType.INVALID_ORDER_TOTAL_AMOUNT);
-        if (finalAmount == null || finalAmount.compareTo(BigDecimal.ZERO) < 0)
-            throw new CustomException(ErrorType.INVALID_ORDER_FINAL_AMOUNT);
-        if (status == null) throw new CustomException(ErrorType.INVALID_ORDER_STATUS);
+        }
+
+        if (orderStatus == null) {
+            throw new CustomException(ErrorType.INVALID_ORDER_STATUS);
+        }
 
         this.userId = userId;
         this.couponIssueId = couponIssueId;
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
         this.finalAmount = finalAmount;
-        this.status = status;
+        this.orderStatus = orderStatus;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * 주문 생성
-     */
-    public static Order create(OrderCommand command, BigDecimal totalAmount, BigDecimal finalAmount) {
+    public static Order create(OrderCommand command) {
+        if (command.userId() == null) {
+            throw new CustomException(ErrorType.INVALID_USER_ID);
+        }
+
+        List<OrderItem> items = command.orderItems().stream()
+                .map(item -> new OrderItem(null, item.productId(), item.quantity(), item.price()))
+                .toList();
+
+        BigDecimal totalAmount = items.stream()
+                .map(OrderItem::getTotalAmount)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         Order order = new Order(
                 command.userId(),
                 command.couponIssueId(),
                 LocalDateTime.now(),
                 totalAmount,
-                finalAmount,
+                null, // 최종금액은 외부에서 할인 적용 후 지정
                 OrderStatus.PAYMENT_WAIT
         );
 
-        List<OrderItem> items = command.orderItems().stream()
-                .map(item -> OrderItem.builder()
-                        .orderId(null) // 아직 저장 전이라 ID 없음
-                        .productId(item.productId())
-                        .quantity(item.quantity())
-                        .price(item.price())
-                        .build())
-                .toList();
-
+        items.forEach(item -> item.setOrder(order));
         order.orderItems.addAll(items);
+
         return order;
+    }
+
+    public void applyFinalAmount(BigDecimal finalAmount) {
+        if (finalAmount == null || finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new CustomException(ErrorType.INVALID_ORDER_FINAL_AMOUNT);
+        }
+        this.finalAmount = finalAmount;
     }
 
     /**
@@ -97,21 +114,34 @@ public class Order {
      * 주문 완료 처리
      */
     public void complete() {
-        if (!this.status.canComplete()) {
+        if (!this.orderStatus.canComplete()) {
             throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_COMPLETE);
         }
-        this.status = OrderStatus.COMPLETED;
-        this.updatedAt = LocalDateTime.now();
+        this.orderStatus = OrderStatus.COMPLETED;
     }
 
     /**
      * 주문 만료 처리
      */
     public void expire() {
-        if (!this.status.canExpire()) {
+        if (!this.orderStatus.canExpire()) {
             throw new CustomException(ErrorType.INVALID_ORDER_STATUS_TO_EXPIRE);
         }
-        this.status = OrderStatus.EXPIRED;
+        this.orderStatus = OrderStatus.EXPIRED;
+    }
+
+    public boolean hasCoupon() {
+        return this.couponIssueId != null;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 }

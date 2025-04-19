@@ -5,16 +5,17 @@ import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -25,27 +26,28 @@ class OrderServiceTest {
     private static final Long NON_EXISTENT_ORDER_ID = 999L;
     private static final Long USER_ID = 123L;
     private static final Long COUPON_ID = 456L;
-    private static final BigDecimal TOTAL_AMOUNT = BigDecimal.valueOf(10000);
-    private static final BigDecimal FINAL_AMOUNT = BigDecimal.valueOf(9000);
     private static final BigDecimal ITEM_PRICE = BigDecimal.valueOf(5000);
     private static final int ITEM_QUANTITY = 2;
+    private static final BigDecimal TOTAL_AMOUNT = ITEM_PRICE.multiply(BigDecimal.valueOf(ITEM_QUANTITY));
+    private static final BigDecimal DISCOUNT_AMOUNT = BigDecimal.valueOf(1000);
+    private static final BigDecimal FINAL_AMOUNT = TOTAL_AMOUNT.subtract(DISCOUNT_AMOUNT);
 
     @InjectMocks
     private OrderService orderService;
 
-    @Mock
-    private OrderRepository orderRepository;
-
-    @Mock
-    private OrderItemRepository orderItemRepository;
+    @Mock private OrderRepository orderRepository;
+    @Mock private OrderItemRepository orderItemRepository;
 
     private Order mockOrder;
 
     @BeforeEach
     void setUp() {
-        OrderCommand command = new OrderCommand(USER_ID, COUPON_ID, List.of());
-        mockOrder = Order.create(command, TOTAL_AMOUNT, FINAL_AMOUNT);
-        ReflectionTestUtils.setField(mockOrder, "status", OrderStatus.PAYMENT_WAIT);
+        OrderCommand command = new OrderCommand(USER_ID, COUPON_ID, List.of(
+                new OrderItemCommand(1L, ITEM_QUANTITY, ITEM_PRICE)
+        ));
+        mockOrder = Order.create(command);
+        mockOrder.applyFinalAmount(FINAL_AMOUNT);
+        ReflectionTestUtils.setField(mockOrder, "orderStatus", OrderStatus.PAYMENT_WAIT);
     }
 
     @Test
@@ -54,14 +56,23 @@ class OrderServiceTest {
         OrderCommand command = new OrderCommand(USER_ID, COUPON_ID, List.of(
                 new OrderItemCommand(1L, ITEM_QUANTITY, ITEM_PRICE)
         ));
-        when(orderRepository.save(any(Order.class))).thenReturn(mockOrder);
 
         // When
-        Long orderId = orderService.createOrder(command, TOTAL_AMOUNT, FINAL_AMOUNT);
+        Long orderId = orderService.createOrder(command, DISCOUNT_AMOUNT);
 
         // Then
-        verify(orderRepository, times(1)).save(any(Order.class));
-        verify(orderItemRepository, times(1)).saveAll(anyList());
+        ArgumentCaptor<Order> captor = ArgumentCaptor.forClass(Order.class);
+        verify(orderRepository).save(captor.capture());
+
+        Order savedOrder = captor.getValue();
+        assertThat(orderId).isEqualTo(mockOrder.getId());
+        assertThat(savedOrder.getUserId()).isEqualTo(USER_ID);
+        assertThat(savedOrder.getCouponIssueId()).isEqualTo(COUPON_ID);
+        assertThat(savedOrder.getTotalAmount()).isEqualByComparingTo(TOTAL_AMOUNT);
+        assertThat(savedOrder.getFinalAmount()).isEqualByComparingTo(FINAL_AMOUNT);
+        assertThat(savedOrder.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);
+        assertThat(savedOrder.getOrderItems()).hasSize(1);
+        assertThat(savedOrder.getOrderItems().get(0).getProductId()).isEqualTo(1L);
     }
 
     @Test
@@ -87,6 +98,6 @@ class OrderServiceTest {
 
         // Then
         verify(orderRepository, times(1)).findById(EXISTING_ORDER_ID);
-        assertEquals(OrderStatus.COMPLETED, mockOrder.getStatus());
+        assertEquals(OrderStatus.COMPLETED, mockOrder.getOrderStatus());
     }
 }

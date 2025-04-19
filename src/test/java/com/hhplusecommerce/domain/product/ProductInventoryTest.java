@@ -7,6 +7,9 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.test.util.ReflectionTestUtils;
+
+import java.math.BigDecimal;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -22,7 +25,9 @@ class ProductInventoryTest {
     private static final int EXCESS_DEDUCT_AMOUNT = 200;
 
     static ProductInventory 기본재고() {
-        return new ProductInventory(PRODUCT_ID, INITIAL_STOCK);
+        Product product = new Product("테스트상품", "카테고리", BigDecimal.valueOf(10000));
+        ReflectionTestUtils.setField(product, "id", PRODUCT_ID);
+        return new ProductInventory(product, INITIAL_STOCK);
     }
 
     @BeforeEach
@@ -88,7 +93,10 @@ class ProductInventoryTest {
 
     @Test
     void 초기_재고가_음수면_예외가_발생한다() {
-        assertThatThrownBy(() -> new ProductInventory(PRODUCT_ID, -50))
+        Product product = new Product("테스트상품", "카테고리", BigDecimal.valueOf(10000));
+        ReflectionTestUtils.setField(product, "id", PRODUCT_ID);
+
+        assertThatThrownBy(() -> new ProductInventory(product, -50))
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
     }

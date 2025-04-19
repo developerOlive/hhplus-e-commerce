@@ -10,4 +10,6 @@ public interface ProductRepository {
     Page<Product> findProducts(ProductsCommand command, Pageable pageable);
 
     Optional<Product> findById(Long productId);
+
+    Product save(Product product);
 }

@@ -5,10 +5,7 @@ import com.hhplusecommerce.domain.balance.BalanceService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderService;
-import com.hhplusecommerce.domain.payment.Payment;
-import com.hhplusecommerce.domain.payment.PaymentCommand;
-import com.hhplusecommerce.domain.payment.PaymentService;
-import com.hhplusecommerce.domain.payment.PaymentStatus;
+import com.hhplusecommerce.domain.payment.*;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
 import com.hhplusecommerce.support.exception.CustomException;
@@ -29,11 +26,11 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PaymentFacadeTest {
+class PaymentFacadeUnitTest {
 
     private static final Long ORDER_ID = 1L;
     private static final Long USER_ID = 100L;
-    private static final BigDecimal FINAL_AMOUNT = new BigDecimal("10000");
+    private static final BigDecimal FINAL_AMOUNT = BigDecimal.valueOf(10000);
 
     @InjectMocks
     private PaymentFacade paymentFacade;
@@ -51,11 +48,10 @@ class PaymentFacadeTest {
         Order order = mock(Order.class);
         List<OrderItem> orderItems = List.of(mock(OrderItem.class));
 
-        when(orderService.getOrder(ORDER_ID)).thenReturn(order);
+        when(order.getId()).thenReturn(ORDER_ID);
         when(order.getUserId()).thenReturn(USER_ID);
         when(order.getFinalAmount()).thenReturn(FINAL_AMOUNT);
-        when(order.getCouponIssueId()).thenReturn(null);
-        when(order.getId()).thenReturn(ORDER_ID);
+        when(orderService.getOrder(ORDER_ID)).thenReturn(order);
         when(orderService.getOrderItems(ORDER_ID)).thenReturn(orderItems);
 
         Payment payment = new Payment(ORDER_ID, FINAL_AMOUNT, PaymentStatus.PENDING);
@@ -80,11 +76,11 @@ class PaymentFacadeTest {
         // given
         PaymentCommand command = new PaymentCommand(ORDER_ID, CREDIT_CARD);
         Order order = mock(Order.class);
+
         when(orderService.getOrder(ORDER_ID)).thenReturn(order);
         when(order.getUserId()).thenReturn(USER_ID);
         when(order.getFinalAmount()).thenReturn(FINAL_AMOUNT);
 
-        // 잔액 부족
         doThrow(new CustomException(ErrorType.INSUFFICIENT_BALANCE))
                 .when(balanceService).deductBalance(any(BalanceCommand.class));
 
@@ -93,10 +89,8 @@ class PaymentFacadeTest {
                 .isInstanceOf(CustomException.class)
                 .hasMessage(ErrorType.INSUFFICIENT_BALANCE.getMessage());
 
-        // 이후 로직 호출되지 않는지 확인
         verify(inventoryService, never()).decreaseStocks(any());
         verify(paymentService, never()).completePayment(anyLong(), any());
         verify(productSalesStatsService, never()).recordSales(any(), any());
     }
-
 }

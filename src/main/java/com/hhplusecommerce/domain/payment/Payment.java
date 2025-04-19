@@ -18,12 +18,14 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Table(name = "payment")
 public class Payment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long orderId;
+    @Column(precision = 10, scale = 0)
     private BigDecimal paidAmount;
     @Enumerated(EnumType.STRING)
     private PaymentStatus paymentStatus;

@@ -1,8 +1,9 @@
 package com.hhplusecommerce.domain.balance;
 
-import org.springframework.stereotype.Repository;
+import java.util.List;
 
-@Repository
 public interface BalanceHistoryRepository {
-    void save(BalanceHistory balanceHistory);
+    void save(BalanceHistory history);
+
+    List<BalanceHistory> findByUserBalance_UserId(Long userId);
 }
