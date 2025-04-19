@@ -30,19 +30,17 @@ class ProductServiceTest {
     void 상품_목록이_정상_조회된다() {
         // given
         ProductsCommand command = ProductsCommand.builder()
-                .productName("testProduct")
-                .minPrice(BigDecimal.valueOf(1000))
-                .maxPrice(BigDecimal.valueOf(2000))
-                .category("categoryA")
-                .page(1)
+                .category("ELECTRONICS")
+                .sortOption(ProductSortOption.PRICE_ASC)
+                .page(0)
                 .size(10)
                 .build();
 
         Pageable pageable = Pageable.unpaged();
 
         List<Product> mockProducts = List.of(
-                Product.builder().name("Product 1").category("Category A").price(BigDecimal.valueOf(1000)).build(),
-                Product.builder().name("Product 2").category("Category B").price(BigDecimal.valueOf(2000)).build()
+                Product.builder().name("Product 1").category("ELECTRONICS").price(BigDecimal.valueOf(1000)).build(),
+                Product.builder().name("Product 2").category("ELECTRONICS").price(BigDecimal.valueOf(2000)).build()
         );
 
         Page<Product> mockPage = new PageImpl<>(mockProducts, pageable, mockProducts.size());
@@ -53,7 +51,7 @@ class ProductServiceTest {
 
         // then
         assertThat(result).isNotNull();
-        assertThat(result.getContent()).hasSize(mockProducts.size());
+        assertThat(result.getContent()).hasSize(2);
         verify(productRepository).findProducts(command, pageable);
     }
 
@@ -61,25 +59,23 @@ class ProductServiceTest {
     void 조회할_상품이_없으면_빈_목록이_반환된다() {
         // given
         ProductsCommand command = ProductsCommand.builder()
-                .productName("nonexistentProduct")
-                .minPrice(BigDecimal.valueOf(1000))
-                .maxPrice(BigDecimal.valueOf(2000))
-                .category("nonexistentCategory")
-                .page(1)
+                .category("EMPTY_CATEGORY")
+                .sortOption(ProductSortOption.LATEST)
+                .page(0)
                 .size(10)
                 .build();
 
         Pageable pageable = Pageable.unpaged();
-        Page<Product> emptyProductPage = Page.empty();
+        Page<Product> emptyPage = Page.empty();
 
         when(productRepository.findProducts(any(ProductsCommand.class), any(Pageable.class)))
-                .thenReturn(emptyProductPage);
+                .thenReturn(emptyPage);
 
         // when
-        Page<ProductResult> results = productService.getProductsWithInventory(command, pageable);
+        Page<ProductResult> result = productService.getProductsWithInventory(command, pageable);
 
         // then
-        assertThat(results).isEmpty();
+        assertThat(result).isEmpty();
         verify(productRepository).findProducts(command, pageable);
     }
 }

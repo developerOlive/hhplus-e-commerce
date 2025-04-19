@@ -1,6 +1,7 @@
 package com.hhplusecommerce.interfaces.product;
 
 import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
+import com.hhplusecommerce.domain.product.ProductSortOption;
 import com.hhplusecommerce.domain.product.ProductsCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -8,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.query.SortDirection;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -15,13 +17,12 @@ import java.math.BigDecimal;
 
 public class ProductRequest {
 
-
     @Getter
     @Setter
     @NoArgsConstructor
     public static class ProductSearchRequest {
 
-        @Schema(description = "상품 이름", example = "MacBook Pro")
+        @Schema(description = "상품명 검색 키워드", example = "아이폰")
         private String productName;
 
         @Schema(description = "최소 가격", example = "100000")
@@ -43,12 +44,13 @@ public class ProductRequest {
         @Schema(description = "페이지 크기", example = "20")
         private Integer size;
 
+        @Schema(description = "정렬 옵션", example = "LATEST")
+        private ProductSortOption sortOption = ProductSortOption.LATEST;
+
         public ProductsCommand toCommand() {
             return ProductsCommand.builder()
-                    .productName(productName != null && !productName.isBlank() ? productName : null)
-                    .minPrice(minPrice)
-                    .maxPrice(maxPrice)
-                    .category(category != null && !category.isBlank() ? category : null)
+                    .category(category)
+                    .sortOption(sortOption)
                     .page(page)
                     .size(size)
                     .build();
