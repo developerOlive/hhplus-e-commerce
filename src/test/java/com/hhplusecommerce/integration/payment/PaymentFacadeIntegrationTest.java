@@ -9,6 +9,7 @@ import com.hhplusecommerce.domain.coupon.*;
 import com.hhplusecommerce.domain.order.*;
 import com.hhplusecommerce.domain.payment.PaymentCommand;
 import com.hhplusecommerce.domain.payment.PaymentStatus;
+import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.*;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
@@ -47,6 +48,7 @@ class PaymentFacadeIntegrationTest extends IntegrationTestSupport {
     @Autowired private BalanceRepository balanceRepository;
     @Autowired private CouponRepository couponRepository;
     @Autowired private CouponHistoryRepository couponHistoryRepository;
+    @Autowired private ProductSalesStatsService productSalesStatsService;
 
     private Product product;
     private Coupon coupon;
@@ -114,6 +116,55 @@ class PaymentFacadeIntegrationTest extends IntegrationTestSupport {
             assertThatThrownBy(() -> paymentFacade.completePayment(new PaymentCommand(orderId, null)))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.COUPON_ALREADY_USED.getMessage());
+        }
+    }
+
+    @Nested
+    class 결제_중간에_실패_시_주문_상태는_PAYMENT_WAIT_으로_남는다 {
+
+        @Test
+        void 잔액이_부족하면_주문상태는_PAYMENT_WAIT으로_남는다() {
+            // 잔액 부족 상태
+            balanceRepository.findByUserId(USER_ID).ifPresent(balance -> balance.deduct(BALANCE_AMOUNT));
+
+            // 결제 시도
+            assertThatThrownBy(() -> paymentFacade.completePayment(new PaymentCommand(orderId, null)))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.INSUFFICIENT_BALANCE.getMessage());
+
+            // 주문 상태 확인
+            Order order = orderService.getOrder(orderId);
+            assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);  // 주문 상태는 PAYMENT_WAIT
+        }
+
+        @Test
+        void 재고가_부족하면_주문상태는_PAYMENT_WAIT으로_남는다() {
+            // 재고 부족 상태
+            inventoryRepository.findInventoryByProductId(product.getId()).ifPresent(i -> i.decrease(STOCK_QUANTITY));
+
+            // 결제 시도
+            assertThatThrownBy(() -> paymentFacade.completePayment(new PaymentCommand(orderId, null)))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.INSUFFICIENT_STOCK.getMessage());
+
+            // 주문 상태 확인
+            Order order = orderService.getOrder(orderId);
+            assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);  // 주문 상태는 PAYMENT_WAIT
+        }
+
+        @Test
+        void 쿠폰이_이미_사용된_경우_주문상태는_PAYMENT_WAIT으로_남는다() {
+            CouponHistory history = couponHistoryRepository.findCouponsByUserIdAndStatus(USER_ID, CouponUsageStatus.AVAILABLE).get(0);
+            history.use();
+
+            // 결제 시도
+            assertThatThrownBy(() -> paymentFacade.completePayment(new PaymentCommand(orderId, null)))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.COUPON_ALREADY_USED.getMessage());
+
+            // 주문 상태 확인
+            Order order = orderService.getOrder(orderId);
+            assertThat(order.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);  // 주문 상태는 PAYMENT_WAIT
         }
     }
 
