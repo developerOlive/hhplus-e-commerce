@@ -12,6 +12,7 @@ import com.hhplusecommerce.domain.payment.PaymentService;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +21,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class PaymentFacade {
 
@@ -56,7 +58,18 @@ public class PaymentFacade {
         Payment payment = paymentService.completePayment(order.getId(), finalAmount);
 
         // 판매 통계 반영
-        productSalesStatsService.recordSales(orderItems, LocalDate.now());
+        try {
+            productSalesStatsService.recordSales(orderItems, LocalDate.now());
+        } catch (Exception e) {
+            // 판매 통계 기록 실패 시 로그에 상품, 수량, 날짜 포함하여 기록 (복구용)
+            for (OrderItem item : orderItems) {
+                log.error("판매 통계 기록에 실패했습니다. 상품 ID: {}, 수량: {}, 날짜: {}, 오류 메시지: {}",
+                        item.getProductId(),
+                        item.getQuantity(),
+                        LocalDate.now(),
+                        e.getMessage());
+            }
+        }
 
         return new PaymentResult(
                 payment.getId(),
