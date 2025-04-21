@@ -34,7 +34,7 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Order getOrder(Long orderId) {
-        return orderRepository.findById(orderId)
+        return orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new CustomException(ErrorType.ORDER_NOT_FOUND));
     }
 

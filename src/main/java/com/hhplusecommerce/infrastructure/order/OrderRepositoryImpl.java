@@ -27,6 +27,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    public Optional<Order> findByIdWithItems(Long orderId) {
+        return orderJpaRepository.findByIdWithItems(orderId);
+    }
+
+    @Override
     public List<Order> findByStatusAndCreatedAtBefore(OrderStatus status, LocalDateTime time) {
         return orderJpaRepository.findByOrderStatusAndCreatedAtBefore(status, time);
     }

@@ -43,7 +43,7 @@ public class PaymentFacade {
         balanceService.deductBalance(new BalanceCommand(userId, finalAmount));
 
         // 주문 항목 조회 및 재고 차감
-        List<OrderItem> orderItems = orderService.getOrderItems(order.getId());
+        List<OrderItem> orderItems = order.getOrderItems();
         inventoryService.decreaseStocks(orderItems);
 
         // 쿠폰 사용 처리

@@ -36,7 +36,6 @@ class OrderServiceTest {
     private OrderService orderService;
 
     @Mock private OrderRepository orderRepository;
-    @Mock private OrderItemRepository orderItemRepository;
 
     private Order mockOrder;
 
@@ -78,7 +77,8 @@ class OrderServiceTest {
     @Test
     void 존재하지_않는_주문ID로_조회할_때_예외가_발생한다() {
         // Given
-        when(orderRepository.findById(NON_EXISTENT_ORDER_ID)).thenReturn(Optional.empty());
+        lenient().when(orderRepository.findByIdWithItems(NON_EXISTENT_ORDER_ID))
+                .thenReturn(Optional.empty());
 
         // When
         CustomException exception = assertThrows(CustomException.class,

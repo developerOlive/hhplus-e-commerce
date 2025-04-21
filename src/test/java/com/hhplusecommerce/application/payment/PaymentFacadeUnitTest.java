@@ -51,8 +51,8 @@ class PaymentFacadeUnitTest {
         when(order.getId()).thenReturn(ORDER_ID);
         when(order.getUserId()).thenReturn(USER_ID);
         when(order.getFinalAmount()).thenReturn(FINAL_AMOUNT);
+        when(order.getOrderItems()).thenReturn(orderItems);
         when(orderService.getOrder(ORDER_ID)).thenReturn(order);
-        when(orderService.getOrderItems(ORDER_ID)).thenReturn(orderItems);
 
         Payment payment = new Payment(ORDER_ID, FINAL_AMOUNT, PaymentStatus.PENDING);
         when(paymentService.completePayment(ORDER_ID, FINAL_AMOUNT)).thenReturn(payment);
@@ -62,10 +62,10 @@ class PaymentFacadeUnitTest {
 
         // then
         verify(balanceService).deductBalance(any(BalanceCommand.class));
-        verify(inventoryService).decreaseStocks(orderItems);
+        verify(inventoryService).decreaseStocks(eq(orderItems));
         verify(order).complete();
         verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
-        verify(productSalesStatsService).recordSales(orderItems, LocalDate.now());
+        verify(productSalesStatsService).recordSales(eq(orderItems), eq(LocalDate.now()));
 
         assertThat(result.paymentId()).isEqualTo(payment.getId());
         assertThat(result.paidAmount()).isEqualTo(payment.getPaidAmount());
