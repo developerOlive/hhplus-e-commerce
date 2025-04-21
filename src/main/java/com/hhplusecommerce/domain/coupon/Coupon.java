@@ -44,9 +44,6 @@ public class Coupon {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "coupon", fetch = FetchType.LAZY)
-    private List<CouponHistory> couponHistories = new ArrayList<>();
-
     @Builder
     public Coupon(String couponName,
                   CouponDiscountType discountType,

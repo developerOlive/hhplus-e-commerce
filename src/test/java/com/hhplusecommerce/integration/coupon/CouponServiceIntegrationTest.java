@@ -155,7 +155,6 @@ class CouponServiceIntegrationTest extends IntegrationTestSupport {
                 .set(field(Coupon::getValidEndDate), LocalDate.now().plusDays(5))
                 .set(field(Coupon::getCouponType), CouponType.LIMITED)
                 .set(field(Coupon::getCouponStatus), CouponStatus.ACTIVE)
-                .ignore(field(Coupon::getCouponHistories))
                 .create();
 
         return couponRepository.save(coupon);

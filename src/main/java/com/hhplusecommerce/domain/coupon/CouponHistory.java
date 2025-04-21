@@ -39,11 +39,7 @@ public class CouponHistory {
     private LocalDateTime updatedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "coupon_id",
-            nullable = false,
-            foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT)
-    )
+    @JoinColumn(name = "coupon_id", nullable = false)
     private Coupon coupon;
 
     public CouponHistory(Long userId,
