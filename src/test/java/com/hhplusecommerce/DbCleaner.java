@@ -4,10 +4,11 @@ import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Table;
-import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.annotation.Isolation;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +39,7 @@ public class DbCleaner {
         log.info("DbCleaner 초기화 완료: 테이블 수 = {}", tables.size());
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.SERIALIZABLE)
     public void execute() {
         log.info("DbCleaner 실행 시작");
 
