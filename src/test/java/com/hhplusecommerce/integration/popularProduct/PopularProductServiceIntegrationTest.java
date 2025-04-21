@@ -1,4 +1,4 @@
-package com.hhplusecommerce.popularProduct;
+package com.hhplusecommerce.integration.popularProduct;
 
 import com.hhplusecommerce.IntegrationTestSupport;
 import com.hhplusecommerce.domain.order.OrderItem;
