@@ -48,7 +48,6 @@ class PaymentFacadeIntegrationTest extends IntegrationTestSupport {
     @Autowired private BalanceRepository balanceRepository;
     @Autowired private CouponRepository couponRepository;
     @Autowired private CouponHistoryRepository couponHistoryRepository;
-    @Autowired private ProductSalesStatsService productSalesStatsService;
 
     private Product product;
     private Coupon coupon;
@@ -179,11 +178,10 @@ class PaymentFacadeIntegrationTest extends IntegrationTestSupport {
 
     private ProductInventory createInventory(Product product, int stock) {
         ProductInventory inventory = ProductInventory.builder()
-                .product(product)
+                .productId(product.getId())
                 .stock(stock)
                 .build();
-        product.setInventory(inventory);
-        return inventory;
+        return inventoryRepository.save(inventory);
     }
 
     private Coupon createCoupon(BigDecimal discount, int maxQuantity) {

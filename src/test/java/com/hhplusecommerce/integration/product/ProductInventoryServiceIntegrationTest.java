@@ -143,11 +143,12 @@ class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     private ProductInventory saveInventory(Product product, int stock) {
+        Product savedProduct = productRepository.save(product);
         ProductInventory inventory = ProductInventory.builder()
-                .product(product)
+                .productId(savedProduct.getId())
                 .stock(stock)
                 .build();
-        product.setInventory(inventory);
+        savedProduct.setInventory(inventory);
         return productInventoryRepository.save(inventory);
     }
 }

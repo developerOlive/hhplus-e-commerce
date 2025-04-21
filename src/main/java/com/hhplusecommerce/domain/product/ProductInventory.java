@@ -19,49 +19,36 @@ public class ProductInventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "product_id", nullable = false, unique = true)
+    private Long productId;  // ★ productId 직접 가짐
+
     private int stock;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    @OneToOne
-    @JoinColumn(name = "product_id", nullable = false, unique = true)
-    private Product product;
-
     @Builder
-    public ProductInventory(Product product, int stock) {
-        if (product == null) {
+    public ProductInventory(Long productId, int stock) {
+        if (productId == null) {
             throw new CustomException(ErrorType.INVALID_PRODUCT_ID);
         }
         if (stock < 0) {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
-
-        this.product = product;
+        this.productId = productId;
         this.stock = stock;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * 재고 증가
-     *
-     * @param amount 증가할 수량 (양수)
-     */
     public void increase(int amount) {
         validateAmount(amount);
-
         stock += amount;
         this.updatedAt = LocalDateTime.now();
     }
 
-    /**
-     * 재고를 차감
-     *
-     * @param amount 차감할 수량 (양수)
-     */
     public void decrease(int amount) {
         validateAmount(amount);
-
         if (amount > stock) {
             throw new CustomException(ErrorType.INSUFFICIENT_STOCK);
         }
@@ -80,9 +67,5 @@ public class ProductInventory {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
         return stock;
-    }
-
-    public void setProduct(Product product) {
-        this.product = product;
     }
 }

@@ -46,13 +46,15 @@ class ProductServiceIntegrationTest extends IntegrationTestSupport {
                 .ignore(Select.field(Product::getInventory))
                 .create();
 
-        ProductInventory inventory = Instancio.of(ProductInventory.class)
-                .set(Select.field(ProductInventory::getProduct), product)
-                .set(Select.field(ProductInventory::getStock), stock)
-                .create();
+        product = productRepository.save(product);
+
+        ProductInventory inventory = ProductInventory.builder()
+                .productId(product.getId())
+                .stock(stock)
+                .build();
 
         product.setInventory(inventory);
-        return productRepository.save(product);
+        return product;
     }
 
     @Nested

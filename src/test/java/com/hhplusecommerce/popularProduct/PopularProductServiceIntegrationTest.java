@@ -1,15 +1,15 @@
-package com.hhplusecommerce.integration.popularProduct;
+package com.hhplusecommerce.popularProduct;
 
 import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
 import com.hhplusecommerce.domain.popularProduct.PopularProductService;
+import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductInventory;
 import com.hhplusecommerce.domain.product.ProductInventoryRepository;
 import com.hhplusecommerce.domain.product.ProductRepository;
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
-import com.hhplusecommerce.domain.order.OrderItem;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,8 +63,15 @@ public class PopularProductServiceIntegrationTest extends IntegrationTestSupport
                 .set(field("price"), PRICE)
                 .create();
 
-        productRepository.save(product);
-        inventoryRepository.save(ProductInventory.builder().product(product).stock(STOCK).build());
+        product = productRepository.save(product);
+
+        ProductInventory inventory = ProductInventory.builder()
+                .productId(product.getId())
+                .stock(STOCK)
+                .build();
+
+        inventoryRepository.save(inventory);
+
         return product;
     }
 

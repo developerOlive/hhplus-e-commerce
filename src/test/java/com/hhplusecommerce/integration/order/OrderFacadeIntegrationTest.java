@@ -160,11 +160,10 @@ class OrderFacadeIntegrationTest extends IntegrationTestSupport {
 
     private ProductInventory createInventory(Product product, int stock) {
         ProductInventory inventory = ProductInventory.builder()
-                .product(product)
+                .productId(product.getId())
                 .stock(stock)
                 .build();
-        product.setInventory(inventory);
-        return inventory;
+        return inventoryRepository.save(inventory);
     }
 
     private Coupon createCoupon(BigDecimal discount, int maxQuantity) {
