@@ -25,10 +25,17 @@ class ProductInventoryTest {
     private static final int EXCESS_DEDUCT_AMOUNT = 200;
 
     static ProductInventory 기본재고() {
+        Product product = createProduct(PRODUCT_ID);
         return ProductInventory.builder()
-                .productId(PRODUCT_ID)
+                .product(product)
                 .stock(INITIAL_STOCK)
                 .build();
+    }
+
+    private static Product createProduct(long id) {
+        Product product = new Product("테스트상품", "카테고리", BigDecimal.valueOf(1000));
+        ReflectionTestUtils.setField(product, "id", id);
+        return product;
     }
 
     @BeforeEach
@@ -94,8 +101,10 @@ class ProductInventoryTest {
 
     @Test
     void 초기_재고가_음수면_예외가_발생한다() {
+        Product product = createProduct(PRODUCT_ID);
+
         assertThatThrownBy(() -> ProductInventory.builder()
-                .productId(PRODUCT_ID)
+                .product(product)
                 .stock(-50)
                 .build())
                 .isInstanceOf(CustomException.class)

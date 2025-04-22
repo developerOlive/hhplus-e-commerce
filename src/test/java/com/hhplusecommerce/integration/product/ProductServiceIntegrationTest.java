@@ -27,6 +27,9 @@ class ProductServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private ProductRepository productRepository;
 
+    @Autowired
+    private ProductInventoryRepository productInventoryRepository;
+
     private Product 아이폰;
     private Product 갤럭시;
     private Product 토비의봄;
@@ -43,17 +46,17 @@ class ProductServiceIntegrationTest extends IntegrationTestSupport {
                 .set(Select.field(Product::getName), name)
                 .set(Select.field(Product::getCategory), category)
                 .set(Select.field(Product::getPrice), price)
-                .ignore(Select.field(Product::getInventory))
                 .create();
 
         product = productRepository.save(product);
 
         ProductInventory inventory = ProductInventory.builder()
-                .productId(product.getId())
+                .product(product)
                 .stock(stock)
                 .build();
 
-        product.setInventory(inventory);
+        productInventoryRepository.save(inventory);
+
         return product;
     }
 

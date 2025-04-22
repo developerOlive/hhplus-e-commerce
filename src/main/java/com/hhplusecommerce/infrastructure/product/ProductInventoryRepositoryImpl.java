@@ -5,6 +5,7 @@ import com.hhplusecommerce.domain.product.ProductInventoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -16,6 +17,11 @@ public class ProductInventoryRepositoryImpl implements ProductInventoryRepositor
     @Override
     public Optional<ProductInventory> findInventoryByProductId(Long productId) {
         return productInventoryJpaRepository.findByProductId(productId);
+    }
+
+    @Override
+    public List<ProductInventory> findAllByProductIdIn(List<Long> productIds) {
+        return productInventoryJpaRepository.findAllByProduct_IdIn(productIds);
     }
 
     @Override

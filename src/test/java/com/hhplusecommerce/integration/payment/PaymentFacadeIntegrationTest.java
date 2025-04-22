@@ -169,7 +169,6 @@ class PaymentFacadeIntegrationTest extends IntegrationTestSupport {
 
     private Product createProduct(String name, String category, BigDecimal price) {
         return Instancio.of(Product.class)
-                .ignore(field("inventory"))
                 .set(field("name"), name)
                 .set(field("category"), category)
                 .set(field("price"), price)
@@ -178,7 +177,7 @@ class PaymentFacadeIntegrationTest extends IntegrationTestSupport {
 
     private ProductInventory createInventory(Product product, int stock) {
         ProductInventory inventory = ProductInventory.builder()
-                .productId(product.getId())
+                .product(product)
                 .stock(stock)
                 .build();
         return inventoryRepository.save(inventory);

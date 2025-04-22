@@ -57,7 +57,6 @@ public class PopularProductServiceIntegrationTest extends IntegrationTestSupport
 
     private Product createAndSaveProduct(String name, String category) {
         Product product = Instancio.of(Product.class)
-                .ignore(field("inventory"))
                 .set(field("name"), name)
                 .set(field("category"), category)
                 .set(field("price"), PRICE)
@@ -66,7 +65,7 @@ public class PopularProductServiceIntegrationTest extends IntegrationTestSupport
         product = productRepository.save(product);
 
         ProductInventory inventory = ProductInventory.builder()
-                .productId(product.getId())
+                .product(product)
                 .stock(STOCK)
                 .build();
 

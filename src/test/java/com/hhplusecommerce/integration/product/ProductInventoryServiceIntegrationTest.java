@@ -134,7 +134,6 @@ class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
 
     private Product saveProduct(String name, String category, BigDecimal price) {
         Product product = Instancio.of(Product.class)
-                .ignore(field("inventory"))
                 .set(field("name"), name)
                 .set(field("category"), category)
                 .set(field("price"), price)
@@ -142,13 +141,14 @@ class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
         return productRepository.save(product);
     }
 
-    private ProductInventory saveInventory(Product product, int stock) {
+    private void saveInventory(Product product, int stock) {
         Product savedProduct = productRepository.save(product);
+
         ProductInventory inventory = ProductInventory.builder()
-                .productId(savedProduct.getId())
+                .product(savedProduct)
                 .stock(stock)
                 .build();
-        savedProduct.setInventory(inventory);
-        return productInventoryRepository.save(inventory);
+
+        productInventoryRepository.save(inventory);
     }
 }

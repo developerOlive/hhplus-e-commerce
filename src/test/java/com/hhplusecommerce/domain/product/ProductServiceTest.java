@@ -8,6 +8,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -23,8 +24,8 @@ class ProductServiceTest {
     @InjectMocks
     private ProductService productService;
 
-    @Mock
-    private ProductRepository productRepository;
+    @Mock private ProductRepository productRepository;
+    @Mock private ProductInventoryRepository inventoryRepository;
 
     @Test
     void 상품_목록이_정상_조회된다() {
@@ -40,15 +41,24 @@ class ProductServiceTest {
 
         Pageable pageable = Pageable.unpaged();
 
-        List<Product> mockProducts = List.of(
-                Product.builder().name("Product 1").category("Category A").price(BigDecimal.valueOf(1000)).build(),
-                Product.builder().name("Product 2").category("Category B").price(BigDecimal.valueOf(2000)).build()
-        );
+        // Product 생성
+        Product product1 = Product.builder().name("Product 1").category("Category A").price(BigDecimal.valueOf(1000)).build();
+        Product product2 = Product.builder().name("Product 2").category("Category B").price(BigDecimal.valueOf(2000)).build();
 
+        // 리플렉션으로 ID 설정
+        ReflectionTestUtils.setField(product1, "id", 1L);
+        ReflectionTestUtils.setField(product2, "id", 2L);
+
+        List<Product> mockProducts = List.of(product1, product2);
         Page<Product> mockPage = new PageImpl<>(mockProducts, pageable, mockProducts.size());
 
-        // when
         when(productRepository.findProducts(command, pageable)).thenReturn(mockPage);
+        when(inventoryRepository.findAllByProductIdIn(any()))
+                .thenReturn(mockProducts.stream()
+                        .map(p -> ProductInventory.builder().product(p).stock(10).build())
+                        .toList());
+
+        // when
         Page<ProductResult> result = productService.getProductsWithInventory(command, pageable);
 
         // then

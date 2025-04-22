@@ -8,7 +8,6 @@ import lombok.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -19,15 +18,12 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private String category;
     private BigDecimal price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_id")
-    private ProductInventory inventory;
 
     @Builder
     public Product(String name, String category, BigDecimal price) {
@@ -53,9 +49,5 @@ public class Product {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
-    }
-
-    public void setInventory(ProductInventory inventory) {
-        this.inventory = inventory;
     }
 }

@@ -20,22 +20,24 @@ public class ProductInventory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "product_id", nullable = false, unique = true)
-    private Long productId;  // ★ productId 직접 가짐
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "product_id", nullable = false, unique = true)
+    private Product product;
 
     private int stock;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
     @Builder
-    public ProductInventory(Long productId, int stock) {
-        if (productId == null) {
+    public ProductInventory(Product product, int stock) {
+        if (product == null) {
             throw new CustomException(ErrorType.INVALID_PRODUCT_ID);
         }
         if (stock < 0) {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
-        this.productId = productId;
+        this.product = product;
         this.stock = stock;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
