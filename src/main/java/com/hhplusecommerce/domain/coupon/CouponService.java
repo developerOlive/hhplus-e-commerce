@@ -31,10 +31,6 @@ public class CouponService {
         return couponHistories.stream()
                 .map(couponHistory -> {
                     Coupon coupon = couponHistory.getCoupon();
-                    if (coupon == null) {
-                        throw new CustomException(COUPON_NOT_FOUND);
-                    }
-
                     return CouponResult.from(couponHistory, coupon);
                 })
                 .collect(Collectors.toList());
