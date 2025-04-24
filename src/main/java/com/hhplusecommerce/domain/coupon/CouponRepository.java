@@ -1,8 +1,15 @@
 package com.hhplusecommerce.domain.coupon;
 
+import org.springframework.data.repository.query.Param;
+
 import java.util.Optional;
 
 public interface CouponRepository {
-    Optional<Coupon> findById(Long id);
+    Optional<Coupon> findById(@Param("id") Long id);
+
+    Optional<Coupon> findByIdForUpdate(Long id);
+
     Coupon save(Coupon coupon);
+
+    int issueCouponAtomically(Long couponId);
 }

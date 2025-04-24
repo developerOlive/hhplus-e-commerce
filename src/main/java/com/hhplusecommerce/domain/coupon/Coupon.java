@@ -128,25 +128,16 @@ public class Coupon {
     }
 
     /**
-     * 쿠폰 발급 처리
-     * - 발급 가능 여부를 확인 후 수량 감소
-     * - 실제 사용자에게 발급된 쿠폰 이력은 CouponHistory에서 관리
+     * 쿠폰 발급 처리 (발급 가능 여부 판단 + 수량 증가를 원자적으로 수행)
+     * - 동시성 환경에서도 초과 발급 방지 보장
      */
     public void confirmCouponIssue() {
-        if (!isIssuable()) {
-            throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
-        }
-        this.issuedQuantity++;
-    }
-
-    /**
-     * 쿠폰 발급 가능 여부 판단
-     */
-    public boolean isIssuable() {
-        if (couponType == CouponType.LIMITED) {
-            return this.issuedQuantity < this.maxQuantity;
+        if (this.couponType == CouponType.LIMITED) {
+            if (this.issuedQuantity + 1 > this.maxQuantity) {
+                throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
+            }
         }
 
-        return true;
+        this.issuedQuantity += 1;
     }
 }
