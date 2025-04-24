@@ -12,10 +12,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
-logging:
-  level:
-    root: INFO
-    org.springframework.web: DEBUG
-    org.hibernate.SQL: DEBUG
-    com.hhplusecommerce: DEBUG
