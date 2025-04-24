@@ -3,6 +3,7 @@ package com.hhplusecommerce.domain.order;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -11,12 +12,12 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final OrderItemRepository orderItemRepository;
 
     /**
      * 주문 생성 (결제 전 상태)
@@ -39,14 +40,6 @@ public class OrderService {
     }
 
     /**
-     * 주문 상세 항목 조회
-     */
-    @Transactional(readOnly = true)
-    public List<OrderItem> getOrderItems(Long orderId) {
-        return orderItemRepository.findByOrderId(orderId);
-    }
-
-    /**
      * 주문 완료 처리
      */
     @Transactional
@@ -61,11 +54,11 @@ public class OrderService {
      */
     @Transactional
     public void expireOverdueOrders() {
-        LocalDateTime thirtyMinutesAgo = LocalDateTime.now().minus(30, ChronoUnit.MINUTES);
-        List<Order> expiredOrders = orderRepository.findByStatusAndCreatedAtBefore(OrderStatus.PAYMENT_WAIT, thirtyMinutesAgo);
+        LocalDateTime oneHourAgo = LocalDateTime.now().minusHours(1);
+        List<Order> expiredOrders = orderRepository.findExpiredOrders(OrderStatus.PAYMENT_WAIT, oneHourAgo);
 
-        for (Order order : expiredOrders) {
-            order.expire();
-        }
+        expiredOrders.forEach(Order::expire);
+
+        log.info("✅ [주문 만료] 1시간 초과된 결제 대기 주문 수: {}", expiredOrders.size());
     }
 }

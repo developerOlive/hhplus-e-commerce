@@ -32,7 +32,7 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
-    public List<Order> findExpiredOrders(OrderStatus status, LocalDateTime from, LocalDateTime to) {
-        return orderJpaRepository.findByOrderStatusAndCreatedAtBetween(status, from, to);
+    public List<Order> findExpiredOrders(OrderStatus status, LocalDateTime expiredBefore) {
+        return orderJpaRepository.findExpiredOrders(status, expiredBefore);
     }
 }
