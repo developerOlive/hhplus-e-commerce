@@ -7,4 +7,5 @@ public interface ProductInventoryRepository {
     Optional<ProductInventory> findInventoryByProductId(Long productId);
     List<ProductInventory> findAllByProductIdIn(List<Long> productIds);
     ProductInventory save(ProductInventory inventory);
+    Optional<ProductInventory> findByProductIdForUpdate(Long productId);
 }

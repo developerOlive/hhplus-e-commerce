@@ -28,4 +28,9 @@ public class ProductInventoryRepositoryImpl implements ProductInventoryRepositor
     public ProductInventory save(ProductInventory inventory) {
         return productInventoryJpaRepository.save(inventory);
     }
+
+    @Override
+    public Optional<ProductInventory> findByProductIdForUpdate(Long productId) {
+        return productInventoryJpaRepository.findByProductIdForUpdate(productId);
+    }
 }
