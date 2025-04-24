@@ -19,7 +19,7 @@ public class BalanceHistoryRepositoryImpl implements BalanceHistoryRepository {
     }
 
     @Override
-    public List<BalanceHistory> findByUserBalance_UserId(Long userId) {
-        return balanceHistoryJpaRepository.findByUserBalance_UserId(userId);
+    public List<BalanceHistory> findByUserId(Long userId) {
+        return balanceHistoryJpaRepository.findByUserId(userId);
     }
 }

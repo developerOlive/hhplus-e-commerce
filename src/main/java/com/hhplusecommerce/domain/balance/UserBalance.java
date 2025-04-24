@@ -23,9 +23,6 @@ public class UserBalance {
     private BigDecimal amount;
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "userBalance", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<BalanceHistory> balanceHistories = new ArrayList<>();
-
     @Builder
     public UserBalance(Long userId, BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {

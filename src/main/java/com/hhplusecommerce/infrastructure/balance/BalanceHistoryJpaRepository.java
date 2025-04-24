@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface BalanceHistoryJpaRepository extends JpaRepository<BalanceHistory, Long> {
-    List<BalanceHistory> findByUserBalance_UserId(Long userId);
+    List<BalanceHistory> findByUserId(Long userId);
 }

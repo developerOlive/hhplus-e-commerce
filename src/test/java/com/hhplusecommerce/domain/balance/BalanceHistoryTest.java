@@ -24,7 +24,7 @@ class BalanceHistoryTest {
                 .amount(BEFORE_BALANCE)
                 .build();
 
-        return BalanceHistory.create(userBalance, BEFORE_BALANCE, AFTER_BALANCE, CHARGE);
+        return BalanceHistory.create(userBalance.getUserId(), BEFORE_BALANCE, AFTER_BALANCE, CHARGE);
     }
 
     @Nested
@@ -36,7 +36,7 @@ class BalanceHistoryTest {
 
             BigDecimal expectedAmount = AFTER_BALANCE.subtract(BEFORE_BALANCE);
 
-            assertThat(history.getUserBalance().getUserId()).isEqualTo(USER_ID);
+            assertThat(history.getUserId()).isEqualTo(USER_ID);
             assertThat(history.getBeforeBalance()).isEqualTo(BEFORE_BALANCE);
             assertThat(history.getAfterBalance()).isEqualTo(AFTER_BALANCE);
             assertThat(history.getAmount()).isEqualTo(expectedAmount);
@@ -51,7 +51,7 @@ class BalanceHistoryTest {
                     .amount(BEFORE_BALANCE)
                     .build();
 
-            BalanceHistory history = BalanceHistory.create(userBalance, BEFORE_BALANCE, BEFORE_BALANCE, BalanceChangeType.CHARGE);
+            BalanceHistory history = BalanceHistory.create(userBalance.getUserId(), BEFORE_BALANCE, BEFORE_BALANCE, BalanceChangeType.CHARGE);
 
             assertThat(history.getAmount()).isEqualTo(BigDecimal.ZERO);
         }
@@ -68,7 +68,7 @@ class BalanceHistoryTest {
                     .build();
 
             assertThatThrownBy(() ->
-                    BalanceHistory.create(userBalance, BEFORE_BALANCE, AFTER_BALANCE, null))
+                    BalanceHistory.create(userBalance.getUserId(), BEFORE_BALANCE, AFTER_BALANCE, null))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_BALANCE_CHANGE_TYPE.getMessage());
         }

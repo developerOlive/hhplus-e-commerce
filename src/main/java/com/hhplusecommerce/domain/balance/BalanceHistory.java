@@ -29,15 +29,16 @@ public class BalanceHistory {
 
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserBalance userBalance;
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
-    public static BalanceHistory create(UserBalance userBalance,
+    public static BalanceHistory create(
+                                        Long userId,
                                         BigDecimal beforeBalance,
                                         BigDecimal afterBalance,
-                                        BalanceChangeType changeType) {
-        if (userBalance == null || userBalance.getUserId() == null) {
+                                        BalanceChangeType changeType
+    ) {
+        if (userId == null) {
             throw new CustomException(ErrorType.USER_BALANCE_NOT_FOUND);
         }
         if (beforeBalance == null || afterBalance == null) {
@@ -60,7 +61,7 @@ public class BalanceHistory {
                 afterBalance,
                 changeType,
                 LocalDateTime.now(),
-                userBalance
+                userId
         );
     }
 }

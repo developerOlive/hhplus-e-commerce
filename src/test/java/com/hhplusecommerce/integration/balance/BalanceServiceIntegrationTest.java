@@ -37,7 +37,6 @@ class BalanceServiceIntegrationTest extends IntegrationTestSupport {
 
     private Long saveUserWithInitialBalance(BigDecimal amount) {
         UserBalance userBalance = Instancio.of(UserBalance.class)
-                .ignore(field(UserBalance::getBalanceHistories))
                 .set(field(UserBalance::getAmount), amount)
                 .create();
         return balanceRepository.save(userBalance).getUserId();
@@ -72,7 +71,7 @@ class BalanceServiceIntegrationTest extends IntegrationTestSupport {
         void 잔액을_충전하면_금액이_추가되고_이력이_저장된다() {
             Long userId = saveUserWithInitialBalance(BigDecimal.ZERO);
             BalanceResult result = balanceService.chargeBalance(new BalanceCommand(userId, INITIAL_AMOUNT));
-            List<BalanceHistory> histories = balanceHistoryRepository.findByUserBalance_UserId(userId);
+            List<BalanceHistory> histories = balanceHistoryRepository.findByUserId(userId);
 
             assertAll(
                     () -> assertThat(result.userId()).isEqualTo(userId),
@@ -93,7 +92,7 @@ class BalanceServiceIntegrationTest extends IntegrationTestSupport {
             balanceService.deductBalance(new BalanceCommand(userId, DEDUCT_AMOUNT));
 
             BalanceResult result = balanceService.getBalance(userId);
-            List<BalanceHistory> histories = balanceHistoryRepository.findByUserBalance_UserId(userId);
+            List<BalanceHistory> histories = balanceHistoryRepository.findByUserId(userId);
 
             assertAll(
                     () -> assertThat(result.userId()).isEqualTo(userId),
