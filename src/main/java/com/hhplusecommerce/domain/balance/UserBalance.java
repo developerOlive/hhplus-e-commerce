@@ -23,6 +23,9 @@ public class UserBalance {
     private BigDecimal amount;
     private LocalDateTime updatedAt;
 
+    @Version
+    private Long version = 0L;
+
     @Builder
     public UserBalance(Long userId, BigDecimal amount) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {
