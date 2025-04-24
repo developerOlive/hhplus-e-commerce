@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -21,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
+@Transactional
 class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
 
     private static final BigDecimal PRICE_SERUM = BigDecimal.valueOf(10_000);

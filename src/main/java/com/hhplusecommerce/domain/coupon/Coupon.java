@@ -4,12 +4,11 @@ import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 쿠폰 정책
@@ -42,6 +41,7 @@ public class Coupon {
     @Enumerated(EnumType.STRING)
     private CouponType couponType;
     private LocalDateTime createdAt;
+    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     @Builder
@@ -107,7 +107,6 @@ public class Coupon {
             throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
         }
         this.issuedQuantity++;
-        this.updatedAt = LocalDateTime.now();
     }
 
     /**
@@ -138,7 +137,6 @@ public class Coupon {
             throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
         }
         this.issuedQuantity++;
-        this.updatedAt = LocalDateTime.now();
     }
 
     /**

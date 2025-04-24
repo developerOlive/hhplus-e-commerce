@@ -5,6 +5,7 @@ import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -16,8 +17,7 @@ import static com.hhplusecommerce.domain.balance.BalanceChangeType.DEDUCT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class BalanceServiceTest {
@@ -73,7 +73,7 @@ class BalanceServiceTest {
         void 유저의_잔액에_금액을_충전한다() {
             // given
             UserBalance userBalance = UserBalance.initialize(USER_ID);
-            when(balanceRepository.findByUserId(USER_ID)).thenReturn(Optional.of(userBalance));
+            when(balanceRepository.findOrCreateById(USER_ID)).thenReturn(userBalance);
 
             // when
             BalanceCommand balanceCommand = new BalanceCommand(USER_ID, CHARGE_AMOUNT);
@@ -86,11 +86,11 @@ class BalanceServiceTest {
 
         @Test
         void 충전_금액이_음수이면_예외가_발생한다() {
-            // given
+            // given: 음수 충전 금액을 시도할 때
             UserBalance userBalance = UserBalance.initialize(USER_ID);
-            when(balanceRepository.findByUserId(USER_ID)).thenReturn(Optional.of(userBalance));
+            when(balanceRepository.findOrCreateById(USER_ID)).thenReturn(userBalance);
 
-            // when & then
+            // when & then: 예외 발생 확인
             assertThatThrownBy(() -> balanceService.chargeBalance(new BalanceCommand(USER_ID, BigDecimal.valueOf(-100))))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_BALANCE_AMOUNT.getMessage());
@@ -107,9 +107,6 @@ class BalanceServiceTest {
         @Test
         void 잔액을_정상적으로_차감한다() {
             // given
-            BigDecimal INITIAL_AMOUNT = BigDecimal.valueOf(1000);  // 초기 잔액
-            BigDecimal DEDUCT_AMOUNT = BigDecimal.valueOf(500);    // 차감 금액
-
             UserBalance userBalance = UserBalance.builder()
                     .userId(USER_ID)
                     .amount(INITIAL_AMOUNT)
@@ -135,7 +132,7 @@ class BalanceServiceTest {
                     .build();
 
             // when
-            BalanceHistory history = BalanceHistory.create(userBalance, same, same, DEDUCT);
+            BalanceHistory history = BalanceHistory.create(userBalance.getUserId(), same, same, DEDUCT);
 
             // then
             assertThat(history.getAmount()).isEqualTo(BigDecimal.ZERO);

@@ -38,7 +38,7 @@ public class OrderFacade {
         BigDecimal discountAmount = couponService.calculateDiscount(userId, couponIssueId, totalAmount);
 
         // 최종 결제 금액 계산
-        BigDecimal finalAmount = totalAmount.subtract(discountAmount).max(BigDecimal.ZERO);
+        BigDecimal finalAmount = totalAmount.subtract(discountAmount != null ? discountAmount : BigDecimal.ZERO).max(BigDecimal.ZERO);
 
         // 잔액 확인
         balanceService.validateEnough(userId, finalAmount);

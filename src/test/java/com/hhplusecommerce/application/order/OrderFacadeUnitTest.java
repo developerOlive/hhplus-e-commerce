@@ -44,7 +44,8 @@ class OrderFacadeUnitTest {
     @InjectMocks
     private OrderFacade orderFacade;
 
-    @Mock private ProductInventoryService inventoryService;
+    @Mock(lenient = true)
+    private ProductInventoryService inventoryService;
     @Mock private BalanceService balanceService;
     @Mock private CouponService couponService;
     @Mock private OrderService orderService;
@@ -78,10 +79,12 @@ class OrderFacadeUnitTest {
 
         @Test
         void 재고가_부족하면_예외가_발생한다() {
+            // given: 상품 재고가 부족한 상태 (차감 시도 시 예외 발생하도록 설정)
             OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
             doThrow(new CustomException(ErrorType.INSUFFICIENT_STOCK))
                     .when(inventoryService).validateAllProductStocks(ITEMS);
 
+            // when & then: 주문 시 예외가 발생하고 이후 로직은 실행되지 않아야 함
             assertThatThrownBy(() -> orderFacade.placeOrder(command))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INSUFFICIENT_STOCK.getMessage());
@@ -91,12 +94,13 @@ class OrderFacadeUnitTest {
 
         @Test
         void 유효하지_않은_쿠폰이면_예외가_발생한다() {
+            // given: 쿠폰 조회 단계에서 예외 발생하도록 설정
             OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
-
-            doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
+            doNothing().when(inventoryService).decreaseStock(PRODUCT_ID, QUANTITY);
             when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT))
                     .thenThrow(new CustomException(ErrorType.COUPON_NOT_FOUND));
 
+            // when & then: 예외 발생하고 잔액 검증 및 주문 저장 로직은 실행되지 않아야 함
             assertThatThrownBy(() -> orderFacade.placeOrder(command))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.COUPON_NOT_FOUND.getMessage());
@@ -106,14 +110,15 @@ class OrderFacadeUnitTest {
 
         @Test
         void 잔액이_부족하면_예외가_발생한다() {
+            // given: 잔액 부족 예외 상황 설정
             OrderCommand command = new OrderCommand(USER_ID, COUPON_ISSUE_ID, ITEMS);
-
-            doNothing().when(inventoryService).validateAllProductStocks(ITEMS);
+            doNothing().when(inventoryService).decreaseStock(PRODUCT_ID, QUANTITY);
             when(couponService.calculateDiscount(USER_ID, COUPON_ISSUE_ID, TOTAL_AMOUNT))
                     .thenReturn(DISCOUNT_AMOUNT);
             doThrow(new CustomException(ErrorType.INSUFFICIENT_BALANCE))
                     .when(balanceService).validateEnough(USER_ID, FINAL_AMOUNT);
 
+            // when & then: 예외 발생하고 주문은 생성되지 않아야 함
             assertThatThrownBy(() -> orderFacade.placeOrder(command))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INSUFFICIENT_BALANCE.getMessage());
