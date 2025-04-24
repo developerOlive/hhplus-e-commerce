@@ -69,6 +69,7 @@ class CouponServiceTest {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
 
+            when(couponRepository.issueCouponAtomically(COUPON_ID)).thenReturn(1);
             when(couponRepository.findByIdForUpdate(COUPON_ID))
                     .thenReturn(Optional.of(coupon));
 
@@ -76,7 +77,6 @@ class CouponServiceTest {
             couponService.issueCoupon(command);
 
             // then
-            assertThat(coupon.getIssuedQuantity()).isEqualTo(1);
             verify(couponHistoryRepository).save(any(CouponHistory.class));
         }
 
@@ -104,6 +104,8 @@ class CouponServiceTest {
         void 존재하지_않는_쿠폰이면_발급할_수_없다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
+
+            when(couponRepository.issueCouponAtomically(COUPON_ID)).thenReturn(1);
             when(couponRepository.findByIdForUpdate(COUPON_ID)).thenReturn(Optional.empty());
 
             // when & then
