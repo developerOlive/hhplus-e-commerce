@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 class CouponServiceTest {
 
     private static final Long USER_ID = 1L;
-    private static final Long OTHER_USER_ID = 2L;
     private static final Long COUPON_ID = 10L;
     private static final Long COUPON_ISSUE_ID = 100L;
     private static final BigDecimal TOTAL_AMOUNT = BigDecimal.valueOf(10000);
@@ -69,7 +68,9 @@ class CouponServiceTest {
         void 정상적으로_쿠폰이_발급된다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
-            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(coupon));
+
+            when(couponRepository.findByIdForUpdate(COUPON_ID))
+                    .thenReturn(Optional.of(coupon));
 
             // when
             couponService.issueCoupon(command);
@@ -103,7 +104,7 @@ class CouponServiceTest {
         void 존재하지_않는_쿠폰이면_발급할_수_없다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
-            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.empty());
+            when(couponRepository.findByIdForUpdate(COUPON_ID)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> couponService.issueCoupon(command))
