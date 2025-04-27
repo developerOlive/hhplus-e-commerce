@@ -8,5 +8,5 @@ public interface OrderRepository {
     Order save(Order order);
     Optional<Order> findById(Long id);
     Optional<Order> findByIdWithItems(Long orderId);
-    List<Order> findByStatusAndCreatedAtBefore(OrderStatus paymentWait, LocalDateTime thirtyMinutesAgo);
+    List<Order> findExpiredOrders(OrderStatus status, LocalDateTime expiredBefore);
 }

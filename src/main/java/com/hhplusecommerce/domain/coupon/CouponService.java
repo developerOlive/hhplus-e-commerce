@@ -1,9 +1,12 @@
 package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -41,15 +44,18 @@ public class CouponService {
      */
     @Transactional
     public Long issueCoupon(CouponCommand command) {
-        Coupon coupon = couponRepository.findById(command.couponId())
-                .orElseThrow(() -> new CustomException(COUPON_NOT_FOUND));
+        int updated = couponRepository.issueCouponAtomically(command.couponId());
+        if (updated == 0) {
+            throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
+        }
 
-        coupon.confirmCouponIssue();
+        Coupon coupon = couponRepository.findByIdForUpdate(command.couponId())
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
 
-        CouponHistory couponHistory = CouponHistory.issue(command.userId(), coupon);
-        couponHistoryRepository.save(couponHistory);
+        CouponHistory history = CouponHistory.issue(command.userId(), coupon);
+        couponHistoryRepository.save(history);
 
-        return couponHistory.getId();
+        return history.getId();
     }
 
     /**

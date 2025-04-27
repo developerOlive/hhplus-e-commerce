@@ -14,6 +14,7 @@ public enum ErrorType {
     INVALID_TOTAL_SOLD_COUNT(HttpStatus.BAD_REQUEST, "판매량은 0 이상이어야 합니다."),
     INVALID_SALE_DATE(HttpStatus.BAD_REQUEST, "판매 일자가 유효하지 않습니다."),
     INVALID_SALES_AMOUNT(HttpStatus.BAD_REQUEST, "판매 금액이 유효하지 않습니다."),
+    NOT_FOUND_PRODUCT_INVENTORY(HttpStatus.NOT_FOUND, "해당 상품의 재고 정보를 찾을 수 없습니다."),
 
     // Balance
     INSUFFICIENT_BALANCE(HttpStatus.BAD_REQUEST, "잔액이 부족합니다."),
@@ -36,6 +37,7 @@ public enum ErrorType {
     INVALID_COUPON_QUANTITY(HttpStatus.BAD_REQUEST, "쿠폰 발급 수량은 1 이상이어야 합니다."),
     INVALID_COUPON_DATE_RANGE(HttpStatus.BAD_REQUEST, "쿠폰 유효 기간이 올바르지 않습니다."),
     INVALID_COUPON_TYPE(HttpStatus.BAD_REQUEST, "쿠폰 타입이 지정되지 않았습니다."),
+    COUPON_ISSUE_FAILED(HttpStatus.BAD_REQUEST, "쿠폰 발급에 실패했습니다."),
 
     // Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문이 존재하지 않습니다."),
@@ -54,7 +56,10 @@ public enum ErrorType {
     INVALID_PAYMENT_STATUS_TO_COMPLETE(HttpStatus.BAD_REQUEST, "PENDING 상태에서 완료 처리할 수 있습니다."),
     INVALID_PAYMENT_STATUS_TO_FAIL(HttpStatus.BAD_REQUEST, "PENDING 상태에서 실패 처리할 수 있습니다."),
     INVALID_PAYMENT_ORDER_ID(HttpStatus.BAD_REQUEST, "결제에 필요한 주문 ID가 누락되었습니다."),
-    INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "결제 상태 정보가 누락되었거나 잘못되었습니다.")
+    INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "결제 상태 정보가 누락되었거나 잘못되었습니다."),
+
+    // Concurrency
+    CONCURRENT_TRANSACTION_EXCEPTION(HttpStatus.CONFLICT, "동시성 오류가 발생했습니다. 다시 시도해 주세요.")
     ;
 
     private final HttpStatus status;

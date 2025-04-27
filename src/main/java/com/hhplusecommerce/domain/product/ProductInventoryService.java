@@ -6,6 +6,7 @@ import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -54,8 +55,12 @@ public class ProductInventoryService {
      */
     @Transactional
     public void decreaseStock(Long productId, int quantity) {
-        ProductInventory inventory = productInventoryRepository.findInventoryByProductId(productId)
-                .orElseThrow(() -> new CustomException(ErrorType.PRODUCT_NOT_FOUND));
+        ProductInventory inventory = productInventoryRepository.findByProductIdForUpdate(productId)
+                .orElseThrow(() -> new CustomException(ErrorType.NOT_FOUND_PRODUCT_INVENTORY));
+
+        if (inventory.getStock() < quantity) {
+            throw new CustomException(ErrorType.INSUFFICIENT_STOCK);
+        }
 
         inventory.decrease(quantity);
     }
