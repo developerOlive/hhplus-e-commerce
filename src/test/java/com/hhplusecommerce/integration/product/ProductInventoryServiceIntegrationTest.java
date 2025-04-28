@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.product;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderItemCommand;
 import com.hhplusecommerce.domain.product.*;

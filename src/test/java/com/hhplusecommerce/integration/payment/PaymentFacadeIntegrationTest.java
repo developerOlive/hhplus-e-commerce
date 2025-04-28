@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.payment;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.application.payment.PaymentFacade;
 import com.hhplusecommerce.application.payment.PaymentResult;
 import com.hhplusecommerce.domain.balance.BalanceRepository;
@@ -9,7 +9,6 @@ import com.hhplusecommerce.domain.coupon.*;
 import com.hhplusecommerce.domain.order.*;
 import com.hhplusecommerce.domain.payment.PaymentCommand;
 import com.hhplusecommerce.domain.payment.PaymentStatus;
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.*;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;

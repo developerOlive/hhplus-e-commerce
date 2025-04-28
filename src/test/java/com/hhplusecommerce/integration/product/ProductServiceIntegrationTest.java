@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.product;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.product.*;
 import org.instancio.Instancio;
 import org.instancio.Select;

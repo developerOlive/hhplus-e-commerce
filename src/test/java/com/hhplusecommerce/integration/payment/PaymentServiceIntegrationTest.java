@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.payment;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.payment.Payment;
 import com.hhplusecommerce.domain.payment.PaymentService;
 import com.hhplusecommerce.domain.payment.PaymentStatus;

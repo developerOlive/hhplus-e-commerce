@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.popularProduct;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;

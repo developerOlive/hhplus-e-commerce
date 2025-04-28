@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.order;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.application.order.OrderFacade;
 import com.hhplusecommerce.application.order.OrderResult;
 import com.hhplusecommerce.domain.balance.BalanceRepository;

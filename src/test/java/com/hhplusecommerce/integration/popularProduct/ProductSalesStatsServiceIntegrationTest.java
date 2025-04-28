@@ -1,11 +1,10 @@
 package com.hhplusecommerce.integration.popularProduct;
 
-import com.hhplusecommerce.IntegrationTestSupport;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStats;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsRepository;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
-import com.hhplusecommerce.support.exception.CustomException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;

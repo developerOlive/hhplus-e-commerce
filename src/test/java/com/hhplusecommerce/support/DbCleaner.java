@@ -1,4 +1,4 @@
-package com.hhplusecommerce;
+package com.hhplusecommerce.support;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.persistence.EntityManager;
