@@ -1,7 +1,7 @@
 package com.hhplusecommerce.integration.balance;
 
-import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.balance.*;
+import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import org.instancio.Instancio;

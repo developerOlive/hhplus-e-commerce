@@ -21,5 +21,5 @@ public interface CouponJpaRepository extends JpaRepository<Coupon, Long> {
         SET c.issuedQuantity = c.issuedQuantity + 1
         WHERE c.id = :couponId AND c.issuedQuantity < c.maxQuantity
     """)
-    int issueCouponAtomically(@Param("couponId") Long couponId);
+    int increaseIssuedQuantityIfAvailable(@Param("couponId") Long couponId);
 }

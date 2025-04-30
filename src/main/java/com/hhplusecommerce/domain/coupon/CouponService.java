@@ -2,11 +2,10 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -23,6 +22,7 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final CouponHistoryRepository couponHistoryRepository;
+    private final RedissonClient redissonClient;
 
     /**
      * 사용 가능한 유저의 쿠폰 목록 조회
@@ -44,7 +44,7 @@ public class CouponService {
      */
     @Transactional
     public Long issueCoupon(CouponCommand command) {
-        int updated = couponRepository.issueCouponAtomically(command.couponId());
+        int updated = couponRepository.increaseIssuedQuantityIfAvailable(command.couponId());
         if (updated == 0) {
             throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
         }

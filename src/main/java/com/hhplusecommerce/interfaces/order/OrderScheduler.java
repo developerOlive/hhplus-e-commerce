@@ -1,4 +1,4 @@
-package com.hhplusecommerce.comoon;
+package com.hhplusecommerce.interfaces.order;
 
 import com.hhplusecommerce.domain.order.OrderService;
 import lombok.RequiredArgsConstructor;

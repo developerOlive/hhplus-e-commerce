@@ -16,7 +16,7 @@
     </root>
 
     <!-- Setting specific logger for your package (com.hhplusecommerce) to INFO level -->
-    <logger name="com.hhplusecommerce" level="INFO"/>
+    <logger name="com.hhplusecommerce" level="DEBUG"/>
 
     <!-- Hibernate SQL logging set to WARN to avoid excessive logging of SQL queries -->
     <logger name="org.hibernate.SQL" level="WARN"/>

@@ -1,4 +1,4 @@
-package com.hhplusecommerce.comoon;
+package com.hhplusecommerce.common;
 
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;

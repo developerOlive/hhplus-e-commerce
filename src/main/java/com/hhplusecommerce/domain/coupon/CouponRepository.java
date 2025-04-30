@@ -11,5 +11,5 @@ public interface CouponRepository {
 
     Coupon save(Coupon coupon);
 
-    int issueCouponAtomically(Long couponId);
+    int increaseIssuedQuantityIfAvailable(Long couponId);
 }

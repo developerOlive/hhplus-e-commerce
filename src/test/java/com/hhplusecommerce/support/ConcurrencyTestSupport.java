@@ -1,21 +1,16 @@
 package com.hhplusecommerce.support;
 
 import com.hhplusecommerce.concurrency.ConcurrencyResult;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 
-/**
- * 동시성 테스트용 서포트 클래스
- */
 @Slf4j
 public abstract class ConcurrencyTestSupport extends IntegrationTestSupport {
 
@@ -28,40 +23,33 @@ public abstract class ConcurrencyTestSupport extends IntegrationTestSupport {
         log.info("테스트 후 DB 초기화 완료");
     }
 
-    /**
-     * 동일한 Runnable을 여러 쓰레드로 동시에 실행하고 성공/실패 반환
-     */
     protected ConcurrencyResult executeConcurrency(int threadCount, Runnable runnable) {
-        List<Runnable> runnables = IntStream.range(0, threadCount)
+        return executeConcurrency(IntStream.range(0, threadCount)
                 .mapToObj(i -> runnable)
-                .toList();
-        return executeConcurrency(runnables);
+                .toList());
     }
 
-    /**
-     * 주어진 Runnable 리스트를 각각 병렬로 실행하고 성공/실패 반환
-     */
-    protected ConcurrencyResult executeConcurrency(List<Runnable> runnables) {
-        ExecutorService executorService = Executors.newFixedThreadPool(runnables.size());
+    protected ConcurrencyResult executeConcurrency(List<Runnable> tasks) {
+        ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
         List<CompletableFuture<Void>> futures = new ArrayList<>();
-        AtomicInteger successCount = new AtomicInteger();
-        AtomicInteger errorCount = new AtomicInteger();
+        AtomicInteger success = new AtomicInteger();
+        AtomicInteger failure = new AtomicInteger();
 
-        for (Runnable runnable : runnables) {
+        for (Runnable task : tasks) {
             futures.add(CompletableFuture.runAsync(() -> {
                 try {
-                    runnable.run();
-                    successCount.incrementAndGet();
+                    task.run();
+                    success.incrementAndGet();
                 } catch (Exception e) {
-                    errorCount.incrementAndGet();
-                    log.error("스레드 실행 중 오류 발생: {}", e.getMessage(), e);
+                    failure.incrementAndGet();
+                    log.error("실행 실패: {}", e.getMessage(), e);
                 }
-            }, executorService));
+            }, executor));
         }
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        executorService.shutdown();
+        executor.shutdown();
 
-        return new ConcurrencyResult(successCount.get(), errorCount.get());
+        return new ConcurrencyResult(success.get(), failure.get());
     }
 }
