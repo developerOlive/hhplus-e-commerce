@@ -1,5 +1,6 @@
 package com.hhplusecommerce.integration.product;
 
+import com.hhplusecommerce.support.DbCleaner;
 import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.domain.product.*;
 import org.instancio.Instancio;
@@ -18,7 +19,6 @@ import java.math.BigDecimal;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ProductServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
@@ -30,12 +30,16 @@ class ProductServiceIntegrationTest extends IntegrationTestSupport {
     @Autowired
     private ProductInventoryRepository productInventoryRepository;
 
+    @Autowired
+    private DbCleaner dbCleaner;
+
     private Product 아이폰;
     private Product 갤럭시;
     private Product 토비의봄;
 
     @BeforeEach
     void setUp() {
+        dbCleaner.execute();
         아이폰 = createProduct("아이폰", "전자기기", new BigDecimal("1000000"), 50);
         갤럭시 = createProduct("갤럭시", "전자기기", new BigDecimal("900000"), 10);
         토비의봄 = createProduct("토비의 봄", "도서", new BigDecimal("30000"), 5);
