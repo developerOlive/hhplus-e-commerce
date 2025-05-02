@@ -110,49 +110,4 @@ class CouponTest {
             assertThat(expiredCoupon.isAvailable()).isFalse();
         }
     }
-
-    @Nested
-    class 발급수량_증가 {
-
-        private static final BigDecimal DISCOUNT_VALUE_500 = BigDecimal.valueOf(500);
-        private static final int MAX_QUANTITY_LIMIT = 1;
-
-        @Test
-        void 발급수량이_정상적으로_1_증가한다() {
-            Coupon coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(DISCOUNT_VALUE_500)
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .couponType(CouponType.LIMITED)
-                    .build();
-
-            coupon.increaseIssuedQuantity();
-
-            assertThat(coupon.getIssuedQuantity()).isEqualTo(1);
-        }
-
-        @Test
-        void 발급수량이_최대치를_초과하면_예외가_발생한다() {
-            Coupon coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(FIXED_AMOUNT)
-                    .discountValue(DISCOUNT_VALUE_500)
-                    .maxQuantity(MAX_QUANTITY_LIMIT)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(0)
-                    .couponType(CouponType.LIMITED)
-                    .build();
-
-            coupon.increaseIssuedQuantity();
-
-            assertThatThrownBy(coupon::increaseIssuedQuantity)
-                    .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
-        }
-    }
 }

@@ -27,9 +27,4 @@ public class CouponRepositoryImpl implements CouponRepository {
     public Coupon save(Coupon coupon) {
         return couponJpaRepository.save(coupon);
     }
-
-    @Override
-    public int increaseIssuedQuantityIfAvailable(Long couponId) {
-        return couponJpaRepository.increaseIssuedQuantityIfAvailable(couponId);
-    }
 }

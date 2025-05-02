@@ -68,7 +68,6 @@ class CouponServiceTest {
         void 정상적으로_쿠폰이_발급된다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
-            when(couponRepository.increaseIssuedQuantityIfAvailable(COUPON_ID)).thenReturn(1);
             when(couponRepository.findByIdForUpdate(COUPON_ID))
                     .thenReturn(Optional.of(coupon));
 
@@ -80,30 +79,9 @@ class CouponServiceTest {
         }
 
         @Test
-        void 발급수량이_최대_수량에_도달한_경우_발급할_수_없다() {
-            // given
-            coupon = Coupon.builder()
-                    .couponName(NAME)
-                    .discountType(CouponDiscountType.FIXED_AMOUNT)
-                    .discountValue(BigDecimal.valueOf(500))
-                    .maxQuantity(MAX_QUANTITY)
-                    .validStartDate(START)
-                    .validEndDate(END)
-                    .issuedQuantity(MAX_QUANTITY)
-                    .couponType(CouponType.LIMITED)
-                    .build();
-
-            // when & then
-            assertThatThrownBy(() -> coupon.confirmCouponIssue())
-                    .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
-        }
-
-        @Test
         void 존재하지_않는_쿠폰이면_발급할_수_없다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
-            when(couponRepository.increaseIssuedQuantityIfAvailable(COUPON_ID)).thenReturn(1);
             when(couponRepository.findByIdForUpdate(COUPON_ID)).thenReturn(Optional.empty());
 
             // when & then

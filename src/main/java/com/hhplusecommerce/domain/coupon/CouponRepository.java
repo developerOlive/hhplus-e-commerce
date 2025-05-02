@@ -10,6 +10,4 @@ public interface CouponRepository {
     Optional<Coupon> findByIdForUpdate(Long id);
 
     Coupon save(Coupon coupon);
-
-    int increaseIssuedQuantityIfAvailable(Long couponId);
 }

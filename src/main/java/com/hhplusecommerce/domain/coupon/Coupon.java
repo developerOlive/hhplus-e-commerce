@@ -100,16 +100,6 @@ public class Coupon {
     }
 
     /**
-     * 쿠폰 발급 수량 증가
-     */
-    public void increaseIssuedQuantity() {
-        if (this.issuedQuantity >= this.maxQuantity) {
-            throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
-        }
-        this.issuedQuantity++;
-    }
-
-    /**
      * 쿠폰을 적용한 할인 금액 계산
      */
     public BigDecimal discountFor(BigDecimal totalAmount) {
