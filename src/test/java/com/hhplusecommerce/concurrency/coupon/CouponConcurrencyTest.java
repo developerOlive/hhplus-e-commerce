@@ -45,24 +45,31 @@ class CouponConcurrencyTest extends ConcurrencyTestSupport {
         }
 
         @Test
-        void 동시에_쿠폰_발급_요청_시_남은_쿠폰수량_만큼만_성공해야_한다() {
-            ConcurrencyResult result = executeConcurrency(REQUEST_COUNT, () -> {
-                couponService.issueCoupon(new CouponCommand(
-                        ThreadLocalRandom.current().nextLong(1, 1_000_000), coupon.getId())
-                );
+        void 동시에_쿠폰_발급_요청_시_남은_쿠폰수량_만큼만_성공해야_한다() throws InterruptedException {
+            ConcurrencyResult result = executeWithLatch(REQUEST_COUNT, r -> {
+                long userId = ThreadLocalRandom.current().nextLong(1, 1_000_000);
+                log.info("🟡 [{}] 쿠폰 발급 시도", userId);
+                try {
+                    Long historyId = couponService.issueCoupon(new CouponCommand(userId, coupon.getId()));
+                    log.info("🟢 [{}] 쿠폰 발급 성공 - historyId: {}", userId, historyId);
+                    r.success();
+                } catch (Exception e) {
+                    log.error("🔴 [{}] 쿠폰 발급 실패: {}", userId, e.getMessage());
+                    r.error();
+                }
             });
 
             Coupon updated = couponRepository.findById(coupon.getId()).orElseThrow();
 
             log.warn("🟢 [잔여수량 내 동시 요청 테스트 결과]");
-            log.warn("▶ 초기 발급 수량: {}, 최대 수량: {}", ALREADY_ISSUED, MAX);
-            log.warn("▶ 동시 요청 수: {}", REQUEST_COUNT);
-            log.warn("▶ 최종 발급 수량: {}", updated.getIssuedQuantity());
-            log.warn("▶ 성공 수: {}, 실패 수: {}", result.getSuccessCount(), result.getErrorCount());
+            log.warn("\u25B6 최초 발급 수량: {}, 최대 수량: {}", ALREADY_ISSUED, MAX);
+            log.warn("\u25B6 동시 요청 수: {}", REQUEST_COUNT);
+            log.warn("\u25B6 최종 발급 수량: {}", updated.getIssuedQuantity());
+            log.warn("\u25B6 성공 수: {}, 실패 수: {}", result.getSuccessCount(), result.getErrorCount());
 
             assertThat(updated.getIssuedQuantity()).isEqualTo(MAX);
-            assertThat(result.getSuccessCount()).isEqualTo(REQUEST_COUNT);
-            assertThat(result.getErrorCount()).isEqualTo(0);
+            assertThat(result.getSuccessCount()).isEqualTo(MAX - ALREADY_ISSUED);
+            assertThat(result.getErrorCount()).isEqualTo(REQUEST_COUNT - (MAX - ALREADY_ISSUED));
         }
     }
 
@@ -85,18 +92,21 @@ class CouponConcurrencyTest extends ConcurrencyTestSupport {
         }
 
         @Test
-        void 전량발급_완료된_쿠폰에_동시요청시_모두_실패해야_한다() {
-            ConcurrencyResult result = executeConcurrency(THREAD_COUNT, () -> {
-                couponService.issueCoupon(new CouponCommand(1L, coupon.getId()));
+        void 전량발급_완료된_쿠폰에_동시요청시_모두_실패해야_한다() throws InterruptedException {
+            ConcurrencyResult result = executeWithLatch(THREAD_COUNT, (r) -> {
+                long userId = ThreadLocalRandom.current().nextLong(1, 1_000_000);
+                log.info("🟡 [{}] 쿠폰 발급 시도", userId);
+                try {
+                    couponService.issueCoupon(new CouponCommand(userId, coupon.getId()));
+                    log.info("🟢 [{}] 쿠폰 발급 성공", userId);
+                    r.success();
+                } catch (Exception e) {
+                    log.error("🔴 [{}] 쿠폰 발급 실패: {}", userId, e.getMessage());
+                    r.error();
+                }
             });
 
             Coupon updated = couponRepository.findById(coupon.getId()).orElseThrow();
-
-            log.warn("🔒 [전량 발급된 쿠폰 테스트 결과]");
-            log.warn("▶ 초기 발급 수량: {}, 최대 수량: {}", ISSUED, MAX);
-            log.warn("▶ 동시 요청 수: {}", THREAD_COUNT);
-            log.warn("▶ 최종 발급 수량: {}", updated.getIssuedQuantity());
-            log.warn("▶ 성공 수: {}, 실패 수: {}", result.getSuccessCount(), result.getErrorCount());
 
             assertThat(updated.getIssuedQuantity()).isEqualTo(MAX);
             assertThat(result.getSuccessCount()).isEqualTo(0);

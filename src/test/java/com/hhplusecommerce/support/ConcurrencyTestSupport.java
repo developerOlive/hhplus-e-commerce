@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.IntStream;
 
 @Slf4j
@@ -23,33 +24,23 @@ public abstract class ConcurrencyTestSupport extends IntegrationTestSupport {
         log.info("테스트 후 DB 초기화 완료");
     }
 
-    protected ConcurrencyResult executeConcurrency(int threadCount, Runnable runnable) {
-        return executeConcurrency(IntStream.range(0, threadCount)
-                .mapToObj(i -> runnable)
-                .toList());
-    }
+    protected ConcurrencyResult executeWithLatch(int threadCount, Consumer<ConcurrencyResult> task) throws InterruptedException {
+        CountDownLatch latch = new CountDownLatch(threadCount);
+        ConcurrencyResult result = new ConcurrencyResult();
 
-    protected ConcurrencyResult executeConcurrency(List<Runnable> tasks) {
-        ExecutorService executor = Executors.newFixedThreadPool(tasks.size());
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-        AtomicInteger success = new AtomicInteger();
-        AtomicInteger failure = new AtomicInteger();
-
-        for (Runnable task : tasks) {
-            futures.add(CompletableFuture.runAsync(() -> {
+        for (int i = 0; i < threadCount; i++) {
+            new Thread(() -> {
                 try {
-                    task.run();
-                    success.incrementAndGet();
+                    task.accept(result);
                 } catch (Exception e) {
-                    failure.incrementAndGet();
-                    log.error("실행 실패: {}", e.getMessage(), e);
+                    result.error();
+                } finally {
+                    latch.countDown();
                 }
-            }, executor));
+            }).start();
         }
 
-        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
-        executor.shutdown();
-
-        return new ConcurrencyResult(success.get(), failure.get());
+        latch.await();
+        return result;
     }
 }

@@ -1,19 +1,34 @@
 package com.hhplusecommerce.concurrency;
 
-public class ConcurrencyResult {
-    private final int successCount;
-    private final int errorCount;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    public ConcurrencyResult(int successCount, int errorCount) {
-        this.successCount = successCount;
-        this.errorCount = errorCount;
+public class ConcurrencyResult {
+    private final AtomicInteger successCount;
+    private final AtomicInteger errorCount;
+
+    public ConcurrencyResult() {
+        this.successCount = new AtomicInteger(0);
+        this.errorCount = new AtomicInteger(0);
+    }
+
+    public ConcurrencyResult(int success, int error) {
+        this.successCount = new AtomicInteger(success);
+        this.errorCount = new AtomicInteger(error);
+    }
+
+    public void success() {
+        successCount.incrementAndGet();
+    }
+
+    public void error() {
+        errorCount.incrementAndGet();
     }
 
     public int getSuccessCount() {
-        return successCount;
+        return successCount.get();
     }
 
     public int getErrorCount() {
-        return errorCount;
+        return errorCount.get();
     }
 }

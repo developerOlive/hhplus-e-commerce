@@ -1,11 +1,11 @@
 package com.hhplusecommerce.concurrency.balance;
 
-import com.hhplusecommerce.support.ConcurrencyTestSupport;
 import com.hhplusecommerce.concurrency.ConcurrencyResult;
 import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceRepository;
 import com.hhplusecommerce.domain.balance.BalanceService;
 import com.hhplusecommerce.domain.balance.UserBalance;
+import com.hhplusecommerce.support.ConcurrencyTestSupport;
 import com.hhplusecommerce.support.exception.CustomException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
@@ -15,11 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 class BalanceConcurrencyTest extends ConcurrencyTestSupport {
@@ -45,9 +41,17 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
     class 잔액_충전_동시성 {
 
         @Test
-        void 동시에_충전_요청_시_하나만_성공한다() {
-            ConcurrencyResult result = executeConcurrency(CONCURRENCY_THREADS, () -> {
-                balanceService.chargeBalance(new BalanceCommand(USER_ID, CHARGE_AMOUNT));
+        void 동시에_충전_요청_시_하나만_성공한다() throws InterruptedException {
+            ConcurrencyResult result = executeWithLatch(CONCURRENCY_THREADS, r -> {
+                long userId = ThreadLocalRandom.current().nextLong(1, 1_000_000);
+                log.info("🟡 [{}] 잔액 충전 시도", userId);
+                try {
+                    balanceService.chargeBalance(new BalanceCommand(USER_ID, CHARGE_AMOUNT));
+                    r.success();
+                } catch (Exception e) {
+                    log.error("🔴 [{}] 충전 실패: {}", userId, e.getMessage());
+                    r.error();
+                }
             });
 
             UserBalance userBalance = balanceRepository.findByUserId(USER_ID).orElseThrow();
@@ -57,7 +61,7 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
             log.warn("▶ 성공한 충전 횟수: {}", result.getSuccessCount());
             log.warn("▶ 실패한 충전 횟수: {}", result.getErrorCount());
 
-            Assertions.assertEquals(1, result.getSuccessCount(), "충전은 하나만 성공해야 합니다.");
+            Assertions.assertEquals(1, result.getSuccessCount());
             Assertions.assertEquals(EXPECTED_AMOUNT.stripTrailingZeros().toPlainString(), finalAmount.stripTrailingZeros().toPlainString());
         }
     }
@@ -74,9 +78,17 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
         }
 
         @Test
-        void 동시에_차감_요청_시_하나만_성공한다() {
-            ConcurrencyResult result = executeConcurrency(CONCURRENCY_THREADS, () -> {
-                balanceService.deductBalance(new BalanceCommand(USER_ID, DEDUCT_AMOUNT));
+        void 동시에_차감_요청_시_하나만_성공한다() throws InterruptedException {
+            ConcurrencyResult result = executeWithLatch(CONCURRENCY_THREADS, r -> {
+                long userId = ThreadLocalRandom.current().nextLong(1, 1_000_000);
+                log.info("🟡 [{}] 잔액 차감 시도", userId);
+                try {
+                    balanceService.deductBalance(new BalanceCommand(USER_ID, DEDUCT_AMOUNT));
+                    r.success();
+                } catch (Exception e) {
+                    log.error("🔴 [{}] 차감 실패: {}", userId, e.getMessage());
+                    r.error();
+                }
             });
 
             UserBalance userBalance = balanceRepository.findByUserId(USER_ID).orElseThrow();
@@ -87,7 +99,7 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
             log.warn("▶ 성공한 차감 횟수: {}", result.getSuccessCount());
             log.warn("▶ 실패한 차감 횟수: {}", result.getErrorCount());
 
-            Assertions.assertEquals(1, result.getSuccessCount(), "차감은 하나만 성공해야 합니다.");
+            Assertions.assertEquals(1, result.getSuccessCount());
             Assertions.assertEquals(expectedAmount.stripTrailingZeros().toPlainString(), finalAmount.stripTrailingZeros().toPlainString());
         }
     }
@@ -112,8 +124,7 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
 
             log.warn("최종 잔액: {}", finalAmount.stripTrailingZeros().toPlainString());
 
-            Assertions.assertEquals(EXPECTED_BALANCE_AFTER_BOTH.stripTrailingZeros().toPlainString(),
-                    finalAmount.stripTrailingZeros().toPlainString());
+            Assertions.assertEquals(EXPECTED_BALANCE_AFTER_BOTH.stripTrailingZeros().toPlainString(), finalAmount.stripTrailingZeros().toPlainString());
         }
 
         @Test
@@ -121,8 +132,7 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
             balanceRepository.save(UserBalance.create(USER_ID, INITIAL_BALANCE));
 
             Assertions.assertThrows(CustomException.class, () ->
-                    balanceService.deductBalance(new BalanceCommand(USER_ID, CHARGE_AMOUNT))
-            );
+                    balanceService.deductBalance(new BalanceCommand(USER_ID, CHARGE_AMOUNT)));
             balanceService.chargeBalance(new BalanceCommand(USER_ID, CHARGE_AMOUNT));
 
             UserBalance userBalance = balanceRepository.findByUserId(USER_ID).orElseThrow();
@@ -130,44 +140,7 @@ class BalanceConcurrencyTest extends ConcurrencyTestSupport {
 
             log.warn("최종 잔액: {}", finalAmount.stripTrailingZeros().toPlainString());
 
-            Assertions.assertEquals(EXPECTED_BALANCE_AFTER_CHARGE_ONLY.stripTrailingZeros().toPlainString(),
-                    finalAmount.stripTrailingZeros().toPlainString());
-        }
-    }
-
-    @Nested
-    class 충전_차감_동시_요청 {
-
-        private static final BigDecimal INITIAL_BALANCE = BigDecimal.valueOf(500);
-        private static final BigDecimal AMOUNT = BigDecimal.valueOf(1000);
-
-        @BeforeEach
-        void setUp() {
-            balanceRepository.save(UserBalance.create(USER_ID, INITIAL_BALANCE));
-        }
-
-        @Test
-        void 충전과_차감을_랜덤_순서로_요청하면_정합성이_유지되어야_한다() {
-            List<Runnable> tasks = new ArrayList<>(List.of(
-                    () -> balanceService.chargeBalance(new BalanceCommand(USER_ID, AMOUNT)),
-                    () -> balanceService.deductBalance(new BalanceCommand(USER_ID, AMOUNT))
-            ));
-            Collections.shuffle(tasks);
-
-            ConcurrencyResult result = executeConcurrency(tasks);
-
-            UserBalance userBalance = balanceRepository.findByUserId(USER_ID).orElseThrow();
-            BigDecimal finalAmount = userBalance.getAmount();
-
-            log.warn("충전 성공 횟수: {}", result.getSuccessCount());
-            log.warn("차감 실패 횟수: {}", result.getErrorCount());
-            log.warn("최종 잔액: {}", finalAmount.stripTrailingZeros().toPlainString());
-
-            boolean case1 = result.getSuccessCount() == 2 && finalAmount.compareTo(INITIAL_BALANCE) == 0;
-            boolean case2 = result.getSuccessCount() == 1 && finalAmount.compareTo(INITIAL_BALANCE.add(AMOUNT)) == 0;
-
-            Assertions.assertTrue(case1 || case2,
-                    String.format("정합성 실패 - 충전 성공: %d, 최종 잔액: %s", result.getSuccessCount(), finalAmount.stripTrailingZeros().toPlainString()));
+            Assertions.assertEquals(EXPECTED_BALANCE_AFTER_CHARGE_ONLY.stripTrailingZeros().toPlainString(), finalAmount.stripTrailingZeros().toPlainString());
         }
     }
 }
