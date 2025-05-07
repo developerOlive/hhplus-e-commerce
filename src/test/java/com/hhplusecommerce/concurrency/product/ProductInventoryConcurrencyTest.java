@@ -1,8 +1,8 @@
 package com.hhplusecommerce.concurrency.product;
 
-import com.hhplusecommerce.support.ConcurrencyTestSupport;
 import com.hhplusecommerce.concurrency.ConcurrencyResult;
 import com.hhplusecommerce.domain.product.*;
+import com.hhplusecommerce.support.ConcurrencyTestSupport;
 import lombok.extern.slf4j.Slf4j;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.instancio.Select.field;
@@ -107,21 +108,24 @@ class ProductInventoryConcurrencyTest extends ConcurrencyTestSupport {
         @Test
         void 재고보다_많은_총_수량이_동시에_주문되면_하나는_실패해야_한다() throws InterruptedException {
             long productId = product.getId();
-            int[] orderQuantities = {ORDER_QUANTITY_A, ORDER_QUANTITY_B};
+
+            List<Integer> orderQuantities = List.of(ORDER_QUANTITY_A, ORDER_QUANTITY_B);
+            AtomicInteger index = new AtomicInteger(0);
 
             ConcurrencyResult result = executeWithLatch(THREAD_COUNT, r -> {
+                int i = index.getAndIncrement();
                 try {
-                    int idx = ThreadLocalRandom.current().nextInt(0, 2);
-                    inventoryService.decreaseStock(productId, orderQuantities[idx]);
+                    inventoryService.decreaseStock(productId, orderQuantities.get(i));
                     r.success();
                 } catch (Exception e) {
+                    log.warn("재고 차감 실패: {}", e.getMessage(), e);
                     r.error();
                 }
             });
 
             ProductInventory updated = inventoryRepository.findInventoryByProductId(productId).orElseThrow();
 
-            log.warn("\uD83D\uDCE6 [시나리오2 결과 - 재고 12개 상품에 10개 & 5개 동시 주문 → 초과 주문 예외 발생 여부]");
+            log.warn("📦 [시나리오2 결과 - 재고 12개 상품에 10개 & 5개 동시 주문 → 초과 주문 예외 발생 여부]");
             log.warn("▶ 초기 재고: {}", INITIAL_STOCK_2);
             log.warn("▶ 동시 요청 수: 2 (10개, 5개)");
             log.warn("▶ 최종 재고: {}", updated.getStock());

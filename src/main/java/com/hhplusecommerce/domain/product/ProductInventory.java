@@ -63,11 +63,4 @@ public class ProductInventory {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
     }
-
-    private int validatePositive(int stock) {
-        if (stock < 0) {
-            throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
-        }
-        return stock;
-    }
 }

@@ -5,12 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.AfterEach;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;
-import java.util.stream.IntStream;
 
 @Slf4j
 public abstract class ConcurrencyTestSupport extends IntegrationTestSupport {

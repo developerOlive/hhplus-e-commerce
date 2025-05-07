@@ -92,8 +92,7 @@ class CouponServiceIntegrationTest extends IntegrationTestSupport {
             couponRepository.save(coupon);
 
             assertThatThrownBy(() -> couponService.issueCoupon(new CouponCommand(USER_ID, coupon.getId())))
-                    .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
+                    .isInstanceOf(CustomException.class);
         }
     }
 

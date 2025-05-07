@@ -43,6 +43,8 @@ public class ProductResponse {
         }
     }
 
+    @Getter
+    @NoArgsConstructor
     public static class PopularProductResponse {
         @Schema(description = "상품 ID", example = "1")
         private Long productId;

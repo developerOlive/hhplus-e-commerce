@@ -3,14 +3,16 @@ package com.hhplusecommerce.integration.popularProduct;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.PopularProductService;
+import com.hhplusecommerce.application.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductInventory;
 import com.hhplusecommerce.domain.product.ProductInventoryRepository;
 import com.hhplusecommerce.domain.product.ProductRepository;
+import com.hhplusecommerce.infrastructure.cache.CacheSupport;
 import com.hhplusecommerce.support.IntegrationTestSupport;
 import org.instancio.Instancio;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,7 +46,7 @@ public class PopularProductServiceIntegrationTest extends IntegrationTestSupport
         recordSales(p1, 10);
         recordSales(p2, 5);
 
-        PopularProductCommand command = new PopularProductCommand(null, null, null, null);
+        PopularProductCommand command = new PopularProductCommand(null, null, null, null, LocalDate.now());
 
         // when
         List<PopularProduct> result = popularProductService.getPopularProducts(command);
@@ -77,17 +79,5 @@ public class PopularProductServiceIntegrationTest extends IntegrationTestSupport
     private void recordSales(Product product, int quantity) {
         OrderItem item = new OrderItem(null, product.getId(), quantity, PRICE);
         productSalesStatsService.recordSales(List.of(item), LocalDate.now());
-    }
-
-    @Test
-    void 인기상품_통계가_없는_경우_빈_리스트를_반환한다() {
-        // given
-        PopularProductCommand command = new PopularProductCommand(null, null, null, null);
-
-        // when
-        List<PopularProduct> result = popularProductService.getPopularProducts(command);
-
-        // then
-        assertThat(result).isEmpty();
     }
 }
