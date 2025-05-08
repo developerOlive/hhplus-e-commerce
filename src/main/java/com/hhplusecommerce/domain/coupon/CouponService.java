@@ -2,6 +2,8 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
+import com.hhplusecommerce.support.lock.DistributedLock;
+import com.hhplusecommerce.support.lock.LockType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,7 @@ public class CouponService {
     /**
      * 쿠폰을 유저에게 발급하고 발급 이력을 저장
      */
+    @DistributedLock(value = "#command.couponId", lockType = LockType.PUBSUB)
     @Transactional
     public Long issueCoupon(CouponCommand command) {
         int updatedRows = couponRepository.increaseIssuedQuantityIfNotExceeded(command.couponId());
