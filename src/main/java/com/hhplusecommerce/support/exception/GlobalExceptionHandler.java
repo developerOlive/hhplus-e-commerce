@@ -1,6 +1,7 @@
 package com.hhplusecommerce.support.exception;
 
 import com.hhplusecommerce.support.response.ApiResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.NoSuchElementException;
 
+@Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
@@ -41,8 +43,20 @@ public class GlobalExceptionHandler {
                 .body(ApiResult.fail(message));
     }
 
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ApiResult<Object>> handleCustomException(CustomException ex) {
+        if (ErrorType.LOCK_ACQUISITION_FAILED.equals(ex.getErrorType())) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(ApiResult.fail(ex.getMessage()));
+        }
+
+        return ResponseEntity.status(ex.getErrorType().getStatus())
+                .body(ApiResult.fail(ex.getMessage()));
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResult<Object>> handleServerError(Exception ex) {
+        log.error("Unhandled exception caught", ex);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ApiResult.fail("서버 오류가 발생했습니다."));
     }
