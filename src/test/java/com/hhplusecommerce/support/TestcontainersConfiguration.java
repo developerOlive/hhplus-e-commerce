@@ -1,31 +1,39 @@
 package com.hhplusecommerce.support;
 
-import jakarta.annotation.PreDestroy;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.MySQLContainer;
 import org.testcontainers.utility.DockerImageName;
 
-@Configuration
 public class TestcontainersConfiguration {
 
-    public static final MySQLContainer<?> MYSQL_CONTAINER;
+    private static final DockerImageName MYSQL_IMAGE = DockerImageName.parse("mysql:8.0");
+    private static final DockerImageName REDIS_IMAGE = DockerImageName.parse("redis:6.2.5");
+
+    private static final MySQLContainer<?> MYSQL_CONTAINER = new MySQLContainer<>(MYSQL_IMAGE)
+            .withReuse(true)
+            .withDatabaseName("hhplus")
+            .withUsername("test")
+            .withPassword("test");
+
+    private static final GenericContainer<?> REDIS_CONTAINER = new GenericContainer<>(REDIS_IMAGE)
+            .withReuse(true)
+            .withExposedPorts(6379);
 
     static {
-        MYSQL_CONTAINER = new MySQLContainer<>(DockerImageName.parse("mysql:8.0"))
-                .withDatabaseName("hhplus")
-                .withUsername("test")
-                .withPassword("test");
         MYSQL_CONTAINER.start();
-
-        System.setProperty("spring.datasource.url", MYSQL_CONTAINER.getJdbcUrl() + "?characterEncoding=UTF-8&serverTimezone=UTC");
-        System.setProperty("spring.datasource.username", MYSQL_CONTAINER.getUsername());
-        System.setProperty("spring.datasource.password", MYSQL_CONTAINER.getPassword());
+        REDIS_CONTAINER.start();
     }
 
-    @PreDestroy
-    public void stopContainer() {
-        if (MYSQL_CONTAINER.isRunning()) {
-            MYSQL_CONTAINER.stop();
-        }
+    @DynamicPropertySource
+    static void registerProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", () -> MYSQL_CONTAINER.getJdbcUrl() + "?characterEncoding=UTF-8&serverTimezone=UTC");
+        registry.add("spring.datasource.username", MYSQL_CONTAINER::getUsername);
+        registry.add("spring.datasource.password", MYSQL_CONTAINER::getPassword);
+        registry.add("spring.redis.host", REDIS_CONTAINER::getHost);
+        registry.add("spring.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379));
+        registry.add("redisson.address", () ->
+                "redis://" + REDIS_CONTAINER.getHost() + ":" + REDIS_CONTAINER.getMappedPort(6379));
     }
 }
