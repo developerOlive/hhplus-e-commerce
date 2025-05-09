@@ -72,7 +72,6 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.redisson:redisson:3.18.1")
-    testImplementation("org.testcontainers:redis:1.19.3")
 }
 
 java {
