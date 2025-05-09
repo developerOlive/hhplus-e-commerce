@@ -14,6 +14,7 @@ import java.math.BigDecimal;
  * 인기 상품 도메인
  */
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PopularProduct {
 
