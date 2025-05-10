@@ -1,7 +1,7 @@
 package com.hhplusecommerce.interfaces.product;
 
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.application.popularProduct.PopularProductService;
+import com.hhplusecommerce.domain.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.product.ProductResult;
 import com.hhplusecommerce.domain.product.ProductService;
 import com.hhplusecommerce.interfaces.product.ProductRequest.PopularProductSearchRequest;

@@ -2,9 +2,10 @@ package com.hhplusecommerce.domain.coupon;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
+import com.hhplusecommerce.support.lock.DistributedLock;
+import com.hhplusecommerce.support.lock.LockType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,6 @@ public class CouponService {
 
     private final CouponRepository couponRepository;
     private final CouponHistoryRepository couponHistoryRepository;
-    private final RedissonClient redissonClient;
 
     /**
      * 사용 가능한 유저의 쿠폰 목록 조회
@@ -42,14 +42,15 @@ public class CouponService {
     /**
      * 쿠폰을 유저에게 발급하고 발급 이력을 저장
      */
+    @DistributedLock(value = "#command.couponId", lockType = LockType.PUBSUB)
     @Transactional
     public Long issueCoupon(CouponCommand command) {
-        int updated = couponRepository.increaseIssuedQuantityIfAvailable(command.couponId());
-        if (updated == 0) {
+        int updatedRows = couponRepository.increaseIssuedQuantityIfNotExceeded(command.couponId());
+        if (updatedRows == 0) {
             throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
         }
 
-        Coupon coupon = couponRepository.findByIdForUpdate(command.couponId())
+        Coupon coupon = couponRepository.findById(command.couponId())
                 .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
 
         CouponHistory history = CouponHistory.issue(command.userId(), coupon);

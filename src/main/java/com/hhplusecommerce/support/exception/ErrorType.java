@@ -59,7 +59,9 @@ public enum ErrorType {
     INVALID_PAYMENT_STATUS(HttpStatus.BAD_REQUEST, "결제 상태 정보가 누락되었거나 잘못되었습니다."),
 
     // Concurrency
-    CONCURRENT_TRANSACTION_EXCEPTION(HttpStatus.CONFLICT, "동시성 오류가 발생했습니다. 다시 시도해 주세요.")
+    CONCURRENT_TRANSACTION_EXCEPTION(HttpStatus.CONFLICT, "동시성 오류가 발생했습니다. 다시 시도해 주세요."),
+    LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "락을 획득할 수 없습니다."),
+    INVALID_LOCK_KEY(HttpStatus.BAD_REQUEST,"유효하지 않은 키입니다.")
     ;
 
     private final HttpStatus status;

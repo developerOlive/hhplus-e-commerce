@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 public class ProductRequest {
 
@@ -63,21 +64,27 @@ public class ProductRequest {
     @NoArgsConstructor
     public static class PopularProductSearchRequest {
 
-        @Schema(description = "조회할 상품 개수", example = "5")
-        @Min(1)
+        @Schema(description = "조회할 상품 개수 (최소 1)", example = "5", defaultValue = "5")
+        @Min(value = 1, message = "limit은 1 이상이어야 합니다.")
         private Integer limit = 5;
 
-        @Schema(description = "최소 판매 수량", example = "100")
-        private Integer minSold = 0;
+        @Schema(description = "최소 판매 수량", example = "100", defaultValue = "100")
+        private Integer minSold = 100;
 
-        @Schema(description = "최근 며칠 이내 기준", example = "7")
+        @Schema(description = "최근 며칠 기준", example = "7", defaultValue = "7")
         private Integer days = 7;
 
-        @Schema(description = "카테고리 필터 (선택)", example = "ELECTRONICS")
+        @Schema(description = "카테고리 필터 (선택)", example = "electronics")
         private String category;
 
         public PopularProductCommand toCommand() {
-            return new PopularProductCommand(limit, minSold, days, category);
+            return new PopularProductCommand(
+                    limit,
+                    minSold,
+                    days,
+                    category,
+                    LocalDate.now()
+            );
         }
     }
 }

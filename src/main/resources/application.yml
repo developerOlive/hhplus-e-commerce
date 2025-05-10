@@ -21,6 +21,14 @@ spring:
       hibernate.timezone.default_storage: NORMALIZE_UTC
       hibernate.jdbc.time_zone: UTC
 
+redisson:
+  address: redis://127.0.0.1:6379
+
+custom:
+  cache:
+    popular-products:
+      ttl: 60s
+
 ---
 spring.config.activate.on-profile: local, test
 

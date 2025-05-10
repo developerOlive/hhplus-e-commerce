@@ -68,8 +68,8 @@ class CouponServiceTest {
         void 정상적으로_쿠폰이_발급된다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
-            when(couponRepository.findByIdForUpdate(COUPON_ID))
-                    .thenReturn(Optional.of(coupon));
+            when(couponRepository.increaseIssuedQuantityIfNotExceeded(COUPON_ID)).thenReturn(1);
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.of(coupon));
 
             // when
             couponService.issueCoupon(command);
@@ -82,12 +82,25 @@ class CouponServiceTest {
         void 존재하지_않는_쿠폰이면_발급할_수_없다() {
             // given
             CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
-            when(couponRepository.findByIdForUpdate(COUPON_ID)).thenReturn(Optional.empty());
+            when(couponRepository.increaseIssuedQuantityIfNotExceeded(COUPON_ID)).thenReturn(1);
+            when(couponRepository.findById(COUPON_ID)).thenReturn(Optional.empty());
 
             // when & then
             assertThatThrownBy(() -> couponService.issueCoupon(command))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.COUPON_NOT_FOUND.getMessage());
+        }
+
+        @Test
+        void 발급_수량을_초과하면_예외가_발생한다() {
+            // given
+            CouponCommand command = new CouponCommand(USER_ID, COUPON_ID);
+            when(couponRepository.increaseIssuedQuantityIfNotExceeded(COUPON_ID)).thenReturn(0);
+
+            // when & then
+            assertThatThrownBy(() -> couponService.issueCoupon(command))
+                    .isInstanceOf(CustomException.class)
+                    .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
         }
     }
 
