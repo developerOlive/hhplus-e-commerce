@@ -4,6 +4,7 @@ import com.hhplusecommerce.application.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductInventory;
