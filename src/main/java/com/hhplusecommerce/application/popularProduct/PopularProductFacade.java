@@ -17,7 +17,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class PopularProductService {
+public class PopularProductFacade {
 
     private final CacheSupport<List<PopularProduct>> popularProductCache;
     private final PopularProductRepository popularProductRepository;

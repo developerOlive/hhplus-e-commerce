@@ -24,7 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class PopularProductServiceTest {
+class PopularProductFacadeTest {
 
     private static final String CATEGORY = "electronics";
     private static final int LIMIT = 10;
@@ -39,7 +39,7 @@ class PopularProductServiceTest {
     private PopularProductRepository popularProductRepository;
 
     @InjectMocks
-    private PopularProductService popularProductService;
+    private PopularProductFacade popularProductFacade;
 
     private PopularProductCommand command;
 
@@ -69,7 +69,7 @@ class PopularProductServiceTest {
 
             when(popularProductCache.get(command)).thenReturn(cached);
 
-            List<PopularProduct> result = popularProductService.getPopularProducts(command);
+            List<PopularProduct> result = popularProductFacade.getPopularProducts(command);
 
             assertThat(result).isEqualTo(cached);
             verify(popularProductRepository, never()).findTopByCommand(any());
@@ -90,7 +90,7 @@ class PopularProductServiceTest {
             when(popularProductCache.get(command)).thenReturn(null);
             when(popularProductRepository.findTopByCommand(command)).thenReturn(dbResult);
 
-            List<PopularProduct> result = popularProductService.getPopularProducts(command);
+            List<PopularProduct> result = popularProductFacade.getPopularProducts(command);
 
             assertThat(result).isEqualTo(dbResult);
             verify(popularProductCache).put(command, dbResult);
@@ -101,7 +101,7 @@ class PopularProductServiceTest {
             when(popularProductCache.get(command)).thenReturn(null);
             when(popularProductRepository.findTopByCommand(command)).thenReturn(Collections.emptyList());
 
-            List<PopularProduct> result = popularProductService.getPopularProducts(command);
+            List<PopularProduct> result = popularProductFacade.getPopularProducts(command);
 
             assertThat(result).isEmpty();
             verify(popularProductCache, never()).put(any(), any());

@@ -1,10 +1,9 @@
-package com.hhplusecommerce.integration.popularProduct;
+package com.hhplusecommerce.application.popularProduct;
 
-import com.hhplusecommerce.application.popularProduct.PopularProductService;
+import com.hhplusecommerce.application.popularProduct.PopularProductFacade;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductInventory;
@@ -26,12 +25,12 @@ import static org.instancio.Select.field;
 
 @SpringBootTest
 @Transactional
-public class PopularProductServiceIntegrationTest extends IntegrationTestSupport {
+public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport {
 
     private static final int STOCK = 10;
     private static final BigDecimal PRICE = BigDecimal.valueOf(10000);
 
-    @Autowired private PopularProductService popularProductService;
+    @Autowired private PopularProductFacade popularProductFacade;
     @Autowired private ProductSalesStatsService productSalesStatsService;
     @Autowired private ProductRepository productRepository;
     @Autowired private ProductInventoryRepository inventoryRepository;
@@ -48,7 +47,7 @@ public class PopularProductServiceIntegrationTest extends IntegrationTestSupport
         PopularProductCommand command = new PopularProductCommand(null, null, null, null, LocalDate.now());
 
         // when
-        List<PopularProduct> result = popularProductService.getPopularProducts(command);
+        List<PopularProduct> result = popularProductFacade.getPopularProducts(command);
 
         // then
         assertThat(result).hasSizeGreaterThanOrEqualTo(2);

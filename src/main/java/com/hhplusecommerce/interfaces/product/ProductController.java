@@ -1,7 +1,7 @@
 package com.hhplusecommerce.interfaces.product;
 
+import com.hhplusecommerce.application.popularProduct.PopularProductFacade;
 import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductService;
 import com.hhplusecommerce.domain.product.ProductResult;
 import com.hhplusecommerce.domain.product.ProductService;
 import com.hhplusecommerce.interfaces.product.ProductRequest.PopularProductSearchRequest;
@@ -35,7 +35,7 @@ import static com.hhplusecommerce.interfaces.product.ProductSwaggerDocs.PRODUCT_
 public class ProductController {
 
     private final ProductService productService;
-    private final PopularProductService popularProductService;
+    private final PopularProductFacade popularProductFacade;
 
     @GetMapping("/api/v1/products")
     @Operation(summary = "상품 목록 조회", description = "전체 상품 목록을 조회합니다.")
@@ -55,7 +55,7 @@ public class ProductController {
             @ApiResponse(responseCode = "200", description = "조회 성공", content = @Content(examples = @ExampleObject(value = POPULAR_PRODUCT_SUCCESS)))
     })
     public ResponseEntity<ApiResult<List<PopularProductResponse>>> getPopularProducts(@Valid PopularProductSearchRequest request) {
-        List<PopularProduct> products = popularProductService.getPopularProducts(request.toCommand());
+        List<PopularProduct> products = popularProductFacade.getPopularProducts(request.toCommand());
         List<PopularProductResponse> response = products.stream()
                 .map(PopularProductResponse::from)
                 .toList();
