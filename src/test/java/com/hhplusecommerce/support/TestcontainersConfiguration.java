@@ -28,12 +28,16 @@ public class TestcontainersConfiguration {
 
     @DynamicPropertySource
     static void registerProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", () -> MYSQL_CONTAINER.getJdbcUrl() + "?characterEncoding=UTF-8&serverTimezone=UTC");
+        String redisHost = REDIS_CONTAINER.getHost();
+        Integer redisPort = REDIS_CONTAINER.getMappedPort(6379);
+
+        registry.add("spring.datasource.url", () ->
+                MYSQL_CONTAINER.getJdbcUrl() + "?characterEncoding=UTF-8&serverTimezone=UTC");
         registry.add("spring.datasource.username", MYSQL_CONTAINER::getUsername);
         registry.add("spring.datasource.password", MYSQL_CONTAINER::getPassword);
-        registry.add("spring.redis.host", REDIS_CONTAINER::getHost);
-        registry.add("spring.redis.port", () -> REDIS_CONTAINER.getMappedPort(6379));
-        registry.add("redisson.address", () ->
-                "redis://" + REDIS_CONTAINER.getHost() + ":" + REDIS_CONTAINER.getMappedPort(6379));
+
+        registry.add("spring.redis.host", () -> redisHost);
+        registry.add("spring.redis.port", () -> redisPort);
+        registry.add("redisson.address", () -> "redis://" + redisHost + ":" + redisPort);
     }
 }
