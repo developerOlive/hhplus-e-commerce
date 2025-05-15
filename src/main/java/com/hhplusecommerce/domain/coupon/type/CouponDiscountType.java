@@ -1,4 +1,4 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.type;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;

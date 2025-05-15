@@ -1,4 +1,8 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.model;
+
+import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
+import com.hhplusecommerce.domain.coupon.type.CouponStatus;
+import com.hhplusecommerce.domain.coupon.type.CouponUsageStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;

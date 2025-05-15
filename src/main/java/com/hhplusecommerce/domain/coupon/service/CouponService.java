@@ -1,9 +1,14 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.service;
 
+import com.hhplusecommerce.domain.coupon.command.CouponCommand;
+import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.model.CouponHistory;
+import com.hhplusecommerce.domain.coupon.repository.CouponHistoryRepository;
+import com.hhplusecommerce.domain.coupon.repository.CouponRepository;
+import com.hhplusecommerce.domain.coupon.model.CouponResult;
+import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import com.hhplusecommerce.support.lock.DistributedLock;
-import com.hhplusecommerce.support.lock.LockType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,7 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hhplusecommerce.domain.coupon.CouponUsageStatus.AVAILABLE;
+import static com.hhplusecommerce.domain.coupon.type.CouponUsageStatus.AVAILABLE;
 import static com.hhplusecommerce.support.exception.ErrorType.COUPON_NOT_FOUND;
 
 @Slf4j

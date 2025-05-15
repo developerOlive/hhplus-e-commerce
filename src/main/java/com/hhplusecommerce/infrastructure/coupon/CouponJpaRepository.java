@@ -1,6 +1,6 @@
 package com.hhplusecommerce.infrastructure.coupon;
 
-import com.hhplusecommerce.domain.coupon.Coupon;
+import com.hhplusecommerce.domain.coupon.model.Coupon;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;

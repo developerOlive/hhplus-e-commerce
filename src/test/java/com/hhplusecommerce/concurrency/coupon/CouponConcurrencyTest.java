@@ -2,10 +2,10 @@ package com.hhplusecommerce.concurrency.coupon;
 
 import com.hhplusecommerce.support.ConcurrencyTestSupport;
 import com.hhplusecommerce.concurrency.ConcurrencyResult;
-import com.hhplusecommerce.domain.coupon.Coupon;
-import com.hhplusecommerce.domain.coupon.CouponCommand;
-import com.hhplusecommerce.domain.coupon.CouponRepository;
-import com.hhplusecommerce.domain.coupon.CouponService;
+import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.command.CouponCommand;
+import com.hhplusecommerce.domain.coupon.repository.CouponRepository;
+import com.hhplusecommerce.domain.coupon.service.CouponService;
 import lombok.extern.slf4j.Slf4j;
 import org.instancio.Instancio;
 import org.junit.jupiter.api.BeforeEach;
