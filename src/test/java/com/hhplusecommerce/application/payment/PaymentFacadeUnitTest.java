@@ -6,7 +6,8 @@ import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderService;
 import com.hhplusecommerce.domain.payment.*;
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
+import com.hhplusecommerce.domain.popularProduct.service.PopularProductRankingService;
+import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
@@ -40,6 +41,7 @@ class PaymentFacadeUnitTest {
     @Mock private OrderService orderService;
     @Mock private PaymentService paymentService;
     @Mock private ProductSalesStatsService productSalesStatsService;
+    @Mock private PopularProductRankingService popularProductRankingService;
 
     @Test
     void 결제를_정상적으로_완료한다() {
@@ -53,6 +55,7 @@ class PaymentFacadeUnitTest {
         when(order.getFinalAmount()).thenReturn(FINAL_AMOUNT);
         when(order.getOrderItems()).thenReturn(orderItems);
         when(orderService.getOrder(ORDER_ID)).thenReturn(order);
+        when(order.hasCoupon()).thenReturn(false);
 
         Payment payment = new Payment(ORDER_ID, FINAL_AMOUNT, PaymentStatus.PENDING);
         when(paymentService.completePayment(ORDER_ID, FINAL_AMOUNT)).thenReturn(payment);
@@ -66,6 +69,7 @@ class PaymentFacadeUnitTest {
         verify(order).complete();
         verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
         verify(productSalesStatsService).recordSales(eq(orderItems), eq(LocalDate.now()));
+        verify(popularProductRankingService).recordSales(eq(orderItems));
 
         assertThat(result.paymentId()).isEqualTo(payment.getId());
         assertThat(result.paidAmount()).isEqualTo(payment.getPaidAmount());
@@ -92,5 +96,6 @@ class PaymentFacadeUnitTest {
         verify(inventoryService, never()).decreaseStocks(any());
         verify(paymentService, never()).completePayment(anyLong(), any());
         verify(productSalesStatsService, never()).recordSales(any(), any());
+        verify(popularProductRankingService, never()).recordSales(any());
     }
 }

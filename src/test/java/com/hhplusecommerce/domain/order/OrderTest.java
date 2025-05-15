@@ -22,12 +22,13 @@ class OrderTest {
     private static final BigDecimal PRICE_PER_ITEM = new BigDecimal("15000");
     private static final BigDecimal TOTAL_AMOUNT = PRICE_PER_ITEM.multiply(BigDecimal.valueOf(QUANTITY));
     private static final BigDecimal FINAL_AMOUNT = new BigDecimal("25000");
+    private static final String CATEGORY = "electronics";
 
     private Order order;
 
     static Order 주문_생성(OrderStatus status) {
         List<OrderItemCommand> items = List.of(
-                new OrderItemCommand(PRODUCT_ID, QUANTITY, PRICE_PER_ITEM)
+                new OrderItemCommand(PRODUCT_ID, QUANTITY, PRICE_PER_ITEM, CATEGORY)
         );
 
         Order order = Order.create(

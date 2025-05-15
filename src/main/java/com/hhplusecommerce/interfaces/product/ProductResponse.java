@@ -1,7 +1,6 @@
 package com.hhplusecommerce.interfaces.product;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.product.Product;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import com.hhplusecommerce.domain.product.ProductResult;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;

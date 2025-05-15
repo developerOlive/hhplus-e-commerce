@@ -27,6 +27,7 @@ custom:
       ttl: 60s
 
 ---
+
 spring.config.activate.on-profile: local
 
 spring:
@@ -42,7 +43,11 @@ spring:
       hibernate:
         format_sql: true
 
+redisson:
+  address: redis://127.0.0.1:6379
+
 ---
+
 spring.config.activate.on-profile: test
 
 spring:

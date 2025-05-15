@@ -1,6 +1,6 @@
 package com.hhplusecommerce.infrastructure.cache;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
 
 import java.time.Duration;
 import java.time.LocalDate;

@@ -24,12 +24,13 @@ public class OrderItem {
     private int quantity;
     private BigDecimal price;
     private BigDecimal totalAmount;
+    private String category;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
     private Order order;
 
-    public OrderItem(Order order, Long productId, int quantity, BigDecimal price) {
+    public OrderItem(Order order, Long productId, int quantity, BigDecimal price, String category) {
         if (quantity <= 0) {
             throw new CustomException(ErrorType.INVALID_STOCK_AMOUNT);
         }
@@ -38,10 +39,15 @@ public class OrderItem {
             throw new CustomException(ErrorType.INVALID_BALANCE_AMOUNT);
         }
 
+        if (category == null || category.isBlank()) {
+            throw new CustomException(ErrorType.INVALID_PRODUCT_CATEGORY);
+        }
+
         this.order = order;
         this.productId = productId;
         this.quantity = quantity;
         this.price = price;
+        this.category = category;
         this.totalAmount = price.multiply(BigDecimal.valueOf(quantity));
     }
 

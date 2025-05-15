@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -29,5 +30,10 @@ public class ProductRepositoryImpl implements ProductRepository {
     @Override
     public Product save(Product product) {
         return productJpaRepository.save(product);
+    }
+
+    @Override
+    public List<Product> findProducts(List<Long> productIds) {
+        return productJpaRepository.findProducts(productIds);
     }
 }
