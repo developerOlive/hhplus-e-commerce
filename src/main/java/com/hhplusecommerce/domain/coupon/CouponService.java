@@ -42,7 +42,6 @@ public class CouponService {
     /**
      * 쿠폰을 유저에게 발급하고 발급 이력을 저장
      */
-    @DistributedLock(value = "#command.couponId", lockType = LockType.PUBSUB)
     @Transactional
     public Long issueCoupon(CouponCommand command) {
         int updatedRows = couponRepository.increaseIssuedQuantityIfNotExceeded(command.couponId());
