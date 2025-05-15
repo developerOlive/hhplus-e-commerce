@@ -5,6 +5,7 @@ import com.hhplusecommerce.domain.coupon.repository.CouponRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -26,5 +27,10 @@ public class CouponRepositoryImpl implements CouponRepository {
     @Override
     public int increaseIssuedQuantityIfNotExceeded(Long couponId) {
         return couponJpaRepository.increaseIssuedQuantityIfNotExceeded(couponId);
+    }
+
+    @Override
+    public List<Long> findActiveCouponIds() {
+        return couponJpaRepository.findActiveCouponIds();
     }
 }

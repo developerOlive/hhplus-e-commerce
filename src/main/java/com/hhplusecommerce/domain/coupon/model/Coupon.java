@@ -123,4 +123,10 @@ public class Coupon {
         }
     }
 
+    /**
+     * 쿠폰 발급 상태 완료 처리 (재고 소진)
+     */
+    public void completeIssue() {
+        this.issueStatus = CouponIssueStatus.FINISHED;
+    }
 }

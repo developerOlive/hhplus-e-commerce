@@ -108,4 +108,40 @@ public class CouponService {
 
         couponHistory.use();
     }
+
+    /**
+     * 쿠폰 발급 상태 완료 처리 (재고 소진)
+     */
+    @Transactional
+    public void finishCoupon(Long couponId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+
+        if (coupon.getIssueStatus() == CouponIssueStatus.FINISHED
+                || coupon.getIssuedQuantity() < coupon.getMaxQuantity()) {
+            return;
+        }
+
+        coupon.completeIssue();
+        couponRepository.save(coupon);
+    }
+
+    @Transactional(readOnly = true)
+    public Coupon getCoupon(Long couponId) {
+        return couponRepository.findById(couponId)
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+    }
+
+    /**
+     * 발급할 쿠폰 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<Long> getActiveCouponIds() {
+        return couponRepository.findActiveCouponIds();
+    }
+
+    @Transactional
+    public void saveCoupon(Coupon coupon) {
+        couponRepository.save(coupon);
+    }
 }

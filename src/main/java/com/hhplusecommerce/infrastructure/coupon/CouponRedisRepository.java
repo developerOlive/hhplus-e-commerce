@@ -7,6 +7,7 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
+import java.util.Set;
 
 import static java.lang.Boolean.TRUE;
 
@@ -40,5 +41,20 @@ public class CouponRedisRepository {
 
         zSetOps.add(couponRequestKey, userId, scoreTimestamp);
         redisTemplate.expire(couponRequestKey, Duration.ofDays(REQUEST_QUEUE_TTL));
+    }
+
+    /** Sorted Set에서 발급 요청을 배치 단위로 꺼냄 */
+    public Set<ZSetOperations.TypedTuple<String>> popRequests(String couponRequestKey, int batchSize) {
+        return zSetOps.popMin(couponRequestKey, batchSize);
+    }
+
+    /** 쿠폰 재고 수량 감소 */
+    public Long decrementStock(String couponStockKey) {
+        return redisTemplate.opsForValue().decrement(couponStockKey);
+    }
+
+    /** Redis Set에 쿠폰 발급 완료 사용자 추가 */
+    public void addIssuedUser(String couponIssuedKey, String userId) {
+        redisTemplate.opsForSet().add(couponIssuedKey, userId);
     }
 }

@@ -10,4 +10,5 @@ public interface CouponRepository {
     Optional<Coupon> findById(@Param("id") Long id);
     Coupon save(Coupon coupon);
     int increaseIssuedQuantityIfNotExceeded(Long couponId);
+    List<Long> findActiveCouponIds();
 }
