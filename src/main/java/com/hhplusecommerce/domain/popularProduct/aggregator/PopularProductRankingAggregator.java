@@ -23,4 +23,9 @@ public interface PopularProductRankingAggregator {
      * 인기상품 상세정보를 캐시에 저장
      */
     void saveProductsToCache(List<ProductDataResult> productData);
+
+    /**
+     * 상품 판매량 누적 집계
+     */
+    void incrementProductSales(String category, Long productId, String saleDate, int quantity);
 }

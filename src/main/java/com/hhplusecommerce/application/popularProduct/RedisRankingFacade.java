@@ -56,4 +56,11 @@ public class RedisRankingFacade implements PopularProductRankingAggregator {
     public void saveProductsToCache(List<ProductDataResult> productData) {
         productCacheAdapter.save(productData);
     }
+
+    @Override
+    public void incrementProductSales(String category, Long productId, String saleDate, int quantity) {
+        String dailyKey = redisRankingKeyFactory.dailyKey(category, saleDate);
+        rankingZSetAdapter.incrementScore(dailyKey, productId, quantity);
+        rankingZSetAdapter.setExpire(dailyKey, Duration.ofDays(30));
+    }
 }
