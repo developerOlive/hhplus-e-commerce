@@ -2,6 +2,8 @@ package com.hhplusecommerce.domain.popularProduct.service;
 
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.popularProduct.aggregator.PopularProductRankingAggregator;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,5 +29,12 @@ public class PopularProductRankingService {
         for (OrderItem item : items) {
             popularProductRankingAggregator.incrementProductSales(item.getCategory(), item.getProductId(), today, item.getQuantity());
         }
+    }
+
+    /**
+     * 인기 상품 조회 (캐싱)
+     */
+    public List<PopularProduct> getTopPopularProducts(PopularProductSearchCommand command) {
+        return popularProductRankingAggregator.getProductsFromCache(command);
     }
 }

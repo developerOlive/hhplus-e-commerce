@@ -1,5 +1,7 @@
 package com.hhplusecommerce.domain.popularProduct.aggregator;
 
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import com.hhplusecommerce.domain.product.ProductDataResult;
 
 import java.util.List;
@@ -24,8 +26,14 @@ public interface PopularProductRankingAggregator {
      */
     void saveProductsToCache(List<ProductDataResult> productData);
 
+
     /**
      * 상품 판매량 누적 집계
      */
     void incrementProductSales(String category, Long productId, String saleDate, int quantity);
+
+    /**
+     * 캐시된 인기상품 상세정보 조회
+     */
+    List<PopularProduct> getProductsFromCache(PopularProductSearchCommand command);
 }
