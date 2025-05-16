@@ -38,7 +38,7 @@ public class ProductCacheAdapter {
         }
     }
 
-    public List<PopularProduct> load(List<String> productIds) {
+    public List<PopularProduct> getFromCache(List<String> productIds) {
         ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
         List<PopularProduct> result = new ArrayList<>();
 

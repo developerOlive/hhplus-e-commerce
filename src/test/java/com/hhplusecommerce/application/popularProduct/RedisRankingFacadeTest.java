@@ -149,7 +149,7 @@ class RedisRankingFacadeTest {
                     PopularProduct.builder().productId(2L).productName("상품2").price(BigDecimal.ZERO).totalSold(20).build(),
                     PopularProduct.builder().productId(3L).productName("상품3").price(BigDecimal.ZERO).totalSold(30).build()
             );
-            when(cacheAdapter.load(new ArrayList<>(productIdStrings))).thenReturn(cachedProducts);
+            when(cacheAdapter.getFromCache(new ArrayList<>(productIdStrings))).thenReturn(cachedProducts);
 
             List<PopularProduct> result = facade.getProductsFromCache(command);
 

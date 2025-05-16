@@ -13,6 +13,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.Duration;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -68,19 +69,22 @@ public class RedisRankingFacade implements PopularProductRankingAggregator {
 
     @Override
     public List<PopularProduct> getProductsFromCache(PopularProductSearchCommand command) {
-        if (command == null) return Collections.emptyList();
+        if (command == null) {
+            log.warn("Search command is null — returning empty list");
+            return Collections.emptyList();
+        }
 
         String category = command.category();
         int days = command.days();
         int limit = command.limit();
 
-        String periodKey = redisRankingKeyFactory.periodKey(category, days);
-        Set<String> productIdStrings = rankingZSetAdapter.getTopIds(periodKey, limit);
+        String rankingKey = redisRankingKeyFactory.periodKey(category, days);
+        Set<String> productIds = rankingZSetAdapter.getTopIds(rankingKey, limit);
 
-        if (productIdStrings == null || productIdStrings.isEmpty()) {
+        if (productIds == null || productIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        return productCacheAdapter.load(productIdStrings.stream().toList());
+        return productCacheAdapter.getFromCache(new ArrayList<>(productIds));
     }
 }
