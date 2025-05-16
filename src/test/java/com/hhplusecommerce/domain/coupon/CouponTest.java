@@ -1,5 +1,8 @@
 package com.hhplusecommerce.domain.coupon;
 
+import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
+import com.hhplusecommerce.domain.coupon.type.CouponType;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-import static com.hhplusecommerce.domain.coupon.CouponDiscountType.FIXED_AMOUNT;
+import static com.hhplusecommerce.domain.coupon.type.CouponDiscountType.FIXED_AMOUNT;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 

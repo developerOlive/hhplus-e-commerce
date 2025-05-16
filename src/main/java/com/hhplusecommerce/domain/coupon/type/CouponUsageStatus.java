@@ -1,4 +1,4 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.type;
 
 public enum CouponUsageStatus {
     AVAILABLE("사용 가능"),

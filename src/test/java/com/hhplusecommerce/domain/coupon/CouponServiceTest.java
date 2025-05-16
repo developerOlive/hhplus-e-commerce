@@ -1,5 +1,14 @@
 package com.hhplusecommerce.domain.coupon;
 
+import com.hhplusecommerce.domain.coupon.command.CouponCommand;
+import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.model.CouponHistory;
+import com.hhplusecommerce.domain.coupon.repository.CouponHistoryRepository;
+import com.hhplusecommerce.domain.coupon.repository.CouponRepository;
+import com.hhplusecommerce.domain.coupon.service.CouponService;
+import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
+import com.hhplusecommerce.domain.coupon.type.CouponType;
+import com.hhplusecommerce.domain.coupon.type.CouponUsageStatus;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;

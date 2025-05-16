@@ -1,8 +1,8 @@
 package com.hhplusecommerce.interfaces.coupon;
 
-import com.hhplusecommerce.domain.coupon.CouponCommand;
-import com.hhplusecommerce.domain.coupon.CouponResult;
-import com.hhplusecommerce.domain.coupon.CouponService;
+import com.hhplusecommerce.domain.coupon.command.CouponCommand;
+import com.hhplusecommerce.domain.coupon.model.CouponResult;
+import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.interfaces.coupon.CouponResponse.CouponDetail;
 import com.hhplusecommerce.interfaces.coupon.CouponResponse.Issue;
 import com.hhplusecommerce.support.response.ApiResult;

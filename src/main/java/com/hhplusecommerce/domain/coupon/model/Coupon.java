@@ -1,5 +1,9 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.model;
 
+import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
+import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
+import com.hhplusecommerce.domain.coupon.type.CouponStatus;
+import com.hhplusecommerce.domain.coupon.type.CouponType;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.*;
@@ -40,6 +44,8 @@ public class Coupon {
     private LocalDate validEndDate;
     @Enumerated(EnumType.STRING)
     private CouponType couponType;
+    @Enumerated(EnumType.STRING)
+    private CouponIssueStatus issueStatus = CouponIssueStatus.READY;
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
@@ -118,16 +124,9 @@ public class Coupon {
     }
 
     /**
-     * 쿠폰 발급 처리 (발급 가능 여부 판단 + 수량 증가를 원자적으로 수행)
-     * - 동시성 환경에서도 초과 발급 방지 보장
+     * 쿠폰 발급 상태 완료 처리 (재고 소진)
      */
-    public void confirmCouponIssue() {
-        if (this.couponType == CouponType.LIMITED) {
-            if (this.issuedQuantity + 1 > this.maxQuantity) {
-                throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
-            }
-        }
-
-        this.issuedQuantity += 1;
+    public void completeIssue() {
+        this.issueStatus = CouponIssueStatus.FINISHED;
     }
 }
