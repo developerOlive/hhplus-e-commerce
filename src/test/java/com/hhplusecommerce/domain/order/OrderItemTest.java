@@ -22,6 +22,7 @@ class OrderItemTest {
     private static final int QUANTITY = 2;
     private static final BigDecimal PRICE = new BigDecimal("100");
     private static final BigDecimal EXPECTED_TOTAL_AMOUNT = PRICE.multiply(BigDecimal.valueOf(QUANTITY));
+    private static final String CATEGORY = "electronics";
 
     private Order mockOrder;
     private OrderItem orderItem;
@@ -29,7 +30,7 @@ class OrderItemTest {
     @BeforeEach
     void setUp() {
         mockOrder = Instancio.create(Order.class);
-        orderItem = new OrderItem(mockOrder, PRODUCT_ID, QUANTITY, PRICE);
+        orderItem = new OrderItem(mockOrder, PRODUCT_ID, QUANTITY, PRICE, CATEGORY);
     }
 
     @Nested
@@ -56,7 +57,7 @@ class OrderItemTest {
         @ParameterizedTest
         @MethodSource("quantitySource")
         void 수량이_음수일_경우_예외가_발생한다(int invalidQuantity) {
-            assertThatThrownBy(() -> new OrderItem(mockOrder, PRODUCT_ID, invalidQuantity, PRICE))
+            assertThatThrownBy(() -> new OrderItem(mockOrder, PRODUCT_ID, invalidQuantity, PRICE, CATEGORY))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_STOCK_AMOUNT.getMessage());
         }
@@ -72,7 +73,7 @@ class OrderItemTest {
         @ParameterizedTest
         @MethodSource("invalidPriceSource")
         void 가격이_음수일_경우_예외가_발생한다(BigDecimal invalidPrice) {
-            assertThatThrownBy(() -> new OrderItem(mockOrder, PRODUCT_ID, QUANTITY, invalidPrice))
+            assertThatThrownBy(() -> new OrderItem(mockOrder, PRODUCT_ID, QUANTITY, invalidPrice, CATEGORY))
                     .isInstanceOf(CustomException.class)
                     .hasMessage(ErrorType.INVALID_BALANCE_AMOUNT.getMessage());
         }

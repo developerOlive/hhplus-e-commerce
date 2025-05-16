@@ -31,6 +31,7 @@ class OrderServiceTest {
     private static final BigDecimal TOTAL_AMOUNT = ITEM_PRICE.multiply(BigDecimal.valueOf(ITEM_QUANTITY));
     private static final BigDecimal DISCOUNT_AMOUNT = BigDecimal.valueOf(1000);
     private static final BigDecimal FINAL_AMOUNT = TOTAL_AMOUNT.subtract(DISCOUNT_AMOUNT);
+    private static final String CATEGORY = "electronics";
 
     @InjectMocks
     private OrderService orderService;
@@ -42,7 +43,7 @@ class OrderServiceTest {
     @BeforeEach
     void setUp() {
         OrderCommand command = new OrderCommand(USER_ID, COUPON_ID, List.of(
-                new OrderItemCommand(1L, ITEM_QUANTITY, ITEM_PRICE)
+                new OrderItemCommand(1L, ITEM_QUANTITY, ITEM_PRICE, CATEGORY)
         ));
         mockOrder = Order.create(command);
         mockOrder.applyFinalAmount(FINAL_AMOUNT);
@@ -53,7 +54,7 @@ class OrderServiceTest {
     void 주문이_성공적으로_생성된다() {
         // Given
         OrderCommand command = new OrderCommand(USER_ID, COUPON_ID, List.of(
-                new OrderItemCommand(1L, ITEM_QUANTITY, ITEM_PRICE)
+                new OrderItemCommand(1L, ITEM_QUANTITY, ITEM_PRICE, CATEGORY)
         ));
 
         // When

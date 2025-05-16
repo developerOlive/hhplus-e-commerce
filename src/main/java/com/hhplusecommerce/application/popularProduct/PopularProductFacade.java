@@ -1,8 +1,8 @@
 package com.hhplusecommerce.application.popularProduct;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.PopularProductRepository;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.repository.PopularProductRepository;
 import com.hhplusecommerce.infrastructure.cache.CacheSupport;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

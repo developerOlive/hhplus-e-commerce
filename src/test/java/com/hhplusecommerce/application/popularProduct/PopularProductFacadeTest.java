@@ -1,9 +1,9 @@
 package com.hhplusecommerce.application.popularProduct;
 
 import com.hhplusecommerce.application.cache.PopularProductCacheKeyGenerator;
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.PopularProductRepository;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.repository.PopularProductRepository;
 import com.hhplusecommerce.infrastructure.cache.CacheSupport;
 import com.hhplusecommerce.infrastructure.cache.EndOfDayTtlStrategy;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,8 +1,8 @@
-package com.hhplusecommerce.infrastructure.popularProduct;
+package com.hhplusecommerce.infrastructure.popularProduct.repository;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.QProductSalesStats;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.model.QProductSalesStats;
 import com.hhplusecommerce.domain.product.QProduct;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;

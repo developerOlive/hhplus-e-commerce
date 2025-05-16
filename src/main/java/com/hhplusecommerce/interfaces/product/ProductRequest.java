@@ -1,6 +1,7 @@
 package com.hhplusecommerce.interfaces.product;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.product.ProductsCommand;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Min;
@@ -84,6 +85,14 @@ public class ProductRequest {
                     days,
                     category,
                     LocalDate.now()
+            );
+        }
+
+        public PopularProductSearchCommand toRankingCommand() {
+            return new PopularProductSearchCommand(
+                    category,
+                    limit,
+                    days
             );
         }
     }

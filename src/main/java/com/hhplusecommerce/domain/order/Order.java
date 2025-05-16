@@ -74,7 +74,13 @@ public class Order {
         }
 
         List<OrderItem> items = command.orderItems().stream()
-                .map(item -> new OrderItem(null, item.productId(), item.quantity(), item.price()))
+                .map(item -> new OrderItem(
+                        null,
+                        item.productId(),
+                        item.quantity(),
+                        item.price(),
+                        item.category()
+                ))
                 .toList();
 
         BigDecimal totalAmount = items.stream()

@@ -21,7 +21,10 @@ public class OrderItemRequest {
     @Schema(description = "상품 단가", example = "12000")
     private BigDecimal price;
 
+    @Schema(description = "상품 카테고리", example = "electronics")
+    private String category;
+
     public OrderItemCommand toCommand() {
-        return new OrderItemCommand(productId, quantity, price);
+        return new OrderItemCommand(productId, quantity, price, category);
     }
 }

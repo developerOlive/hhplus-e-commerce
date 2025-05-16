@@ -1,4 +1,4 @@
-package com.hhplusecommerce.domain.popularProduct;
+package com.hhplusecommerce.domain.popularProduct.model;
 
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;

@@ -64,4 +64,18 @@ public class ProductCustomRepositoryImpl implements ProductCustomRepository {
 
         return builder;
     }
+
+    @Override
+    public List<Product> findProducts(List<Long> productIds) {
+        QProduct product = QProduct.product;
+
+        if (productIds == null || productIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return queryFactory
+                .selectFrom(product)
+                .where(product.id.in(productIds))
+                .fetch();
+    }
 }

@@ -1,10 +1,9 @@
 package com.hhplusecommerce.application.popularProduct;
 
-import com.hhplusecommerce.application.popularProduct.PopularProductFacade;
 import com.hhplusecommerce.domain.order.OrderItem;
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsService;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductInventory;
 import com.hhplusecommerce.domain.product.ProductInventoryRepository;
@@ -29,6 +28,7 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
 
     private static final int STOCK = 10;
     private static final BigDecimal PRICE = BigDecimal.valueOf(10000);
+    private static final String CATEGORY = "electronics";
 
     @Autowired private PopularProductFacade popularProductFacade;
     @Autowired private ProductSalesStatsService productSalesStatsService;
@@ -75,7 +75,7 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
     }
 
     private void recordSales(Product product, int quantity) {
-        OrderItem item = new OrderItem(null, product.getId(), quantity, PRICE);
+        OrderItem item = new OrderItem(null, product.getId(), quantity, PRICE, CATEGORY);
         productSalesStatsService.recordSales(List.of(item), LocalDate.now());
     }
 }

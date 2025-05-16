@@ -1,11 +1,13 @@
 package com.hhplusecommerce.domain.product;
 
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,5 +37,13 @@ public class ProductService {
             int stock = inventory != null ? inventory.getStock() : 0;
             return ProductResult.from(product, stock);
         });
+    }
+
+    public List<ProductDataResult> findProducts(List<Long> productIds) {
+        List<Product> products = productRepository.findProducts(productIds);
+
+        return products.stream()
+                .map(ProductDataResult::from)
+                .collect(Collectors.toList());
     }
 }
