@@ -86,7 +86,7 @@ class ProductCacheAdapterTest {
                             .build()
             ).when(objectMapper).readValue(json, PopularProduct.class);
 
-            List<PopularProduct> 결과 = adapter.load(List.of(productId));
+            List<PopularProduct> 결과 = adapter.getFromCache(List.of(productId));
 
             assertThat(결과).hasSize(1);
             assertThat(결과.get(0).getProductId()).isEqualTo(1L);
@@ -98,7 +98,7 @@ class ProductCacheAdapterTest {
 
             doReturn(null).when(valueOperations).get(캐시_키_PREFIX + productId);
 
-            List<PopularProduct> 결과 = adapter.load(List.of(productId));
+            List<PopularProduct> 결과 = adapter.getFromCache(List.of(productId));
 
             assertThat(결과).isEmpty();
         }
@@ -111,7 +111,7 @@ class ProductCacheAdapterTest {
             when(valueOperations.get(캐시_키_PREFIX + productId)).thenReturn(badJson);
             when(objectMapper.readValue(badJson, PopularProduct.class)).thenThrow(new RuntimeException("역직렬화 실패"));
 
-            List<PopularProduct> 결과 = adapter.load(List.of(productId));
+            List<PopularProduct> 결과 = adapter.getFromCache(List.of(productId));
 
             assertThat(결과).isEmpty();
         }
