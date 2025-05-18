@@ -1,6 +1,6 @@
-package com.hhplusecommerce.infrastructure.popularProduct;
+package com.hhplusecommerce.infrastructure.popularProduct.stats;
 
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStats;
+import com.hhplusecommerce.domain.popularProduct.model.ProductSalesStats;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;

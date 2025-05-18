@@ -24,6 +24,7 @@ class OrderServiceIntegrationTest extends IntegrationTestSupport {
     private static final Long USER_ID = 1L;
     private static final Long PRODUCT_ID = 10L;
     private static final BigDecimal PRICE = new BigDecimal("1000");
+    private static final String PRODUCT_CATEGORY = "electronics";
 
     @Autowired
     private OrderService orderService;
@@ -45,7 +46,7 @@ class OrderServiceIntegrationTest extends IntegrationTestSupport {
         @Test
         void 주문을_생성하면_Order와_OrderItem이_저장된다() {
             // given
-            OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, VALID_QUANTITY, PRICE);
+            OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, VALID_QUANTITY, PRICE, PRODUCT_CATEGORY);
             OrderCommand command = new OrderCommand(USER_ID, null, List.of(item));
 
             BigDecimal totalAmount = command.orderItems().stream()
@@ -75,7 +76,7 @@ class OrderServiceIntegrationTest extends IntegrationTestSupport {
         @Test
         void 할인된_금액으로_주문이_생성된다() {
             // given
-            OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, 3, PRICE);
+            OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, 3, PRICE, PRODUCT_CATEGORY);
             OrderCommand command = new OrderCommand(USER_ID, null, List.of(item));
 
             BigDecimal totalAmount = PRICE.multiply(BigDecimal.valueOf(3));
@@ -100,7 +101,7 @@ class OrderServiceIntegrationTest extends IntegrationTestSupport {
         @ValueSource(ints = {0, -1})
         void 수량이_0또는_음수이면_예외가_발생한다(int invalidQuantity) {
             // given
-            OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, invalidQuantity, PRICE);
+            OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, invalidQuantity, PRICE, PRODUCT_CATEGORY);
             OrderCommand command = new OrderCommand(USER_ID, null, List.of(item));
 
             BigDecimal discountAmount = BigDecimal.ZERO;
@@ -142,7 +143,7 @@ class OrderServiceIntegrationTest extends IntegrationTestSupport {
     }
 
     private Long createTestOrder() {
-        OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, 1, PRICE);
+        OrderItemCommand item = new OrderItemCommand(PRODUCT_ID, 1, PRICE, PRODUCT_CATEGORY);
         OrderCommand command = new OrderCommand(USER_ID, null, List.of(item));
 
         BigDecimal discountAmount = BigDecimal.ZERO;

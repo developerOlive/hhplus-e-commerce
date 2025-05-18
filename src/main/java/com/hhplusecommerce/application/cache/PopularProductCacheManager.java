@@ -1,7 +1,7 @@
 package com.hhplusecommerce.application.cache;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
 import com.hhplusecommerce.infrastructure.cache.CacheSupport;
 import com.hhplusecommerce.infrastructure.cache.RedisCacheSupport;
 import com.hhplusecommerce.infrastructure.cache.EndOfDayTtlStrategy;

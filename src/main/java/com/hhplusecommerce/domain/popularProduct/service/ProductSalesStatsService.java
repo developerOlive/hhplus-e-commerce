@@ -1,6 +1,8 @@
-package com.hhplusecommerce.domain.popularProduct;
+package com.hhplusecommerce.domain.popularProduct.service;
 
 import com.hhplusecommerce.domain.order.OrderItem;
+import com.hhplusecommerce.domain.popularProduct.model.ProductSalesStats;
+import com.hhplusecommerce.domain.popularProduct.repository.ProductSalesStatsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

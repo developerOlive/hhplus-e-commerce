@@ -33,6 +33,7 @@ class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
     private static final BigDecimal PRICE_LOTION = BigDecimal.valueOf(8_000);
     private static final BigDecimal PRICE_CUSHION = BigDecimal.valueOf(15_000);
     private static final BigDecimal PRICE_ESSENCE = BigDecimal.valueOf(12_000);
+    private static final String CATEGORY = "cosmetics";
 
     private static final int STOCK_FULL = 10;
     private static final int STOCK_HALF = 5;
@@ -103,8 +104,8 @@ class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
             saveInventory(p2, STOCK_HALF);
 
             List<OrderItemCommand> items = List.of(
-                    new OrderItemCommand(p1.getId(), 2, p1.getPrice()),
-                    new OrderItemCommand(p2.getId(), 1, p2.getPrice())
+                    new OrderItemCommand(p1.getId(), 2, p1.getPrice(), CATEGORY),
+                    new OrderItemCommand(p2.getId(), 1, p2.getPrice(), CATEGORY)
             );
 
             productInventoryService.validateAllProductStocks(items);
@@ -118,8 +119,8 @@ class ProductInventoryServiceIntegrationTest extends IntegrationTestSupport {
             saveInventory(p2, STOCK_EIGHT);
 
             List<OrderItem> orderItems = List.of(
-                    new OrderItem(null, p1.getId(), 3, p1.getPrice()),
-                    new OrderItem(null, p2.getId(), 5, p2.getPrice())
+                    new OrderItem(null, p1.getId(), 3, p1.getPrice(), CATEGORY),
+                    new OrderItem(null, p2.getId(), 5, p2.getPrice(), CATEGORY)
             );
 
             productInventoryService.decreaseStocks(orderItems);

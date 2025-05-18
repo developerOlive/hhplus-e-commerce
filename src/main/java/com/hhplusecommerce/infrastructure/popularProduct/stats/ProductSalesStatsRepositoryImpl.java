@@ -1,7 +1,7 @@
-package com.hhplusecommerce.infrastructure.popularProduct;
+package com.hhplusecommerce.infrastructure.popularProduct.stats;
 
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStats;
-import com.hhplusecommerce.domain.popularProduct.ProductSalesStatsRepository;
+import com.hhplusecommerce.domain.popularProduct.model.ProductSalesStats;
+import com.hhplusecommerce.domain.popularProduct.repository.ProductSalesStatsRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

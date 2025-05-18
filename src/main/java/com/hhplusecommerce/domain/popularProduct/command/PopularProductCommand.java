@@ -1,4 +1,4 @@
-package com.hhplusecommerce.domain.popularProduct;
+package com.hhplusecommerce.domain.popularProduct.command;
 
 import java.time.LocalDate;
 

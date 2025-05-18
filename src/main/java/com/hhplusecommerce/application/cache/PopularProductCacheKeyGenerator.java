@@ -1,6 +1,6 @@
 package com.hhplusecommerce.application.cache;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
 
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;

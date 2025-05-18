@@ -12,8 +12,12 @@ public class LettuceConfig {
     @Bean
     public LettuceConnectionFactory lettuceConnectionFactory(Environment env) {
         String host = env.getProperty("spring.redis.host");
+        if (host == null || host.isBlank()) {
+            host = "localhost";
+        }
         int port = Integer.parseInt(env.getProperty("spring.redis.port", "6379"));
         RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+
         return new LettuceConnectionFactory(config);
     }
 }

@@ -1,8 +1,8 @@
-package com.hhplusecommerce.infrastructure.popularProduct;
+package com.hhplusecommerce.infrastructure.popularProduct.repository;
 
-import com.hhplusecommerce.domain.popularProduct.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.PopularProductCommand;
-import com.hhplusecommerce.domain.popularProduct.PopularProductRepository;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.repository.PopularProductRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
