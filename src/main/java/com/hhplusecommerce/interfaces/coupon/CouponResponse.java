@@ -1,9 +1,9 @@
 package com.hhplusecommerce.interfaces.coupon;
 
-import com.hhplusecommerce.domain.coupon.CouponDiscountType;
-import com.hhplusecommerce.domain.coupon.CouponResult;
-import com.hhplusecommerce.domain.coupon.CouponStatus;
-import com.hhplusecommerce.domain.coupon.CouponUsageStatus;
+import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
+import com.hhplusecommerce.domain.coupon.model.CouponResult;
+import com.hhplusecommerce.domain.coupon.type.CouponStatus;
+import com.hhplusecommerce.domain.coupon.type.CouponUsageStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,5 +1,10 @@
 package com.hhplusecommerce.domain.coupon;
 
+import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.model.CouponHistory;
+import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
+import com.hhplusecommerce.domain.coupon.type.CouponType;
+import com.hhplusecommerce.domain.coupon.type.CouponUsageStatus;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.util.ReflectionTestUtils;
 

@@ -1,5 +1,6 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.model;
 
+import com.hhplusecommerce.domain.coupon.type.CouponUsageStatus;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.*;

@@ -1,9 +1,14 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.service;
 
+import com.hhplusecommerce.domain.coupon.command.CouponCommand;
+import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.model.CouponHistory;
+import com.hhplusecommerce.domain.coupon.repository.CouponHistoryRepository;
+import com.hhplusecommerce.domain.coupon.repository.CouponRepository;
+import com.hhplusecommerce.domain.coupon.model.CouponResult;
+import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import com.hhplusecommerce.support.lock.DistributedLock;
-import com.hhplusecommerce.support.lock.LockType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -13,7 +18,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.hhplusecommerce.domain.coupon.CouponUsageStatus.AVAILABLE;
+import static com.hhplusecommerce.domain.coupon.type.CouponUsageStatus.AVAILABLE;
 import static com.hhplusecommerce.support.exception.ErrorType.COUPON_NOT_FOUND;
 
 @Slf4j
@@ -102,5 +107,41 @@ public class CouponService {
         CouponValidator.validateUsableCoupon(coupon, couponHistory);
 
         couponHistory.use();
+    }
+
+    /**
+     * 쿠폰 발급 상태 완료 처리 (재고 소진)
+     */
+    @Transactional
+    public void finishCoupon(Long couponId) {
+        Coupon coupon = couponRepository.findById(couponId)
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+
+        if (coupon.getIssueStatus() == CouponIssueStatus.FINISHED
+                || coupon.getIssuedQuantity() < coupon.getMaxQuantity()) {
+            return;
+        }
+
+        coupon.completeIssue();
+        couponRepository.save(coupon);
+    }
+
+    @Transactional(readOnly = true)
+    public Coupon getCoupon(Long couponId) {
+        return couponRepository.findById(couponId)
+                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
+    }
+
+    /**
+     * 발급할 쿠폰 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<Long> getActiveCouponIds() {
+        return couponRepository.findActiveCouponIds();
+    }
+
+    @Transactional
+    public void saveCoupon(Coupon coupon) {
+        couponRepository.save(coupon);
     }
 }
