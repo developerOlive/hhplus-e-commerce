@@ -1,6 +1,6 @@
-package com.hhplusecommerce.application.popularProduct;
+package com.hhplusecommerce.infrastructure.popularProduct.ranking;
 
-import com.hhplusecommerce.domain.popularProduct.aggregator.PopularProductRankingAggregator;
+import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import com.hhplusecommerce.domain.product.ProductDataResult;
@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 @RequiredArgsConstructor
-public class RedisRankingFacade implements PopularProductRankingAggregator {
+public class RedisRankingAggregatorImpl implements PopularProductRankingAggregator {
 
     private final RedisRankingKeyFactory redisRankingKeyFactory;
     private final RankingZSetAdapter rankingZSetAdapter;

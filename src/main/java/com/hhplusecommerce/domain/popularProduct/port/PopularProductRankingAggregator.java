@@ -1,4 +1,4 @@
-package com.hhplusecommerce.domain.popularProduct.aggregator;
+package com.hhplusecommerce.domain.popularProduct.port;
 
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;

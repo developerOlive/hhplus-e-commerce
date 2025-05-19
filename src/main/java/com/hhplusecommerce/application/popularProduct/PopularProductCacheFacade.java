@@ -1,8 +1,9 @@
-package com.hhplusecommerce.domain.popularProduct.service;
+package com.hhplusecommerce.application.popularProduct;
 
-import com.hhplusecommerce.domain.popularProduct.aggregator.PopularProductRankingAggregator;
+import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
 import com.hhplusecommerce.domain.product.ProductDataResult;
 import com.hhplusecommerce.domain.product.ProductService;
+import io.swagger.v3.oas.annotations.servers.Server;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -10,7 +11,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class PopularProductCacheRefreshService {
+public class PopularProductCacheFacade {
 
     private final PopularProductRankingAggregator popularProductRankingAggregator;
     private final ProductService productService;

@@ -1,9 +1,11 @@
-package com.hhplusecommerce.application.popularProduct;
+package com.hhplusecommerce.infrastructure.popularProduct.ranking;
 
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
 import com.hhplusecommerce.domain.product.ProductDataResult;
 import com.hhplusecommerce.infrastructure.popularProduct.cache.ProductCacheAdapter;
+import com.hhplusecommerce.infrastructure.popularProduct.ranking.RedisRankingAggregatorImpl;
 import com.hhplusecommerce.infrastructure.popularProduct.ranking.key.RedisRankingKeyFactory;
 import com.hhplusecommerce.infrastructure.popularProduct.ranking.zset.RankingZSetAdapter;
 import org.junit.jupiter.api.Nested;
@@ -21,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-class RedisRankingFacadeTest {
+class RedisRankingAggregatorImplTest {
 
     private static final String CATEGORY = "test-category";
     private static final String SALE_DATE = "20250515";
@@ -38,7 +40,7 @@ class RedisRankingFacadeTest {
     ProductCacheAdapter cacheAdapter;
 
     @InjectMocks
-    RedisRankingFacade facade;
+    RedisRankingAggregatorImpl popularProductRankingAggregator;
 
     @Nested
     class 상품판매량증가_테스트 {
@@ -48,7 +50,7 @@ class RedisRankingFacadeTest {
             String dailyKey = "ranking:" + CATEGORY + "-" + SALE_DATE;
             when(keyFactory.dailyKey(CATEGORY, SALE_DATE)).thenReturn(dailyKey);
 
-            facade.incrementProductSales(CATEGORY, 123L, SALE_DATE, 5);
+            popularProductRankingAggregator.incrementProductSales(CATEGORY, 123L, SALE_DATE, 5);
 
             verify(zSetAdapter).incrementScore(dailyKey, 123L, 5);
             verify(zSetAdapter).setExpire(dailyKey, Duration.ofDays(30));
@@ -73,7 +75,7 @@ class RedisRankingFacadeTest {
                 when(keyFactory.periodKey(CATEGORY, days)).thenReturn("period-key-" + days);
             }
 
-            facade.aggregateRanking(CATEGORY, daysList);
+            popularProductRankingAggregator.aggregateRanking(CATEGORY, daysList);
 
             for (int days : daysList) {
                 List<String> dailyKeys = keyFactory.dailyKeysFor(now, days, CATEGORY);
@@ -97,7 +99,7 @@ class RedisRankingFacadeTest {
             when(keyFactory.periodKey(CATEGORY, days)).thenReturn(periodKey);
             when(zSetAdapter.getTopIds(periodKey, LIMIT)).thenReturn(productIds);
 
-            List<Long> result = facade.getTopProductIds(CATEGORY, days, LIMIT);
+            List<Long> result = popularProductRankingAggregator.getTopProductIds(CATEGORY, days, LIMIT);
 
             assertThat(result).containsExactly(101L, 102L, 103L);
         }
@@ -110,7 +112,7 @@ class RedisRankingFacadeTest {
             when(keyFactory.periodKey(CATEGORY, days)).thenReturn(periodKey);
             when(zSetAdapter.getTopIds(periodKey, LIMIT)).thenReturn(Collections.emptySet());
 
-            List<Long> result = facade.getTopProductIds(CATEGORY, days, LIMIT);
+            List<Long> result = popularProductRankingAggregator.getTopProductIds(CATEGORY, days, LIMIT);
 
             assertThat(result).isEmpty();
         }
@@ -126,7 +128,7 @@ class RedisRankingFacadeTest {
                     new ProductDataResult(2L, "상품2", "카테고리", null)
             );
 
-            facade.saveProductsToCache(products);
+            popularProductRankingAggregator.saveProductsToCache(products);
 
             verify(cacheAdapter).save(products);
         }
@@ -151,7 +153,7 @@ class RedisRankingFacadeTest {
             );
             when(cacheAdapter.getFromCache(new ArrayList<>(productIdStrings))).thenReturn(cachedProducts);
 
-            List<PopularProduct> result = facade.getProductsFromCache(command);
+            List<PopularProduct> result = popularProductRankingAggregator.getProductsFromCache(command);
 
             assertThat(result).hasSize(3);
             assertThat(result.get(0).getProductId()).isEqualTo(1L);
@@ -166,14 +168,14 @@ class RedisRankingFacadeTest {
             when(keyFactory.periodKey(CATEGORY, 3)).thenReturn(periodKey);
             when(zSetAdapter.getTopIds(periodKey, LIMIT)).thenReturn(productIdStrings);
 
-            List<PopularProduct> result = facade.getProductsFromCache(command);
+            List<PopularProduct> result = popularProductRankingAggregator.getProductsFromCache(command);
 
             assertThat(result).isEmpty();
         }
 
         @Test
         void null_명령이_들어오면_빈_리스트를_반환하는지_검증한다() {
-            List<PopularProduct> result = facade.getProductsFromCache(null);
+            List<PopularProduct> result = popularProductRankingAggregator.getProductsFromCache(null);
 
             assertThat(result).isEmpty();
         }

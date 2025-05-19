@@ -1,7 +1,7 @@
 package com.hhplusecommerce.domain.popularProduct.service;
 
 import com.hhplusecommerce.domain.order.OrderItem;
-import com.hhplusecommerce.domain.popularProduct.aggregator.PopularProductRankingAggregator;
+import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import lombok.RequiredArgsConstructor;
