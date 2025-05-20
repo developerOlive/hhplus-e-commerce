@@ -1,6 +1,6 @@
 package com.hhplusecommerce.integration.popularProduct;
 
-import com.hhplusecommerce.domain.order.OrderItem;
+import com.hhplusecommerce.domain.order.*;
 import com.hhplusecommerce.domain.popularProduct.model.ProductSalesStats;
 import com.hhplusecommerce.domain.popularProduct.repository.ProductSalesStatsRepository;
 import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
@@ -15,7 +15,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-
 @Transactional
 class ProductSalesStatsServiceIntegrationTest extends IntegrationTestSupport {
 
@@ -24,6 +23,9 @@ class ProductSalesStatsServiceIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private ProductSalesStatsRepository statsRepository;
+
+    @Autowired
+    private OrderRepository orderRepository;
 
     @Test
     void 상품_판매_통계를_정상적으로_기록한다() {
@@ -35,11 +37,20 @@ class ProductSalesStatsServiceIntegrationTest extends IntegrationTestSupport {
         LocalDate saleDate = LocalDate.now();
         String category = "electronics";
 
-        OrderItem item = new OrderItem(null, productId, quantity, price, category);
-        List<OrderItem> orderItems = List.of(item);
+        OrderItemCommand itemCommand = new OrderItemCommand(productId, quantity, price, category);
+        OrderCommand orderCommand = new OrderCommand(123L, null, List.of(itemCommand));
+
+        // Order 생성
+        Order order = Order.create(orderCommand);
+
+        // 주문 상태를 COMPLETED로 변경 (결제 완료 상태)
+        order.complete();
+
+        // 주문 저장
+        Order savedOrder = orderRepository.save(order);
 
         // when
-        statsService.recordSales(orderItems, saleDate);
+        statsService.recordSales(savedOrder.getId(), saleDate);
 
         // then
         ProductSalesStats stats = statsRepository.findByProductIdAndSaleDate(productId, saleDate)

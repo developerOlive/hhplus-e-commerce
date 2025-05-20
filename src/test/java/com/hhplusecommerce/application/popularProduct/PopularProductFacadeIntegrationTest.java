@@ -1,6 +1,6 @@
 package com.hhplusecommerce.application.popularProduct;
 
-import com.hhplusecommerce.domain.order.OrderItem;
+import com.hhplusecommerce.domain.order.*;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
 import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
@@ -34,22 +34,23 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
     @Autowired private ProductSalesStatsService productSalesStatsService;
     @Autowired private ProductRepository productRepository;
     @Autowired private ProductInventoryRepository inventoryRepository;
+    @Autowired private OrderRepository orderRepository;
 
     @Test
     void 인기상품_조회시_판매수량_기준으로_내림차순_정렬된다() {
-        // given
+        // given: 두 개의 상품을 생성하고 각각 판매 기록을 저장한다
         Product p1 = createAndSaveProduct("립스틱", "메이크업");
         Product p2 = createAndSaveProduct("클렌징폼", "스킨케어");
 
-        recordSales(p1, 10);
-        recordSales(p2, 5);
+        recordSales(p1, 10);  // p1은 10개 판매
+        recordSales(p2, 5);   // p2는 5개 판매
 
         PopularProductCommand command = new PopularProductCommand(null, null, null, null, LocalDate.now());
 
-        // when
+        // when: 인기 상품을 조회한다
         List<PopularProduct> result = popularProductFacade.getPopularProducts(command);
 
-        // then
+        // then: 결과가 판매 수량 내림차순으로 정렬되어야 한다
         assertThat(result).hasSizeGreaterThanOrEqualTo(2);
         assertThat(result.get(0).getProductId()).isEqualTo(p1.getId());
         assertThat(result.get(1).getProductId()).isEqualTo(p2.getId());
@@ -75,7 +76,27 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
     }
 
     private void recordSales(Product product, int quantity) {
-        OrderItem item = new OrderItem(null, product.getId(), quantity, PRICE, CATEGORY);
-        productSalesStatsService.recordSales(List.of(item), LocalDate.now());
+        // given: 주문 항목과 주문 생성
+        OrderItemCommand itemCommand = new OrderItemCommand(
+                product.getId(),
+                quantity,
+                PRICE,
+                CATEGORY
+        );
+
+        OrderCommand orderCommand = new OrderCommand(
+                123L,
+                null,
+                List.of(itemCommand)
+        );
+
+        // when: 주문을 생성하고 완료 상태로 변경 후 저장
+        Order order = Order.create(orderCommand);
+        order.complete();
+
+        Order savedOrder = orderRepository.save(order);
+
+        // then: 상품 판매 통계에 판매 기록 등록
+        productSalesStatsService.recordSales(savedOrder.getId(), LocalDate.now());
     }
 }

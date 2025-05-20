@@ -1,5 +1,6 @@
 package com.hhplusecommerce.domain.order;
 
+import com.hhplusecommerce.domain.coupon.CouponService;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import jakarta.persistence.*;
@@ -138,6 +139,15 @@ public class Order {
 
     public boolean hasCoupon() {
         return this.couponIssueId != null;
+    }
+
+    /**
+     * 쿠폰이 있으면 쿠폰 사용 처리 호출
+     */
+    public void applyCouponIfPresent(Long userId, CouponService couponService) {
+        if (this.hasCoupon()) {
+            couponService.useCoupon(userId, this.couponIssueId);
+        }
     }
 
     @PrePersist

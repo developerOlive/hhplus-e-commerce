@@ -4,13 +4,17 @@ import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
+import com.hhplusecommerce.domain.order.OrderRepository;
 import com.hhplusecommerce.domain.order.OrderService;
+import com.hhplusecommerce.domain.order.OrderStatus;
+import com.hhplusecommerce.domain.order.event.OrderEventPublisher;
 import com.hhplusecommerce.domain.payment.*;
 import com.hhplusecommerce.domain.popularProduct.service.PopularProductRankingService;
 import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,10 +24,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static com.hhplusecommerce.domain.payment.PaymentMethod.CREDIT_CARD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -42,6 +49,7 @@ class PaymentFacadeUnitTest {
     @Mock private PaymentService paymentService;
     @Mock private ProductSalesStatsService productSalesStatsService;
     @Mock private PopularProductRankingService popularProductRankingService;
+    @Mock private OrderEventPublisher orderEventPublisher;
 
     @Test
     void 결제를_정상적으로_완료한다() {
@@ -50,14 +58,18 @@ class PaymentFacadeUnitTest {
         Order order = mock(Order.class);
         List<OrderItem> orderItems = List.of(mock(OrderItem.class));
 
+        when(orderService.getOrder(ORDER_ID)).thenReturn(order);
+
         when(order.getId()).thenReturn(ORDER_ID);
         when(order.getUserId()).thenReturn(USER_ID);
         when(order.getFinalAmount()).thenReturn(FINAL_AMOUNT);
         when(order.getOrderItems()).thenReturn(orderItems);
-        when(orderService.getOrder(ORDER_ID)).thenReturn(order);
-        when(order.hasCoupon()).thenReturn(false);
 
-        Payment payment = new Payment(ORDER_ID, FINAL_AMOUNT, PaymentStatus.PENDING);
+        Payment payment = mock(Payment.class);
+        when(payment.getId()).thenReturn(ORDER_ID);
+        when(payment.getPaidAmount()).thenReturn(FINAL_AMOUNT);
+        when(payment.getPaymentStatus()).thenReturn(PaymentStatus.PENDING);
+
         when(paymentService.completePayment(ORDER_ID, FINAL_AMOUNT)).thenReturn(payment);
 
         // when
@@ -68,11 +80,10 @@ class PaymentFacadeUnitTest {
         verify(inventoryService).decreaseStocks(eq(orderItems));
         verify(order).complete();
         verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
-        verify(productSalesStatsService).recordSales(eq(orderItems), eq(LocalDate.now()));
-        verify(popularProductRankingService).recordSales(eq(orderItems));
+        verify(orderEventPublisher).publishOrderConfirmed(eq(ORDER_ID));
 
-        assertThat(result.paymentId()).isEqualTo(payment.getId());
-        assertThat(result.paidAmount()).isEqualTo(payment.getPaidAmount());
+        assertThat(result.paymentId()).isEqualTo(ORDER_ID);
+        assertThat(result.paidAmount()).isEqualTo(FINAL_AMOUNT);
     }
 
     @Test
@@ -95,7 +106,8 @@ class PaymentFacadeUnitTest {
 
         verify(inventoryService, never()).decreaseStocks(any());
         verify(paymentService, never()).completePayment(anyLong(), any());
-        verify(productSalesStatsService, never()).recordSales(any(), any());
+        verify(productSalesStatsService, never()).recordSales(anyLong(), any());
         verify(popularProductRankingService, never()).recordSales(any());
+        verify(orderEventPublisher, never()).publishOrderConfirmed(anyLong());
     }
 }
