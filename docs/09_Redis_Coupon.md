@@ -42,18 +42,18 @@ Redis의 빠른 처리 속도와 원자적 연산을 활용해 <br>
 
 ### ❗️ 비관적락 코드 (선착순 쿠폰 발급)
 
-![img.png](img_9.png)
+![img.png](images/img_9.png)
 
-![img.png](img_10.png)
+![img.png](images/img_10.png)
 
 <br><br>
 
 
 ### 💫 Redis 기반 개선 코드 (선착순 쿠폰 발급)
 
-![img.png](img_11.png)
+![img.png](images/img_11.png)
 
-![img.png](img_12.png)
+![img.png](images/img_12.png)
 
 
 <br><br>
