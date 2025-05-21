@@ -1,7 +1,7 @@
 package com.hhplusecommerce.application.order;
 
 import com.hhplusecommerce.domain.balance.BalanceService;
-import com.hhplusecommerce.domain.coupon.CouponService;
+import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderCommand;
 import com.hhplusecommerce.domain.order.OrderService;

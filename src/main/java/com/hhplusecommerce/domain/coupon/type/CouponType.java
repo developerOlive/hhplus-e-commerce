@@ -1,4 +1,4 @@
-package com.hhplusecommerce.domain.coupon;
+package com.hhplusecommerce.domain.coupon.type;
 
 public enum CouponType {
     LIMITED("수량 제한"),
