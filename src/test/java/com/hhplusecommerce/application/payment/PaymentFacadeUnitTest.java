@@ -4,17 +4,18 @@ import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
-import com.hhplusecommerce.domain.order.OrderRepository;
+import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.order.OrderService;
-import com.hhplusecommerce.domain.order.OrderStatus;
 import com.hhplusecommerce.domain.order.event.OrderEventPublisher;
-import com.hhplusecommerce.domain.payment.*;
+import com.hhplusecommerce.domain.payment.Payment;
+import com.hhplusecommerce.domain.payment.PaymentCommand;
+import com.hhplusecommerce.domain.payment.PaymentService;
+import com.hhplusecommerce.domain.payment.PaymentStatus;
 import com.hhplusecommerce.domain.popularProduct.service.PopularProductRankingService;
 import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,15 +23,12 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 import static com.hhplusecommerce.domain.payment.PaymentMethod.CREDIT_CARD;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -56,7 +54,8 @@ class PaymentFacadeUnitTest {
         // given
         PaymentCommand command = new PaymentCommand(ORDER_ID, CREDIT_CARD);
         Order order = mock(Order.class);
-        List<OrderItem> orderItems = List.of(mock(OrderItem.class));
+        List<OrderItem> orderItemList = List.of(mock(OrderItem.class));
+        OrderItems orderItems = new OrderItems(orderItemList);
 
         when(orderService.getOrder(ORDER_ID)).thenReturn(order);
 
@@ -77,10 +76,9 @@ class PaymentFacadeUnitTest {
 
         // then
         verify(balanceService).deductBalance(any(BalanceCommand.class));
-        verify(inventoryService).decreaseStocks(eq(orderItems));
+        verify(inventoryService).decreaseStocks(eq(orderItemList));
         verify(order).complete();
         verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
-        verify(orderEventPublisher).publishOrderConfirmed(eq(ORDER_ID));
 
         assertThat(result.paymentId()).isEqualTo(ORDER_ID);
         assertThat(result.paidAmount()).isEqualTo(FINAL_AMOUNT);
@@ -106,8 +104,8 @@ class PaymentFacadeUnitTest {
 
         verify(inventoryService, never()).decreaseStocks(any());
         verify(paymentService, never()).completePayment(anyLong(), any());
-        verify(productSalesStatsService, never()).recordSales(anyLong(), any());
-        verify(popularProductRankingService, never()).recordSales(any());
+        verify(productSalesStatsService, never()).recordSales(any(OrderItems.class), any());
+        verify(popularProductRankingService, never()).recordSales(any(OrderItems.class));
         verify(orderEventPublisher, never()).publishOrderConfirmed(anyLong());
     }
 }

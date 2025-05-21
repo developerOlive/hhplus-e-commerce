@@ -28,7 +28,6 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
 
     private static final int STOCK = 10;
     private static final BigDecimal PRICE = BigDecimal.valueOf(10000);
-    private static final String CATEGORY = "electronics";
 
     @Autowired private PopularProductFacade popularProductFacade;
     @Autowired private ProductSalesStatsService productSalesStatsService;
@@ -81,7 +80,7 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
                 product.getId(),
                 quantity,
                 PRICE,
-                CATEGORY
+                product.getCategory()
         );
 
         OrderCommand orderCommand = new OrderCommand(
@@ -97,6 +96,6 @@ public class PopularProductFacadeIntegrationTest extends IntegrationTestSupport 
         Order savedOrder = orderRepository.save(order);
 
         // then: 상품 판매 통계에 판매 기록 등록
-        productSalesStatsService.recordSales(savedOrder.getId(), LocalDate.now());
+        productSalesStatsService.recordSales(savedOrder.getOrderItems(), LocalDate.now());
     }
 }

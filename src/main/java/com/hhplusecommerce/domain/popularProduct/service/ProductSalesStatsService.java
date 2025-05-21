@@ -1,14 +1,15 @@
 package com.hhplusecommerce.domain.popularProduct.service;
 
 import com.hhplusecommerce.domain.order.OrderItem;
+import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.popularProduct.model.ProductSalesStats;
 import com.hhplusecommerce.domain.popularProduct.repository.ProductSalesStatsRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -19,8 +20,8 @@ public class ProductSalesStatsService {
     /**
      * 일자별 상품 판매 통계를 누적 기록
      */
-    public void recordSales(List<OrderItem> orderItems, LocalDate saleDate) {
-        for (OrderItem item : orderItems) {
+    public void recordSales(OrderItems orderItems, LocalDate saleDate) {
+        for (OrderItem item : orderItems.getItems()) {
             Long productId = item.getProductId();
             int quantity = item.getQuantity();
             BigDecimal amount = item.getTotalAmount();

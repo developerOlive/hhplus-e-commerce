@@ -4,7 +4,7 @@ import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceService;
 import com.hhplusecommerce.domain.coupon.CouponService;
 import com.hhplusecommerce.domain.order.Order;
-import com.hhplusecommerce.domain.order.OrderItem;
+import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.order.OrderService;
 import com.hhplusecommerce.domain.payment.Payment;
 import com.hhplusecommerce.domain.payment.PaymentCommand;
@@ -12,14 +12,15 @@ import com.hhplusecommerce.domain.payment.PaymentService;
 import com.hhplusecommerce.domain.popularProduct.service.PopularProductRankingService;
 import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.ProductInventoryService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -38,18 +39,17 @@ public class PaymentFacade {
     public PaymentResult completePayment(PaymentCommand command) {
         // 주문 조회
         Order order = orderService.getOrder(command.orderId());
-        Long userId = order.getUserId();
         BigDecimal finalAmount = order.getFinalAmount();
 
         // 잔액 차감
-        balanceService.deductBalance(new BalanceCommand(userId, finalAmount));
+        balanceService.deductBalance(new BalanceCommand(order.getUserId(), finalAmount));
 
         // 주문 항목 조회 및 재고 차감
-        List<OrderItem> orderItems = order.getOrderItems();
-        inventoryService.decreaseStocks(orderItems);
+        OrderItems orderItems = order.getOrderItems();
+        inventoryService.decreaseStocks(orderItems.getItems());
 
         // 쿠폰 사용 처리
-        order.applyCouponIfPresent(userId, couponService);
+        order.applyCouponIfPresent(order.getUserId(), couponService);
 
         // 주문 상태 완료 처리
         order.complete();
@@ -61,7 +61,6 @@ public class PaymentFacade {
         productSalesStatsService.recordSales(orderItems, LocalDate.now());
         popularProductRankingService.recordSales(orderItems);
 
-        return new PaymentResult(payment.getId(), payment.getPaidAmount(), payment.getPaymentStatus()
-        );
+        return new PaymentResult(payment.getId(), payment.getPaidAmount(), payment.getPaymentStatus());
     }
 }

@@ -113,8 +113,8 @@ public class Order {
     /**
      * 주문에 포함된 주문 항목 리스트 반환
      */
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
+    public OrderItems getOrderItems() {
+        return new OrderItems(this.orderItems);
     }
 
     /**

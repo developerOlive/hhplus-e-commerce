@@ -71,8 +71,11 @@ class OrderServiceTest {
         assertThat(savedOrder.getTotalAmount()).isEqualByComparingTo(TOTAL_AMOUNT);
         assertThat(savedOrder.getFinalAmount()).isEqualByComparingTo(FINAL_AMOUNT);
         assertThat(savedOrder.getOrderStatus()).isEqualTo(OrderStatus.PAYMENT_WAIT);
-        assertThat(savedOrder.getOrderItems()).hasSize(1);
-        assertThat(savedOrder.getOrderItems().get(0).getProductId()).isEqualTo(1L);
+
+        OrderItems orderItems = savedOrder.getOrderItems();
+        List<OrderItem> items = orderItems.getItems();
+        assertThat(items).hasSize(1);
+        assertThat(items.get(0).getProductId()).isEqualTo(1L);
     }
 
     @Test

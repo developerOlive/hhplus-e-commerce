@@ -1,9 +1,11 @@
 package com.hhplusecommerce.domain.popularProduct.service;
 
 import com.hhplusecommerce.domain.order.OrderItem;
-import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
+import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,10 +26,15 @@ public class PopularProductRankingService {
     /**
      * 일자별 상품 판매 통계를 누적 기록 (캐싱)
      */
-    public void recordSales(List<OrderItem> items) {
+    public void recordSales(OrderItems items) {
         String today = LocalDate.now().format(DATE_FORMATTER);
-        for (OrderItem item : items) {
-            popularProductRankingAggregator.incrementProductSales(item.getCategory(), item.getProductId(), today, item.getQuantity());
+        for (OrderItem item : items.getItems()) {
+            popularProductRankingAggregator.incrementProductSales(
+                    item.getCategory(),
+                    item.getProductId(),
+                    today,
+                    item.getQuantity()
+            );
         }
     }
 

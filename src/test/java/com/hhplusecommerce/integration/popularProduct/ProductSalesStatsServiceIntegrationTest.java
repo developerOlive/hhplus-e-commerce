@@ -50,7 +50,7 @@ class ProductSalesStatsServiceIntegrationTest extends IntegrationTestSupport {
         Order savedOrder = orderRepository.save(order);
 
         // when
-        statsService.recordSales(savedOrder.getId(), saleDate);
+        statsService.recordSales(savedOrder.getOrderItems(), saleDate);
 
         // then
         ProductSalesStats stats = statsRepository.findByProductIdAndSaleDate(productId, saleDate)
