@@ -2,11 +2,11 @@ package com.hhplusecommerce.application.payment;
 
 import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceService;
+import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.order.OrderService;
-import com.hhplusecommerce.domain.order.event.OrderEventPublisher;
 import com.hhplusecommerce.domain.payment.Payment;
 import com.hhplusecommerce.domain.payment.PaymentCommand;
 import com.hhplusecommerce.domain.payment.PaymentService;
@@ -44,10 +44,10 @@ class PaymentFacadeUnitTest {
     @Mock private BalanceService balanceService;
     @Mock private ProductInventoryService inventoryService;
     @Mock private OrderService orderService;
+    @Mock private CouponService couponService;
     @Mock private PaymentService paymentService;
     @Mock private ProductSalesStatsService productSalesStatsService;
     @Mock private PopularProductRankingService popularProductRankingService;
-    @Mock private OrderEventPublisher orderEventPublisher;
 
     @Test
     void 결제를_정상적으로_완료한다() {
@@ -106,6 +106,5 @@ class PaymentFacadeUnitTest {
         verify(paymentService, never()).completePayment(anyLong(), any());
         verify(productSalesStatsService, never()).recordSales(any(OrderItems.class), any());
         verify(popularProductRankingService, never()).recordSales(any(OrderItems.class));
-        verify(orderEventPublisher, never()).publishOrderConfirmed(anyLong());
     }
 }

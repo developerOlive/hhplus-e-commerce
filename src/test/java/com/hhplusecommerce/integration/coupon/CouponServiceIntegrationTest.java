@@ -10,6 +10,7 @@ import com.hhplusecommerce.domain.coupon.type.CouponDiscountType;
 import com.hhplusecommerce.domain.coupon.type.CouponStatus;
 import com.hhplusecommerce.domain.coupon.type.CouponType;
 import com.hhplusecommerce.domain.coupon.type.CouponUsageStatus;
+import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.support.IntegrationTestSupport;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
@@ -27,6 +28,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.instancio.Select.field;
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 class CouponServiceIntegrationTest extends IntegrationTestSupport {
 
@@ -110,11 +113,19 @@ class CouponServiceIntegrationTest extends IntegrationTestSupport {
 
         @Test
         void 사용가능한_쿠폰이_정상_사용처리되면_상태와_사용날짜가_변경된다() {
+            // given
             Coupon coupon = createCoupon(HIGH_DISCOUNT, DEFAULT_MAX_QUANTITY);
             Long issueId = couponService.issueCoupon(new CouponCommand(USER_ID, coupon.getId()));
+            Order order = mock(Order.class);
 
-            couponService.useCoupon(USER_ID, issueId);
+            when(order.hasCoupon()).thenReturn(true);
+            when(order.getUserId()).thenReturn(USER_ID);
+            when(order.getCouponIssueId()).thenReturn(issueId);
 
+            // when
+            couponService.useCoupon(order);
+
+            // then
             CouponHistory used = couponHistoryRepository.findById(issueId).orElseThrow();
 
             assertAll(

@@ -3,10 +3,11 @@ package com.hhplusecommerce.domain.coupon.service;
 import com.hhplusecommerce.domain.coupon.command.CouponCommand;
 import com.hhplusecommerce.domain.coupon.model.Coupon;
 import com.hhplusecommerce.domain.coupon.model.CouponHistory;
+import com.hhplusecommerce.domain.coupon.model.CouponResult;
 import com.hhplusecommerce.domain.coupon.repository.CouponHistoryRepository;
 import com.hhplusecommerce.domain.coupon.repository.CouponRepository;
-import com.hhplusecommerce.domain.coupon.model.CouponResult;
 import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
+import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import lombok.RequiredArgsConstructor;
@@ -96,8 +97,12 @@ public class CouponService {
      * 쿠폰 사용 처리 (결제 성공 시)
      */
     @Transactional
-    public void useCoupon(Long userId, Long couponIssueId) {
-        CouponHistory couponHistory = getCouponHistory(userId, couponIssueId);
+    public void useCoupon(Order order) {
+        if (!order.hasCoupon()) {
+            return;
+        }
+
+        CouponHistory couponHistory = getCouponHistory(order.getUserId(), order.getCouponIssueId());
         Coupon coupon = couponHistory.getCoupon();
 
         if (coupon == null) {

@@ -49,7 +49,7 @@ public class PaymentFacade {
         inventoryService.decreaseStocks(orderItems.getItems());
 
         // 쿠폰 사용 처리
-        order.applyCouponIfPresent(order.getUserId(), couponService);
+        couponService.useCoupon(order);
 
         // 주문 상태 완료 처리
         order.complete();
