@@ -1,4 +1,4 @@
-package com.hhplusecommerce.infrastructure.order.payment;
+package com.hhplusecommerce.infrastructure.payment;
 
 import com.hhplusecommerce.domain.payment.Payment;
 import com.hhplusecommerce.domain.payment.PaymentRepository;
