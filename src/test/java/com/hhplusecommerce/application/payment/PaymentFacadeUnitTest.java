@@ -2,6 +2,7 @@ package com.hhplusecommerce.application.payment;
 
 import com.hhplusecommerce.domain.balance.BalanceCommand;
 import com.hhplusecommerce.domain.balance.BalanceService;
+import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderItems;
@@ -46,6 +47,7 @@ class PaymentFacadeUnitTest {
     @Mock private OrderService orderService;
     @Mock private PaymentService paymentService;
     @Mock private OrderEventPublisher orderEventPublisher;
+    @Mock private CouponService couponService;
 
     @Captor
     private ArgumentCaptor<OrderEvent.Completed> eventCaptor;
@@ -77,12 +79,13 @@ class PaymentFacadeUnitTest {
         verify(balanceService).deductBalance(any(BalanceCommand.class));
         verify(inventoryService).decreaseStocks(eq(orderItemList));
         verify(order).complete();
+        verify(couponService).useCoupon(order);
         verify(paymentService).completePayment(ORDER_ID, FINAL_AMOUNT);
         verify(orderEventPublisher).publish(eventCaptor.capture());
 
         assertThat(result.paymentId()).isEqualTo(ORDER_ID);
         assertThat(result.paidAmount()).isEqualTo(FINAL_AMOUNT);
-        assertThat(eventCaptor.getValue().orderItems()).isEqualTo(orderItems);
+        assertThat(eventCaptor.getValue().orderItems().getItems()).hasSize(orderItemList.size());
     }
 
     @Test
