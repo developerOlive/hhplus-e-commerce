@@ -43,7 +43,7 @@ public class OrderFacade {
         // 잔액 확인
         balanceService.validateEnough(userId, finalAmount);
 
-        // 할인 금액 적용 및 저장
+        // 주문서 저장
         Long orderId = orderService.createOrder(command, discountAmount);
 
         // 결과 반환

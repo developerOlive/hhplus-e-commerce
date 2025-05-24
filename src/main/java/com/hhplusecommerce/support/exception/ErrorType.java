@@ -49,6 +49,7 @@ public enum ErrorType {
     INVALID_ORDER_TOTAL_AMOUNT(HttpStatus.BAD_REQUEST, "총 주문 금액이 잘못되었습니다."),
     INVALID_ORDER_FINAL_AMOUNT(HttpStatus.BAD_REQUEST, "최종 결제 금액이 잘못되었습니다."),
     INVALID_ORDER_STATUS(HttpStatus.BAD_REQUEST, "주문 상태가 유효하지 않습니다."),
+    EMPTY_ORDER_ITEMS(HttpStatus.BAD_REQUEST, "주문 항목이 비어 있습니다. orderId를 가져올 수 없습니다."),
 
     // Payment
     PAYMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "결제 정보가 존재하지 않습니다."),
