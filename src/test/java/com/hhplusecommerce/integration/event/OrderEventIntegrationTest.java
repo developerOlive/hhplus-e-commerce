@@ -67,7 +67,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
 
             // then
             verify(rankingListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
+            verify(dataListener, timeout(3000)).bufferEvent(any(OrderEvent.Completed.class));
         }
     }
 
@@ -91,7 +91,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
 
             // then
             verify(rankingListener, never()).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(dataListener, never()).bufferEvent(any(OrderEvent.Completed.class));
         }
     }
 
@@ -110,7 +110,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
 
             // then
             verify(rankingListener, never()).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(dataListener, never()).bufferEvent(any(OrderEvent.Completed.class));
         }
     }
 }
