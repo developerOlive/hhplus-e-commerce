@@ -7,43 +7,63 @@ import com.hhplusecommerce.interfaces.event.dataPlatform.OrderDataEventListener;
 import com.hhplusecommerce.interfaces.event.ranking.PopularProductRankingEventListener;
 import com.hhplusecommerce.interfaces.event.ranking.ProductSalesStatsEventListener;
 import com.hhplusecommerce.support.IntegrationTestSupport;
-import com.hhplusecommerce.support.trace.EventTraceManager;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.stubbing.Answer;
+import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.test.mock.mockito.SpyBean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 class OrderEventIntegrationTest extends IntegrationTestSupport {
 
     @Autowired
     private TransactionTemplate transactionTemplate;
 
     @Autowired
-    private EventTraceManager eventTraceManager;
+    private ApplicationEventPublisher eventPublisher;
 
-    @SpyBean
+    @MockBean
     private ProductSalesStatsEventListener productSalesStatsListener;
 
-    @SpyBean
+    @MockBean
     private PopularProductRankingEventListener popularProductRankingListener;
 
     @SpyBean
     private OrderDataEventListener dataListener;
 
+    private final AtomicReference<String> capturedTraceId = new AtomicReference<>();
+    private final AtomicReference<String> capturedSpanId = new AtomicReference<>();
+
     @BeforeEach
-    void clearSpies() {
+    void clearMocks() {
         clearInvocations(productSalesStatsListener, popularProductRankingListener, dataListener);
+
+        doAnswer((Answer<Void>) invocation -> {
+            capturedTraceId.set(MDC.get("traceId"));
+            capturedSpanId.set(MDC.get("spanId"));
+            return null;
+        }).when(productSalesStatsListener).handle(any(OrderEvent.Completed.class));
+    }
+
+    @AfterEach
+    void clearMdcCapture() {
+        capturedTraceId.set(null);
+        capturedSpanId.set(null);
+        MDC.clear();
     }
 
     private OrderItems createValidOrderItems(Long orderId) {
@@ -65,13 +85,35 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
 
             // when
             transactionTemplate.executeWithoutResult(status -> {
-                eventTraceManager.publish(new OrderEvent.Completed(orderItems));
+                eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
             });
 
             // then
             verify(productSalesStatsListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
             verify(popularProductRankingListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
             verify(dataListener, timeout(3000)).bufferEvent(any(OrderEvent.Completed.class));
+        }
+
+        @Test
+        void 이벤트_발행시_MDC가_셋업되는지_검증() {
+            // given
+            String testTraceId = "test-trace-id";
+            String testSpanId = "test-span-id";
+            MDC.put("traceId", testTraceId);
+            MDC.put("spanId", testSpanId);
+
+            OrderItems orderItems = createValidOrderItems(100L);
+            OrderEvent.Completed event = new OrderEvent.Completed(orderItems);
+
+            // when
+            transactionTemplate.executeWithoutResult(status -> {
+                eventPublisher.publishEvent(event);
+            });
+
+            // then
+            verify(productSalesStatsListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
+            assertEquals(testTraceId, capturedTraceId.get());
+            assertEquals(testSpanId, capturedSpanId.get());
         }
     }
 
@@ -88,7 +130,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // when & then
             assertThatThrownBy(() ->
                     transactionTemplate.executeWithoutResult(status -> {
-                        eventTraceManager.publish(new OrderEvent.Completed(orderItems));
+                        eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
                         throw new RuntimeException("강제 롤백");
                     })
             ).isInstanceOf(RuntimeException.class);
@@ -111,7 +153,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             OrderItems orderItems = createValidOrderItems(ORDER_ID);
 
             // when
-            eventTraceManager.publish(new OrderEvent.Completed(orderItems));
+            eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
 
             // then
             verify(productSalesStatsListener, never()).handle(any(OrderEvent.Completed.class));
