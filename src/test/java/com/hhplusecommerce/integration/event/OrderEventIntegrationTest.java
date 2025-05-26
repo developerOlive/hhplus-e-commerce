@@ -7,13 +7,13 @@ import com.hhplusecommerce.domain.order.event.OrderEvent;
 import com.hhplusecommerce.interfaces.event.dataPlatform.OrderDataEventListener;
 import com.hhplusecommerce.interfaces.event.ranking.OrderRankingEventListener;
 import com.hhplusecommerce.support.IntegrationTestSupport;
+import com.hhplusecommerce.support.trace.EventTraceManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -30,7 +30,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
     private TransactionTemplate transactionTemplate;
 
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private EventTraceManager eventTraceManager;
 
     @SpyBean
     private OrderRankingEventListener rankingListener;
@@ -61,9 +61,9 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             OrderItems orderItems = createValidOrderItems(ORDER_ID);
 
             // when
-            transactionTemplate.executeWithoutResult(status ->
-                    eventPublisher.publishEvent(new OrderEvent.Completed(orderItems))
-            );
+            transactionTemplate.executeWithoutResult(status -> {
+                eventTraceManager.publish(new OrderEvent.Completed(orderItems));
+            });
 
             // then
             verify(rankingListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
@@ -84,7 +84,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // when & then
             assertThatThrownBy(() ->
                     transactionTemplate.executeWithoutResult(status -> {
-                        eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
+                        eventTraceManager.publish(new OrderEvent.Completed(orderItems));
                         throw new RuntimeException("강제 롤백");
                     })
             ).isInstanceOf(RuntimeException.class);
@@ -106,7 +106,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             OrderItems orderItems = createValidOrderItems(ORDER_ID);
 
             // when
-            eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
+            eventTraceManager.publish(new OrderEvent.Completed(orderItems));
 
             // then
             verify(rankingListener, never()).handle(any(OrderEvent.Completed.class));

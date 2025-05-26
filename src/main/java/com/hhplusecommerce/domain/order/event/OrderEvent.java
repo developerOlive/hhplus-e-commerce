@@ -3,5 +3,31 @@ package com.hhplusecommerce.domain.order.event;
 import com.hhplusecommerce.domain.order.OrderItems;
 
 public class OrderEvent {
-    public record Completed(OrderItems orderItems) {}
+
+    public static class Completed {
+        private final OrderItems orderItems;
+        private String traceId;
+        private String spanId;
+
+        public Completed(OrderItems orderItems) {
+            this.orderItems = orderItems;
+        }
+
+        public OrderItems getOrderItems() {
+            return orderItems;
+        }
+
+        public String getTraceId() {
+            return traceId;
+        }
+
+        public String getSpanId() {
+            return spanId;
+        }
+
+        public void setTraceContext(String traceId, String spanId) {
+            this.traceId = traceId;
+            this.spanId = spanId;
+        }
+    }
 }

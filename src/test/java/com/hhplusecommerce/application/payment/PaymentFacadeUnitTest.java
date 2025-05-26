@@ -85,7 +85,7 @@ class PaymentFacadeUnitTest {
 
         assertThat(result.paymentId()).isEqualTo(ORDER_ID);
         assertThat(result.paidAmount()).isEqualTo(FINAL_AMOUNT);
-        assertThat(eventCaptor.getValue().orderItems().getItems()).hasSize(orderItemList.size());
+        assertThat(eventCaptor.getValue().getOrderItems().getItems()).hasSize(orderItemList.size());
     }
 
     @Test
