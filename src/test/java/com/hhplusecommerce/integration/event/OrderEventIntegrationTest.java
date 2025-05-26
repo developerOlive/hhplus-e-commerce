@@ -1,19 +1,19 @@
 package com.hhplusecommerce.integration.event;
 
-import com.hhplusecommerce.domain.order.Order;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.order.event.OrderEvent;
 import com.hhplusecommerce.interfaces.event.dataPlatform.OrderDataEventListener;
-import com.hhplusecommerce.interfaces.event.ranking.OrderRankingEventListener;
+import com.hhplusecommerce.interfaces.event.ranking.PopularProductRankingEventListener;
+import com.hhplusecommerce.interfaces.event.ranking.ProductSalesStatsEventListener;
 import com.hhplusecommerce.support.IntegrationTestSupport;
+import com.hhplusecommerce.support.trace.EventTraceManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.SpyBean;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -30,21 +30,24 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
     private TransactionTemplate transactionTemplate;
 
     @Autowired
-    private ApplicationEventPublisher eventPublisher;
+    private EventTraceManager eventTraceManager;
 
     @SpyBean
-    private OrderRankingEventListener rankingListener;
+    private ProductSalesStatsEventListener productSalesStatsListener;
+
+    @SpyBean
+    private PopularProductRankingEventListener popularProductRankingListener;
 
     @SpyBean
     private OrderDataEventListener dataListener;
 
     @BeforeEach
     void clearSpies() {
-        clearInvocations(rankingListener, dataListener);
+        clearInvocations(productSalesStatsListener, popularProductRankingListener, dataListener);
     }
 
     private OrderItems createValidOrderItems(Long orderId) {
-        Order mockOrder = mock(Order.class);
+        var mockOrder = mock(com.hhplusecommerce.domain.order.Order.class);
         when(mockOrder.getId()).thenReturn(orderId);
         OrderItem item = new OrderItem(mockOrder, 1L, 2, BigDecimal.valueOf(1000), "electronic");
         return new OrderItems(List.of(item));
@@ -56,18 +59,19 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
         private static final Long ORDER_ID = 101L;
 
         @Test
-        void 트랜잭션_내에서_커밋되면_일반리스너와_AFTER_COMMIT_리스너가_1번씩_실행된다() {
+        void 트랜잭션_내에서_커밋되면_각_리스너가_1번씩_실행된다() {
             // given
             OrderItems orderItems = createValidOrderItems(ORDER_ID);
 
             // when
-            transactionTemplate.executeWithoutResult(status ->
-                    eventPublisher.publishEvent(new OrderEvent.Completed(orderItems))
-            );
+            transactionTemplate.executeWithoutResult(status -> {
+                eventTraceManager.publish(new OrderEvent.Completed(orderItems));
+            });
 
             // then
-            verify(rankingListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
+            verify(productSalesStatsListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
+            verify(popularProductRankingListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
+            verify(dataListener, timeout(3000)).bufferEvent(any(OrderEvent.Completed.class));
         }
     }
 
@@ -84,14 +88,15 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // when & then
             assertThatThrownBy(() ->
                     transactionTemplate.executeWithoutResult(status -> {
-                        eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
+                        eventTraceManager.publish(new OrderEvent.Completed(orderItems));
                         throw new RuntimeException("강제 롤백");
                     })
             ).isInstanceOf(RuntimeException.class);
 
             // then
-            verify(rankingListener, never()).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(productSalesStatsListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(popularProductRankingListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(dataListener, never()).bufferEvent(any(OrderEvent.Completed.class));
         }
     }
 
@@ -106,11 +111,12 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             OrderItems orderItems = createValidOrderItems(ORDER_ID);
 
             // when
-            eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
+            eventTraceManager.publish(new OrderEvent.Completed(orderItems));
 
             // then
-            verify(rankingListener, never()).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(productSalesStatsListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(popularProductRankingListener, never()).handle(any(OrderEvent.Completed.class));
+            verify(dataListener, never()).bufferEvent(any(OrderEvent.Completed.class));
         }
     }
 }

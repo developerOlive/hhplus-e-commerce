@@ -47,10 +47,11 @@ class OrderDataEventListenerTest {
             OrderEvent.Completed event = new OrderEvent.Completed(orderItems);
 
             // when
-            listener.handle(event);
+            listener.bufferEvent(event);
+            listener.processRemainingEvents();
 
             // then
-            verify(dataPlatformExporter, timeout(1000)).sendOrder(orderItems);
+            verify(dataPlatformExporter, times(1)).sendBatchData(anyList());
         }
     }
 }
