@@ -7,8 +7,8 @@
 | 1️⃣ &nbsp; [정렬 인덱스, 필터 인덱스, 그 조합이 만드는 쿼리의 운명](https://domean.tistory.com/329)                                   |
 | 2️⃣ &nbsp; [동시성 이슈 - 비관적 락 vs 낙관적 락](https://domean.tistory.com/330)                                            |
 | 3️⃣ &nbsp; [캐싱 비교 보고서](https://github.com/developerOlive/hhplus-e-commerce/blob/main/docs/08_Cashing_Report.md) |
-| 4️⃣ &nbsp; [Redis 기반 실시간 판매 상품 랭킹 도입 보고서](https://github.com/developerOlive/hhplus-e-commerce/blob/step13/docs/10_Redis_Ranking.md) |
-| 5️⃣ &nbsp; [Redis 기반 선착순 쿠폰 발급 시스템 개선](https://github.com/developerOlive/hhplus-e-commerce/blob/step14/docs/09_Redis_Report.md) |
+| 4️⃣ &nbsp; [Redis 기반 실시간 판매 상품 랭킹 도입 보고서](https://github.com/developerOlive/hhplus-e-commerce/blob/main/docs/10_Redis_Ranking.md) |
+| 5️⃣ &nbsp; [Redis 기반 선착순 쿠폰 발급 시스템 개선](https://github.com/developerOlive/hhplus-e-commerce/blob/main/docs/09_Redis_Coupon.md) |
 
 
 <br>
