@@ -22,9 +22,12 @@ spring:
       hibernate.jdbc.time_zone: UTC
 
 custom:
-  cache:
-    popular-products:
-      ttl: 60s
+  kafka:
+    topic:
+      order-completed: order.completed.v1
+    consumer:
+      group-id:
+        order-data-platform: order-data-platform-consumer
 
 ---
 
@@ -43,8 +46,25 @@ spring:
       hibernate:
         format_sql: true
 
+  kafka:
+    bootstrap-servers: localhost:9092              # Kafka 브로커 주소
+    producer:
+      client-id: hhplus-producer                   # 프로듀서 클라이언트 아이디
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      retries: 5                                   # 전송 실패 시 최대 재시도 횟수
+    consumer:
+      group-id: order-data-platform-consumer       # 컨슈머 그룹 아이디
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        enable-auto-commit: false                   # 자동 커밋 비활성화 (수동 커밋 권장)
+    listener:
+      concurrency: 2                                # 동시 처리 스레드 수 (성능 향상용)
+      ack-mode: manual                              # 메시지 수신 후 수동으로 커밋 처리
+
 redisson:
-  address: redis://127.0.0.1:6379
+  address: redis://127.0.0.1:6379                   # Redis 접속 주소
 
 ---
 
@@ -62,3 +82,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+test:
+  kafka:
+    groupId: test-group-${random.uuid}
