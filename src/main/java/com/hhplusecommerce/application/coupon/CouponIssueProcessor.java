@@ -4,64 +4,52 @@ import com.hhplusecommerce.domain.coupon.model.Coupon;
 import com.hhplusecommerce.domain.coupon.command.CouponCommand;
 import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
 import com.hhplusecommerce.domain.coupon.service.CouponService;
-import com.hhplusecommerce.domain.coupon.port.CouponIssuePort;
-
+import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
+import com.hhplusecommerce.application.coupon.event.CouponIssueCompletedEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
+import static com.hhplusecommerce.application.coupon.event.CouponIssueResult.*;
 
-/**
- * 쿠폰 발급 요청을 배치로 처리하고 재고 관리 및 예외 복구를 담당
- */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class CouponIssueProcessor {
 
-    private final CouponIssuePort couponIssuePort;
     private final CouponService couponService;
+    private final ApplicationEventPublisher eventPublisher;
 
-    public void processCouponIssues(Long couponId, int batchSize) {
+    @Transactional
+    public void processCouponIssue(Long userId, Long couponId) {
         Coupon coupon = couponService.getCoupon(couponId);
+
         if (coupon.getIssueStatus() == CouponIssueStatus.FINISHED) {
+            eventPublisher.publishEvent(new CouponIssueCompletedEvent(userId, couponId, OUT_OF_STOCK, OUT_OF_STOCK.getMessage()));
+            throw new CustomException(ErrorType.COUPON_ALREADY_FINISHED);
+        }
+
+        if (couponService.isCouponAlreadyIssued(userId, couponId)) {
+            eventPublisher.publishEvent(new CouponIssueCompletedEvent(userId, couponId, ALREADY_ISSUED, ALREADY_ISSUED.getMessage()));
             return;
         }
 
-        String requestKey = couponIssuePort.getRequestQueueKey(couponId);
-        String issuedKey = couponIssuePort.getIssuedKey(couponId);
-        String stockKey = couponIssuePort.getStockKey(couponId);
+        try {
+            couponService.issueCoupon(new CouponCommand(userId, couponId));
+            eventPublisher.publishEvent(new CouponIssueCompletedEvent(userId, couponId, SUCCESS, SUCCESS.getMessage()));
 
-        Set<String> poppedUsers = couponIssuePort.popRequests(requestKey, batchSize);
-        if (poppedUsers.isEmpty()) {
-            return;
-        }
-        for (String userIdStr : poppedUsers) {
-            if (couponIssuePort.isIssued(issuedKey, userIdStr)) {
-                continue;
-            }
-
-            Long stockLeft = couponIssuePort.decrementStock(stockKey);
-            if (stockLeft == null || stockLeft < 0) {
-                // 재고 부족 시 재고 복구 및 쿠폰 상태 마감 처리
-                couponIssuePort.incrementStock(stockKey);
-                couponService.finishCoupon(couponId);
-                continue;
-            }
-
-            couponIssuePort.addIssuedUser(issuedKey, userIdStr);
-
-            try {
-                couponService.issueCoupon(new CouponCommand(Long.valueOf(userIdStr), couponId));
-            } catch (Exception e) {
-                // DB 발급 실패 시 발급 완료 등록 취소 및 재고 복구
-                couponIssuePort.removeIssuedUser(issuedKey, userIdStr);
-                couponIssuePort.incrementStock(stockKey);
-                throw e;
-            }
-
-            if (stockLeft == 0) {
+            if (couponService.getCouponCurrentStock(couponId) == 0) {
                 couponService.finishCoupon(couponId);
             }
+        } catch (CustomException ex) {
+            eventPublisher.publishEvent(new CouponIssueCompletedEvent(userId, couponId, FAILED_SYSTEM, ex.getMessage()));
+            throw ex;
+        } catch (Exception ex) {
+            eventPublisher.publishEvent(new CouponIssueCompletedEvent(userId, couponId, FAILED_SYSTEM, FAILED_SYSTEM.getMessage()));
+            throw new CustomException(ErrorType.UNKNOWN_ERROR, ex);
         }
     }
 }
