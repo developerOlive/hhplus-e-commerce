@@ -106,7 +106,7 @@ class CouponServiceTest {
 
             assertThatThrownBy(() -> couponService.issueCoupon(command))
                     .isInstanceOf(CustomException.class)
-                    .hasMessage(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED.getMessage());
+                    .hasMessage(ErrorType.COUPON_NO_STOCK.getMessage());
         }
     }
 

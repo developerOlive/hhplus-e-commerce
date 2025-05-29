@@ -1,6 +1,5 @@
-package com.hhplusecommerce.infrastructure.coupon;
+package com.hhplusecommerce.infrastructure.coupon.redis;
 
-import com.hhplusecommerce.application.coupon.CouponKeyProvider;
 import org.springframework.stereotype.Component;
 
 @Component

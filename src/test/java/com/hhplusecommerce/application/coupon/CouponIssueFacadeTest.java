@@ -1,8 +1,8 @@
 package com.hhplusecommerce.application.coupon;
 
 import com.hhplusecommerce.domain.coupon.command.CouponCommand;
-import com.hhplusecommerce.domain.coupon.port.CouponIssuePort;
-import com.hhplusecommerce.domain.coupon.service.CouponService;
+import com.hhplusecommerce.domain.coupon.port.in.CouponRequestAcceptor;
+import com.hhplusecommerce.domain.coupon.port.out.CouponIssuePublisher;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.Nested;
@@ -16,8 +16,11 @@ import org.mockito.quality.Strictness;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -27,51 +30,43 @@ class CouponIssueFacadeTest {
     private static final Long USER_ID = 202L;
 
     @Mock
-    private CouponIssueProcessor couponIssueProcessor;
-
+    private CouponRequestAcceptor couponRequestAcceptor;
     @Mock
-    private CouponIssuePort couponIssuePort;
-
-    @Mock
-    private CouponService couponService;
-
-    @Mock
-    private CouponKeyProvider couponKeyProvider;
+    private CouponIssuePublisher couponIssuePublisher;
 
     @InjectMocks
     private CouponIssueFacade couponIssueFacade;
 
     @Nested
     class RequestCouponIssueTest {
-        private static final String ISSUED_KEY = "coupon:issued:" + COUPON_ID;
-        private static final String REQUEST_KEY = "coupon:request:" + COUPON_ID;
 
         @Test
         void 이미_발급된_쿠폰_요청시_예외가_발생한다() {
             // given
-            when(couponKeyProvider.issuedKey(COUPON_ID)).thenReturn(ISSUED_KEY);
-            when(couponIssuePort.isIssued(ISSUED_KEY, USER_ID.toString())).thenReturn(true);
+            doThrow(new CustomException(ErrorType.COUPON_ALREADY_ISSUED))
+                    .when(couponRequestAcceptor).acceptCouponRequest(any(CouponCommand.class));
 
             // when + then
             CustomException ex = assertThrows(CustomException.class,
                     () -> couponIssueFacade.requestCouponIssue(new CouponCommand(USER_ID, COUPON_ID)));
 
             assertEquals(ErrorType.COUPON_ALREADY_ISSUED, ex.getErrorType());
-            verify(couponIssuePort, never()).addToRequestQueue(any(), any(), anyLong());
+            verify(couponRequestAcceptor).acceptCouponRequest(any(CouponCommand.class));
+            verifyNoInteractions(couponIssuePublisher);
         }
 
         @Test
-        void 정상_요청이면_대기열에_추가한다() {
+        void 정상_요청이면_대기열에_추가하고_카프카에_발행한다() {
             // given
-            when(couponKeyProvider.issuedKey(COUPON_ID)).thenReturn(ISSUED_KEY);
-            when(couponIssuePort.isIssued(ISSUED_KEY, USER_ID.toString())).thenReturn(false);
-            when(couponKeyProvider.requestKey(COUPON_ID)).thenReturn(REQUEST_KEY);
+            doNothing().when(couponRequestAcceptor).acceptCouponRequest(any(CouponCommand.class));
+            doNothing().when(couponIssuePublisher).publishCouponRequest(any(CouponCommand.class));
 
             // when
             couponIssueFacade.requestCouponIssue(new CouponCommand(USER_ID, COUPON_ID));
 
             // then
-            verify(couponIssuePort).addToRequestQueue(eq(REQUEST_KEY), eq(USER_ID.toString()), anyLong());
+            verify(couponRequestAcceptor).acceptCouponRequest(any(CouponCommand.class));
+            verify(couponIssuePublisher).publishCouponRequest(any(CouponCommand.class));
         }
     }
 }

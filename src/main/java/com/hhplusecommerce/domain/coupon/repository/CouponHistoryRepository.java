@@ -22,4 +22,6 @@ public interface CouponHistoryRepository {
     CouponHistory save(CouponHistory couponHistory);
 
     Optional<CouponHistory> findById(Long couponId);
+
+    boolean existsByUserIdAndCouponId(Long userId, Long couponId);
 }

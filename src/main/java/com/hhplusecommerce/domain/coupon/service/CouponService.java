@@ -52,14 +52,16 @@ public class CouponService {
     public Long issueCoupon(CouponCommand command) {
         int updatedRows = couponRepository.increaseIssuedQuantityIfNotExceeded(command.couponId());
         if (updatedRows == 0) {
-            throw new CustomException(ErrorType.COUPON_ISSUE_LIMIT_EXCEEDED);
+            throw new CustomException(ErrorType.COUPON_NO_STOCK);
         }
 
-        Coupon coupon = couponRepository.findById(command.couponId())
-                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
-
+        Coupon coupon = getCoupon(command.couponId());
         CouponHistory history = CouponHistory.issue(command.userId(), coupon);
         couponHistoryRepository.save(history);
+
+        if (getCouponCurrentStock(command.couponId()) == 0) {
+            finishCouponInternal(command.couponId());
+        }
 
         return history.getId();
     }
@@ -104,13 +106,7 @@ public class CouponService {
 
         CouponHistory couponHistory = getCouponHistory(order.getUserId(), order.getCouponIssueId());
         Coupon coupon = couponHistory.getCoupon();
-
-        if (coupon == null) {
-            throw new CustomException(COUPON_NOT_FOUND);
-        }
-
         CouponValidator.validateUsableCoupon(coupon, couponHistory);
-
         couponHistory.use();
     }
 
@@ -119,16 +115,7 @@ public class CouponService {
      */
     @Transactional
     public void finishCoupon(Long couponId) {
-        Coupon coupon = couponRepository.findById(couponId)
-                .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
-
-        if (coupon.getIssueStatus() == CouponIssueStatus.FINISHED
-                || coupon.getIssuedQuantity() < coupon.getMaxQuantity()) {
-            return;
-        }
-
-        coupon.completeIssue();
-        couponRepository.save(coupon);
+        finishCouponInternal(couponId);
     }
 
     @Transactional(readOnly = true)
@@ -137,16 +124,32 @@ public class CouponService {
                 .orElseThrow(() -> new CustomException(ErrorType.COUPON_NOT_FOUND));
     }
 
-    /**
-     * 발급할 쿠폰 목록 조회
-     */
-    @Transactional(readOnly = true)
-    public List<Long> getActiveCouponIds() {
-        return couponRepository.findActiveCouponIds();
+    @Transactional
+    protected void finishCouponInternal(Long couponId) {
+        Coupon coupon = getCoupon(couponId);
+
+        if (coupon.getIssueStatus() == CouponIssueStatus.FINISHED) {
+            return;
+        }
+
+        if (coupon.getIssuedQuantity() < coupon.getMaxQuantity()) {
+            return;
+        }
+
+        coupon.completeIssue();
+        couponRepository.save(coupon);
     }
 
-    @Transactional
-    public void saveCoupon(Coupon coupon) {
-        couponRepository.save(coupon);
+    @Transactional(readOnly = true)
+    public boolean isCouponAlreadyIssued(Long userId, Long couponId) {
+        return couponHistoryRepository.existsByUserIdAndCouponId(userId, couponId);
+    }
+
+    @Transactional(readOnly = true)
+    public int getCouponCurrentStock(Long couponId) {
+        Coupon coupon = getCoupon(couponId);
+        int stock = coupon.getMaxQuantity() - coupon.getIssuedQuantity();
+
+        return Math.max(0, stock);  // 음수 방지
     }
 }

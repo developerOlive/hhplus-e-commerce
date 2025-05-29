@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface CouponHistoryJpaRepository extends JpaRepository<CouponHistory, Long> {
     List<CouponHistory> findByUserIdAndCouponUsageStatus(Long userId, CouponUsageStatus status);
+    boolean existsByUserIdAndCouponId(Long userId, Long couponId);
 }

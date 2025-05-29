@@ -29,4 +29,9 @@ public class CouponHistoryRepositoryImpl implements CouponHistoryRepository {
     public CouponHistory save(CouponHistory couponHistory) {
         return couponHistoryJpaRepository.save(couponHistory);
     }
+
+    @Override
+    public boolean existsByUserIdAndCouponId(Long userId, Long couponId) {
+        return couponHistoryJpaRepository.existsByUserIdAndCouponId(userId, couponId);
+    }
 }

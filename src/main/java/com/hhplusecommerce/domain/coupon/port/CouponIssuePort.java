@@ -17,4 +17,10 @@ public interface CouponIssuePort {
     void incrementStock(String couponStockKey);
 
     void removeIssuedUser(String couponIssuedKey, String userId);
+
+    String getRequestQueueKey(Long couponId);
+
+    String getIssuedKey(Long couponId);
+
+    String getStockKey(Long couponId);
 }

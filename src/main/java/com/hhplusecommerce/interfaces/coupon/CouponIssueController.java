@@ -21,7 +21,7 @@ public class CouponIssueController {
     private final CouponIssueFacade couponIssueFacade;
 
     @PostMapping("/api/v2/users/{userId}/coupons/{couponId}/issue")
-    @Operation(summary = "쿠폰 발급 요청", description = "Redis 대기열에 쿠폰 발급 요청을 등록합니다.")
+    @Operation(summary = "쿠폰 발급 요청", description = "Redis로 중복 및 재고를 확인 후 Kafka로 비동기 발급 요청")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "발급 요청 성공"),
             @ApiResponse(responseCode = "409", description = "이미 발급된 쿠폰"),
