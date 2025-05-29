@@ -38,6 +38,8 @@ public enum ErrorType {
     INVALID_COUPON_DATE_RANGE(HttpStatus.BAD_REQUEST, "쿠폰 유효 기간이 올바르지 않습니다."),
     INVALID_COUPON_TYPE(HttpStatus.BAD_REQUEST, "쿠폰 타입이 지정되지 않았습니다."),
     COUPON_ISSUE_FAILED(HttpStatus.BAD_REQUEST, "쿠폰 발급에 실패했습니다."),
+    COUPON_ALREADY_FINISHED(HttpStatus.BAD_REQUEST, "이미 발급이 마감된 쿠폰입니다."),
+    COUPON_NO_STOCK(HttpStatus.BAD_REQUEST, "쿠폰 재고가 부족합니다."),
 
     // Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문이 존재하지 않습니다."),
@@ -62,8 +64,8 @@ public enum ErrorType {
     // Concurrency
     CONCURRENT_TRANSACTION_EXCEPTION(HttpStatus.CONFLICT, "동시성 오류가 발생했습니다. 다시 시도해 주세요."),
     LOCK_ACQUISITION_FAILED(HttpStatus.CONFLICT, "락을 획득할 수 없습니다."),
-    INVALID_LOCK_KEY(HttpStatus.BAD_REQUEST,"유효하지 않은 키입니다.")
-    ;
+
+    UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "알 수 없는 서버 오류가 발생했습니다.");
 
     private final HttpStatus status;
     private final String message;
