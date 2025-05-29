@@ -4,23 +4,27 @@
     <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
     <property name="LOG_PATTERN_WITH_MDC" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} [%X{requestId}] - %msg%n"/>
 
-    <!-- Console appender to print logs to the console -->
+    <!-- 콘솔 출력 설정 -->
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${LOG_PATTERN_WITH_MDC}</pattern>
         </encoder>
     </appender>
 
-    <!-- Setting root log level to INFO to reduce log verbosity -->
+    <!-- 전체 로그 INFO -->
     <root level="INFO">
         <appender-ref ref="STDOUT"/>
     </root>
 
-    <!-- Setting specific logger for your package (com.hhplusecommerce) to INFO level -->
+    <!-- 특정 패키지 INFO -->
     <logger name="com.hhplusecommerce" level="INFO"/>
 
-    <!-- Hibernate SQL logging set to WARN to avoid excessive logging of SQL queries -->
+    <!-- Hibernate SQL 쿼리 로그 경고 이상만 -->
     <logger name="org.hibernate.SQL" level="WARN"/>
     <logger name="org.hibernate.type" level="WARN"/>
+
+    <!-- Kafka 네트워크 관련 로그 ERROR로 제한 -->
+    <logger name="org.apache.kafka.clients.NetworkClient" level="ERROR"/>
+    <logger name="org.springframework.kafka" level="ERROR"/>
 
 </configuration>

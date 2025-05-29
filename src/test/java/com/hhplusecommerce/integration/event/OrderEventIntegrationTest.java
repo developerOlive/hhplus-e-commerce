@@ -3,6 +3,7 @@ package com.hhplusecommerce.integration.event;
 import com.hhplusecommerce.domain.order.OrderItem;
 import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.domain.order.event.OrderEvent;
+import com.hhplusecommerce.domain.outbox.service.OutboxEventService;
 import com.hhplusecommerce.interfaces.event.dataPlatform.OrderDataEventListener;
 import com.hhplusecommerce.interfaces.event.ranking.PopularProductRankingEventListener;
 import com.hhplusecommerce.interfaces.event.ranking.ProductSalesStatsEventListener;
@@ -15,7 +16,6 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -42,7 +42,10 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
     @MockBean
     private PopularProductRankingEventListener popularProductRankingListener;
 
-    @SpyBean
+    @MockBean
+    private OutboxEventService outboxEventService;
+
+    @MockBean
     private OrderDataEventListener dataListener;
 
     private final AtomicReference<String> capturedTraceId = new AtomicReference<>();
@@ -50,13 +53,19 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
 
     @BeforeEach
     void clearMocks() {
-        clearInvocations(productSalesStatsListener, popularProductRankingListener, dataListener);
+        clearInvocations(productSalesStatsListener, popularProductRankingListener, dataListener, outboxEventService);
 
+        // MDC 셋업 (기존 로직 유지)
         doAnswer((Answer<Void>) invocation -> {
             capturedTraceId.set(MDC.get("traceId"));
             capturedSpanId.set(MDC.get("spanId"));
             return null;
         }).when(productSalesStatsListener).handle(any(OrderEvent.Completed.class));
+
+        doAnswer(invocation -> {
+            outboxEventService.save(any());
+            return null;
+        }).when(dataListener).saveOutbox(any(OrderEvent.Completed.class));
     }
 
     @AfterEach
@@ -91,7 +100,8 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // then
             verify(productSalesStatsListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
             verify(popularProductRankingListener, timeout(3000)).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, timeout(3000)).bufferEvent(any(OrderEvent.Completed.class));
+            verify(outboxEventService, timeout(3000)).save(any());
+            verify(dataListener, timeout(3000)).saveOutbox(any(OrderEvent.Completed.class));
         }
 
         @Test
@@ -127,7 +137,7 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // given
             OrderItems orderItems = createValidOrderItems(ORDER_ID);
 
-            // when & then
+            // when
             assertThatThrownBy(() ->
                     transactionTemplate.executeWithoutResult(status -> {
                         eventPublisher.publishEvent(new OrderEvent.Completed(orderItems));
@@ -138,7 +148,8 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // then
             verify(productSalesStatsListener, never()).handle(any(OrderEvent.Completed.class));
             verify(popularProductRankingListener, never()).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, never()).bufferEvent(any(OrderEvent.Completed.class));
+            verify(outboxEventService, never()).save(any());
+            verify(dataListener, never()).saveOutbox(any());
         }
     }
 
@@ -158,7 +169,8 @@ class OrderEventIntegrationTest extends IntegrationTestSupport {
             // then
             verify(productSalesStatsListener, never()).handle(any(OrderEvent.Completed.class));
             verify(popularProductRankingListener, never()).handle(any(OrderEvent.Completed.class));
-            verify(dataListener, never()).bufferEvent(any(OrderEvent.Completed.class));
+            verify(outboxEventService, never()).save(any());
+            verify(dataListener, never()).saveOutbox(any());
         }
     }
 }
