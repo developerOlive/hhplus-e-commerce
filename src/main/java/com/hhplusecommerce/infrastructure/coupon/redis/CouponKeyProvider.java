@@ -1,4 +1,4 @@
-package com.hhplusecommerce.application.coupon;
+package com.hhplusecommerce.infrastructure.coupon.redis;
 
 public interface CouponKeyProvider {
     String requestKey(Long couponId);

@@ -26,9 +26,9 @@ class CouponIssueProcessorTest {
 
     @Mock CouponIssuePort couponIssuePort;
     @Mock CouponService couponService;
-    @Mock CouponKeyProvider couponKeyProvider;
 
-    @InjectMocks CouponIssueProcessor processor;
+    @InjectMocks
+    CouponIssueProcessor processor;
 
     private static final Long TEST_COUPON_ID = 1L;
     private static final int TEST_BATCH_SIZE = 5;
@@ -36,12 +36,13 @@ class CouponIssueProcessorTest {
     private static final String ISSUED_KEY = "coupon:issued:" + TEST_COUPON_ID;
     private static final String STOCK_KEY = "coupon:stock:" + TEST_COUPON_ID;
 
+
     @BeforeEach
     void setup() {
-        // given
-        lenient().when(couponKeyProvider.requestKey(TEST_COUPON_ID)).thenReturn(REQUEST_KEY);
-        lenient().when(couponKeyProvider.issuedKey(TEST_COUPON_ID)).thenReturn(ISSUED_KEY);
-        lenient().when(couponKeyProvider.stockKey(TEST_COUPON_ID)).thenReturn(STOCK_KEY);
+        // CouponIssuePort의 getXXXKey 메서드 Mocking 추가
+        lenient().when(couponIssuePort.getRequestQueueKey(TEST_COUPON_ID)).thenReturn(REQUEST_KEY);
+        lenient().when(couponIssuePort.getIssuedKey(TEST_COUPON_ID)).thenReturn(ISSUED_KEY);
+        lenient().when(couponIssuePort.getStockKey(TEST_COUPON_ID)).thenReturn(STOCK_KEY);
     }
 
     @Test
@@ -64,7 +65,7 @@ class CouponIssueProcessorTest {
         Coupon processingCoupon = mock(Coupon.class);
         when(processingCoupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
         when(couponService.getCoupon(TEST_COUPON_ID)).thenReturn(processingCoupon);
-        when(couponIssuePort.popRequests(REQUEST_KEY, TEST_BATCH_SIZE)).thenReturn(null);
+        when(couponIssuePort.popRequests(REQUEST_KEY, TEST_BATCH_SIZE)).thenReturn(Set.of());
 
         // when
         processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
@@ -91,7 +92,6 @@ class CouponIssueProcessorTest {
         doNothing().when(couponIssuePort).incrementStock(anyString());
         doNothing().when(couponIssuePort).addIssuedUser(anyString(), anyString());
         doNothing().when(couponIssuePort).removeIssuedUser(anyString(), anyString());
-        doNothing().when(couponService).finishCoupon(anyLong());
 
         // when
         processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
@@ -101,6 +101,7 @@ class CouponIssueProcessorTest {
         verify(couponIssuePort, times(2)).decrementStock(eq(STOCK_KEY));
         verify(couponIssuePort, times(2)).addIssuedUser(eq(ISSUED_KEY), anyString());
         verify(couponService, never()).finishCoupon(eq(TEST_COUPON_ID));
+        verify(couponService, times(2)).issueCoupon(any(CouponCommand.class));
     }
 
     @Test
@@ -117,13 +118,13 @@ class CouponIssueProcessorTest {
         when(couponIssuePort.decrementStock(STOCK_KEY)).thenReturn(0L);
 
         doNothing().when(couponIssuePort).addIssuedUser(ISSUED_KEY, "10");
-        doNothing().when(couponService).finishCoupon(TEST_COUPON_ID);
 
         // when
         processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
 
         // then
         verify(couponService).finishCoupon(TEST_COUPON_ID);
+        verify(couponService).issueCoupon(any(CouponCommand.class));
     }
 
     @Test
@@ -145,13 +146,14 @@ class CouponIssueProcessorTest {
         doNothing().when(couponIssuePort).removeIssuedUser(ISSUED_KEY, "10");
         doNothing().when(couponIssuePort).incrementStock(STOCK_KEY);
 
-        // when & then
+        // when & then (예외 발생 확인)
         assertThrows(RuntimeException.class, () -> {
             processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
         });
 
-        // then
+        // then (롤백 메서드 호출 확인)
         verify(couponIssuePort).removeIssuedUser(ISSUED_KEY, "10");
         verify(couponIssuePort).incrementStock(STOCK_KEY);
+        verify(couponService, never()).finishCoupon(anyLong());
     }
 }

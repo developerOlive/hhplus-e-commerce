@@ -1,8 +1,10 @@
 package com.hhplusecommerce.application.coupon;
 
 import com.hhplusecommerce.domain.coupon.model.Coupon;
+import com.hhplusecommerce.domain.coupon.repository.CouponHistoryRepository;
 import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
+import com.hhplusecommerce.domain.coupon.port.CouponIssuePort;
 import com.hhplusecommerce.support.IntegrationTestSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -32,12 +35,20 @@ public class CouponIssueProcessorIntegrationTest extends IntegrationTestSupport 
     @Autowired
     private StringRedisTemplate redisTemplate;
 
+    @Autowired
+    private CouponHistoryRepository couponHistoryRepository;
+
+    @Autowired
+    private CouponIssuePort couponIssuePort;
+
     private static final Long TEST_COUPON_ID = 1L;
 
     @BeforeEach
+    @Transactional
     void setUp() {
         try {
-            couponService.getCoupon(TEST_COUPON_ID);
+            Coupon coupon = couponService.getCoupon(TEST_COUPON_ID);
+            couponService.saveCoupon(coupon);
         } catch (Exception e) {
             Coupon coupon = Coupon.builder()
                     .couponName("통합 테스트 쿠폰")
@@ -50,16 +61,17 @@ public class CouponIssueProcessorIntegrationTest extends IntegrationTestSupport 
                     .couponType(LIMITED)
                     .build();
             couponService.saveCoupon(coupon);
-            log.info("테스트용 쿠폰 생성 완료");
         }
 
-        // Redis 키 초기화
-        redisTemplate.delete("coupon:request:" + TEST_COUPON_ID);
-        redisTemplate.delete("coupon:issued:" + TEST_COUPON_ID);
-        redisTemplate.delete("coupon:stock:" + TEST_COUPON_ID);  // 재고 키 삭제
+        String requestKey = couponIssuePort.getRequestQueueKey(TEST_COUPON_ID);
+        String issuedKey = couponIssuePort.getIssuedKey(TEST_COUPON_ID);
+        String stockKey = couponIssuePort.getStockKey(TEST_COUPON_ID);
 
-        // 재고 초기값 세팅 (maxQuantity 만큼)
-        redisTemplate.opsForValue().set("coupon:stock:" + TEST_COUPON_ID, "10");
+        redisTemplate.delete(requestKey);
+        redisTemplate.delete(issuedKey);
+        redisTemplate.delete(stockKey);
+
+        redisTemplate.opsForValue().set(stockKey, "10");
 
         Set<String> keysBefore = redisTemplate.keys("coupon:*");
         log.info("테스트 시작 전 Redis 키 목록: {}", keysBefore);
@@ -71,7 +83,8 @@ public class CouponIssueProcessorIntegrationTest extends IntegrationTestSupport 
         Coupon coupon = couponService.getCoupon(TEST_COUPON_ID);
         assertThat(coupon.getIssueStatus()).isNotEqualTo(CouponIssueStatus.FINISHED);
 
-        String requestKey = "coupon:request:" + TEST_COUPON_ID;
+        String requestKey = couponIssuePort.getRequestQueueKey(TEST_COUPON_ID);
+        String issuedKey = couponIssuePort.getIssuedKey(TEST_COUPON_ID);
 
         redisTemplate.opsForZSet().add(requestKey, "1", System.currentTimeMillis());
         redisTemplate.opsForZSet().add(requestKey, "2", System.currentTimeMillis());
@@ -80,17 +93,13 @@ public class CouponIssueProcessorIntegrationTest extends IntegrationTestSupport 
         log.info("배치 처리 실행 전 Redis 대기열 상태: {}", redisTemplate.opsForZSet().range(requestKey, 0, -1));
 
         // when
+        log.info("processCouponIssues 호출 시작. couponId={}, batchSize={}", TEST_COUPON_ID, 5);
         processor.processCouponIssues(TEST_COUPON_ID, 5);
+        log.info("processCouponIssues 호출 완료.");
 
         // then
-        Set<String> keysAfter = redisTemplate.keys("coupon:*");
-        log.info("처리 후 Redis 키 목록: {}", keysAfter);
-
         Thread.sleep(500);
-
-        String issuedKey = "coupon:issued:" + TEST_COUPON_ID;
         Set<String> issuedUsers = redisTemplate.opsForSet().members(issuedKey);
-        log.info("발급된 사용자 목록: {}", issuedUsers);
 
         assertThat(issuedUsers).contains(
                 String.valueOf(1L),
@@ -99,6 +108,7 @@ public class CouponIssueProcessorIntegrationTest extends IntegrationTestSupport 
         );
 
         Coupon updatedCoupon = couponService.getCoupon(TEST_COUPON_ID);
+        assertThat(updatedCoupon.getIssuedQuantity()).isEqualTo(3);
         assertThat(updatedCoupon.getIssueStatus()).isNotEqualTo(CouponIssueStatus.FINISHED);
     }
 }

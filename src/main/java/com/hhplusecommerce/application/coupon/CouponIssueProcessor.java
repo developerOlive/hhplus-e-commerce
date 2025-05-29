@@ -5,6 +5,7 @@ import com.hhplusecommerce.domain.coupon.command.CouponCommand;
 import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
 import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.domain.coupon.port.CouponIssuePort;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,6 @@ public class CouponIssueProcessor {
 
     private final CouponIssuePort couponIssuePort;
     private final CouponService couponService;
-    private final CouponKeyProvider couponKeyProvider;
 
     public void processCouponIssues(Long couponId, int batchSize) {
         Coupon coupon = couponService.getCoupon(couponId);
@@ -27,13 +27,14 @@ public class CouponIssueProcessor {
             return;
         }
 
-        String requestKey = couponKeyProvider.requestKey(couponId);
-        String issuedKey = couponKeyProvider.issuedKey(couponId);
-        String stockKey = couponKeyProvider.stockKey(couponId);
+        String requestKey = couponIssuePort.getRequestQueueKey(couponId);
+        String issuedKey = couponIssuePort.getIssuedKey(couponId);
+        String stockKey = couponIssuePort.getStockKey(couponId);
 
         Set<String> poppedUsers = couponIssuePort.popRequests(requestKey, batchSize);
-        if (poppedUsers == null || poppedUsers.isEmpty()) return;
-
+        if (poppedUsers.isEmpty()) {
+            return;
+        }
         for (String userIdStr : poppedUsers) {
             if (couponIssuePort.isIssued(issuedKey, userIdStr)) {
                 continue;
