@@ -1,159 +1,195 @@
 package com.hhplusecommerce.application.coupon;
 
+import com.hhplusecommerce.application.coupon.event.CouponIssueCompletedEvent;
 import com.hhplusecommerce.domain.coupon.command.CouponCommand;
 import com.hhplusecommerce.domain.coupon.model.Coupon;
-import com.hhplusecommerce.domain.coupon.port.CouponIssuePort;
 import com.hhplusecommerce.domain.coupon.service.CouponService;
 import com.hhplusecommerce.domain.coupon.type.CouponIssueStatus;
+import com.hhplusecommerce.support.exception.CustomException;
+import com.hhplusecommerce.support.exception.ErrorType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
+import org.springframework.context.ApplicationEventPublisher;
 
-import java.util.Set;
-
+import static com.hhplusecommerce.application.coupon.event.CouponIssueResult.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class CouponIssueProcessorTest {
 
-    @Mock CouponIssuePort couponIssuePort;
-    @Mock CouponService couponService;
+    @Mock
+    CouponService couponService;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
     CouponIssueProcessor processor;
 
-    private static final Long TEST_COUPON_ID = 1L;
-    private static final int TEST_BATCH_SIZE = 5;
-    private static final String REQUEST_KEY = "coupon:request:" + TEST_COUPON_ID;
-    private static final String ISSUED_KEY = "coupon:issued:" + TEST_COUPON_ID;
-    private static final String STOCK_KEY = "coupon:stock:" + TEST_COUPON_ID;
-
+    private final Long userId = 100L;
+    private final Long couponId = 1L;
 
     @BeforeEach
-    void setup() {
-        // CouponIssuePort의 getXXXKey 메서드 Mocking 추가
-        lenient().when(couponIssuePort.getRequestQueueKey(TEST_COUPON_ID)).thenReturn(REQUEST_KEY);
-        lenient().when(couponIssuePort.getIssuedKey(TEST_COUPON_ID)).thenReturn(ISSUED_KEY);
-        lenient().when(couponIssuePort.getStockKey(TEST_COUPON_ID)).thenReturn(STOCK_KEY);
+    void setUp() {
+        Mockito.reset(couponService, eventPublisher);
     }
 
     @Test
-    void 이미_발급완료된_쿠폰은_추가발급_처리하지_않는다() {
+    void 쿠폰이_이미_마감된_경우_예외가_발생한다() {
         // given
-        Coupon finishedCoupon = mock(Coupon.class);
-        when(finishedCoupon.getIssueStatus()).thenReturn(CouponIssueStatus.FINISHED);
-        when(couponService.getCoupon(TEST_COUPON_ID)).thenReturn(finishedCoupon);
+        Coupon coupon = mock(Coupon.class);
+        when(coupon.getIssueStatus()).thenReturn(CouponIssueStatus.FINISHED);
+        when(couponService.getCoupon(couponId)).thenReturn(coupon);
 
-        // when
-        processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
-
-        // then
-        verify(couponIssuePort, never()).popRequests(anyString(), anyInt());
-    }
-
-    @Test
-    void 발급_요청이_없으면_즉시_처리_종료한다() {
-        // given
-        Coupon processingCoupon = mock(Coupon.class);
-        when(processingCoupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
-        when(couponService.getCoupon(TEST_COUPON_ID)).thenReturn(processingCoupon);
-        when(couponIssuePort.popRequests(REQUEST_KEY, TEST_BATCH_SIZE)).thenReturn(Set.of());
-
-        // when
-        processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
-
-        // then
-        verify(couponIssuePort, never()).isIssued(anyString(), anyString());
-    }
-
-    @Test
-    void 쿠폰_요청_사용자_목록을_정상적으로_처리한다() {
-        // given
-        Coupon processingCoupon = mock(Coupon.class);
-        when(processingCoupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
-        when(couponService.getCoupon(TEST_COUPON_ID)).thenReturn(processingCoupon);
-
-        Set<String> users = Set.of("10", "20");
-        when(couponIssuePort.popRequests(REQUEST_KEY, TEST_BATCH_SIZE)).thenReturn(users);
-
-        when(couponIssuePort.isIssued(ISSUED_KEY, "10")).thenReturn(false);
-        when(couponIssuePort.isIssued(ISSUED_KEY, "20")).thenReturn(false);
-
-        when(couponIssuePort.decrementStock(STOCK_KEY)).thenReturn(2L, 1L);
-
-        doNothing().when(couponIssuePort).incrementStock(anyString());
-        doNothing().when(couponIssuePort).addIssuedUser(anyString(), anyString());
-        doNothing().when(couponIssuePort).removeIssuedUser(anyString(), anyString());
-
-        // when
-        processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
-
-        // then
-        verify(couponIssuePort, times(2)).isIssued(eq(ISSUED_KEY), anyString());
-        verify(couponIssuePort, times(2)).decrementStock(eq(STOCK_KEY));
-        verify(couponIssuePort, times(2)).addIssuedUser(eq(ISSUED_KEY), anyString());
-        verify(couponService, never()).finishCoupon(eq(TEST_COUPON_ID));
-        verify(couponService, times(2)).issueCoupon(any(CouponCommand.class));
-    }
-
-    @Test
-    void 재고가_소진되면_쿠폰_발급을_종료한다() {
-        // given
-        Coupon processingCoupon = mock(Coupon.class);
-        when(processingCoupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
-        when(couponService.getCoupon(TEST_COUPON_ID)).thenReturn(processingCoupon);
-
-        Set<String> users = Set.of("10");
-        when(couponIssuePort.popRequests(REQUEST_KEY, TEST_BATCH_SIZE)).thenReturn(users);
-
-        when(couponIssuePort.isIssued(ISSUED_KEY, "10")).thenReturn(false);
-        when(couponIssuePort.decrementStock(STOCK_KEY)).thenReturn(0L);
-
-        doNothing().when(couponIssuePort).addIssuedUser(ISSUED_KEY, "10");
-
-        // when
-        processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
-
-        // then
-        verify(couponService).finishCoupon(TEST_COUPON_ID);
-        verify(couponService).issueCoupon(any(CouponCommand.class));
-    }
-
-    @Test
-    void 쿠폰_발급_처리_중_오류가_발생하면_발급_정보를_롤백한다() {
-        // given
-        Coupon processingCoupon = mock(Coupon.class);
-        when(processingCoupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
-        when(couponService.getCoupon(TEST_COUPON_ID)).thenReturn(processingCoupon);
-
-        Set<String> users = Set.of("10");
-        when(couponIssuePort.popRequests(REQUEST_KEY, TEST_BATCH_SIZE)).thenReturn(users);
-
-        when(couponIssuePort.isIssued(ISSUED_KEY, "10")).thenReturn(false);
-        when(couponIssuePort.decrementStock(STOCK_KEY)).thenReturn(1L);
-
-        doNothing().when(couponIssuePort).addIssuedUser(ISSUED_KEY, "10");
-
-        doThrow(new RuntimeException("DB 오류")).when(couponService).issueCoupon(any(CouponCommand.class));
-        doNothing().when(couponIssuePort).removeIssuedUser(ISSUED_KEY, "10");
-        doNothing().when(couponIssuePort).incrementStock(STOCK_KEY);
-
-        // when & then (예외 발생 확인)
-        assertThrows(RuntimeException.class, () -> {
-            processor.processCouponIssues(TEST_COUPON_ID, TEST_BATCH_SIZE);
+        // when & then
+        CustomException ex = assertThrows(CustomException.class, () -> {
+            processor.processCouponIssue(userId, couponId);
         });
 
-        // then (롤백 메서드 호출 확인)
-        verify(couponIssuePort).removeIssuedUser(ISSUED_KEY, "10");
-        verify(couponIssuePort).incrementStock(STOCK_KEY);
+        assertEquals(ErrorType.COUPON_ALREADY_FINISHED, ex.getErrorType());
+        verify(couponService, never()).issueCoupon(any());
+
+        // 발행된 이벤트의 내용 검증
+        ArgumentCaptor<CouponIssueCompletedEvent> eventCaptor = ArgumentCaptor.forClass(CouponIssueCompletedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        CouponIssueCompletedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.userId());
+        assertEquals(couponId, capturedEvent.couponId());
+        assertEquals(OUT_OF_STOCK, capturedEvent.result());
+    }
+
+    @Test
+    void 이미_사용자에게_쿠폰이_발급된_경우_추가처리_없이_종료된다() {
+        // given
+        Coupon coupon = mock(Coupon.class);
+        when(coupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
+        when(couponService.getCoupon(couponId)).thenReturn(coupon);
+        when(couponService.isCouponAlreadyIssued(userId, couponId)).thenReturn(true);
+
+        // when
+        processor.processCouponIssue(userId, couponId);
+
+        // then
+        verify(couponService, never()).issueCoupon(any());
+
+        // 발행된 이벤트의 내용 검증
+        ArgumentCaptor<CouponIssueCompletedEvent> eventCaptor = ArgumentCaptor.forClass(CouponIssueCompletedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        CouponIssueCompletedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.userId());
+        assertEquals(couponId, capturedEvent.couponId());
+        assertEquals(ALREADY_ISSUED, capturedEvent.result());
+    }
+
+    @Test
+    void 정상적으로_쿠폰이_발급된다() {
+        // given
+        Coupon coupon = mock(Coupon.class);
+        when(coupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
+        when(couponService.getCoupon(couponId)).thenReturn(coupon);
+        when(couponService.isCouponAlreadyIssued(userId, couponId)).thenReturn(false);
+        when(couponService.issueCoupon(any(CouponCommand.class))).thenReturn(1L);
+        when(couponService.getCouponCurrentStock(couponId)).thenReturn(10);
+
+        // when
+        processor.processCouponIssue(userId, couponId);
+
+        // then
+        verify(couponService).issueCoupon(any(CouponCommand.class));
         verify(couponService, never()).finishCoupon(anyLong());
+
+        // 발행된 이벤트의 내용 검증
+        ArgumentCaptor<CouponIssueCompletedEvent> eventCaptor = ArgumentCaptor.forClass(CouponIssueCompletedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        CouponIssueCompletedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.userId());
+        assertEquals(couponId, capturedEvent.couponId());
+        assertEquals(SUCCESS, capturedEvent.result());
+    }
+
+    @Test
+    void 발급_후_재고가_0이면_쿠폰이_마감_처리된다() {
+        // given
+        Coupon coupon = mock(Coupon.class);
+        when(coupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
+        when(couponService.getCoupon(couponId)).thenReturn(coupon);
+        when(couponService.isCouponAlreadyIssued(userId, couponId)).thenReturn(false);
+        when(couponService.issueCoupon(any(CouponCommand.class))).thenReturn(1L);
+        when(couponService.getCouponCurrentStock(couponId)).thenReturn(0);
+
+        // when
+        processor.processCouponIssue(userId, couponId);
+
+        // then
+        verify(couponService).issueCoupon(any(CouponCommand.class));
+        verify(couponService).finishCoupon(couponId);
+
+        // 발행된 이벤트의 내용 검증
+        ArgumentCaptor<CouponIssueCompletedEvent> eventCaptor = ArgumentCaptor.forClass(CouponIssueCompletedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        CouponIssueCompletedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.userId());
+        assertEquals(couponId, capturedEvent.couponId());
+        assertEquals(SUCCESS, capturedEvent.result());
+    }
+
+    @Test
+    void 쿠폰_발급_중_CustomException_발생_시_이벤트가_발행되고_예외가_던져진다() {
+        // given
+        Coupon coupon = mock(Coupon.class);
+        when(coupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
+        when(couponService.getCoupon(couponId)).thenReturn(coupon);
+        when(couponService.isCouponAlreadyIssued(userId, couponId)).thenReturn(false);
+        doThrow(new CustomException(ErrorType.COUPON_NO_STOCK)).when(couponService).issueCoupon(any(CouponCommand.class));
+
+        // when & then
+        CustomException ex = assertThrows(CustomException.class, () -> {
+            processor.processCouponIssue(userId, couponId);
+        });
+
+        assertEquals(ErrorType.COUPON_NO_STOCK, ex.getErrorType());
+        verify(couponService).issueCoupon(any(CouponCommand.class));
+
+        // 발행된 이벤트의 내용 검증
+        ArgumentCaptor<CouponIssueCompletedEvent> eventCaptor = ArgumentCaptor.forClass(CouponIssueCompletedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        CouponIssueCompletedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.userId());
+        assertEquals(couponId, capturedEvent.couponId());
+        assertEquals(FAILED_SYSTEM, capturedEvent.result());
+    }
+
+    @Test
+    void 쿠폰_발급_중_일반_Exception_발생_시_이벤트가_발행되고_CustomException이_던져진다() {
+        // given
+        Coupon coupon = mock(Coupon.class);
+        when(coupon.getIssueStatus()).thenReturn(CouponIssueStatus.PROCESSING);
+        when(couponService.getCoupon(couponId)).thenReturn(coupon);
+        when(couponService.isCouponAlreadyIssued(userId, couponId)).thenReturn(false);
+        doThrow(new RuntimeException("DB Connection Error")).when(couponService).issueCoupon(any(CouponCommand.class));
+
+        // when & then
+        CustomException ex = assertThrows(CustomException.class, () -> {
+            processor.processCouponIssue(userId, couponId);
+        });
+
+        assertEquals(ErrorType.UNKNOWN_ERROR, ex.getErrorType());
+        verify(couponService).issueCoupon(any(CouponCommand.class));
+
+        // 발행된 이벤트의 내용 검증
+        ArgumentCaptor<CouponIssueCompletedEvent> eventCaptor = ArgumentCaptor.forClass(CouponIssueCompletedEvent.class);
+        verify(eventPublisher).publishEvent(eventCaptor.capture());
+        CouponIssueCompletedEvent capturedEvent = eventCaptor.getValue();
+        assertEquals(userId, capturedEvent.userId());
+        assertEquals(couponId, capturedEvent.couponId());
+        assertEquals(FAILED_SYSTEM, capturedEvent.result());
     }
 }
