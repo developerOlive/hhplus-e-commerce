@@ -25,9 +25,11 @@ custom:
   kafka:
     topic:
       order-completed: order.completed.v1
+      coupon-issue-request: coupon.issue.request.v1
     consumer:
       group-id:
         order-data-platform: order-data-platform-consumer
+        coupon-processor: coupon-issue-processor
 
 ---
 
