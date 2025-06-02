@@ -65,6 +65,7 @@ dependencies {
     testImplementation(libs.rest.assured)
     testImplementation(libs.rest.assured.json.path)
     testImplementation(libs.rest.assured.schema)
+    testImplementation("org.testcontainers:kafka:1.19.3")
 
     implementation("org.springframework.retry:spring-retry")
     implementation("org.springframework:spring-aspects")
@@ -72,6 +73,9 @@ dependencies {
     // Redis
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("org.redisson:redisson:3.18.1")
+
+    // kafka
+    implementation("org.springframework.kafka:spring-kafka")
 }
 
 java {

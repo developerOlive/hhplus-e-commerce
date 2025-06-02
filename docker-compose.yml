@@ -1,18 +1,63 @@
-version: '3'
+version: '3.8'
+
 services:
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    ports:
+      - "9092:9092"             # Kafka 클라이언트 기본 포트
+      - "9093:9093"             # KRaft 컨트롤러 통신 포트
+      - "9094:9094"             # 외부 접속용 포트
+    environment:
+      KAFKA_KRAFT_MODE: "true"                              # Zookeeper 없이 KRaft 모드 활성화
+      KAFKA_PROCESS_ROLES: controller,broker                # 컨트롤러 및 브로커 역할 수행
+      KAFKA_NODE_ID: 1                                      # 클러스터 내 고유 노드 ID
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"   # 컨트롤러 후보 노드 주소
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,EXTERNAL://localhost:9094
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"              # 자동 토픽 생성 비활성화
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1             # 단일 브로커 복제 팩터 1
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER           # 컨트롤러 리스너 이름 지정
+      KAFKA_LOG_RETENTION_HOURS: 168                         # 로그 보존 7일
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0             # 리밸런싱 지연 시간 0
+      CLUSTER_ID: "cluster-dev-AD5E4060-FDC3-4A21-950F-8F50FC85D7FA"
+    volumes:
+      - ./data/kafka:/var/lib/kafka/data                     # Kafka 데이터 저장 위치
+
   mysql:
     image: mysql:8.0
+    container_name: mysql
     ports:
-      - "3306:3306"
+      - "3306:3306"                                          # MySQL 기본 포트
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=application
-      - MYSQL_PASSWORD=application
-      - MYSQL_DATABASE=hhplus
+      MYSQL_ROOT_PASSWORD: root                              # 루트 비밀번호
+      MYSQL_USER: application                                # 일반 사용자
+      MYSQL_PASSWORD: application                            # 사용자 비밀번호
+      MYSQL_DATABASE: hhplus                                 # 기본 데이터베이스명
     volumes:
-      - ./data/mysql/:/var/lib/mysql
+      - ./data/mysql:/var/lib/mysql                          # MySQL 데이터 저장 위치
+
+  redis:
+    image: redis:7.0
+    container_name: redis
+    ports:
+      - "6379:6379"                                          # Redis 기본 포트
+    volumes:
+      - ./data/redis:/data                                   # Redis 데이터 저장 위치
+
+  mongodb:
+    image: mongo:6.0
+    container_name: mongodb
+    ports:
+      - "27017:27017"                                        # MongoDB 기본 포트
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: application                # 루트 사용자명
+      MONGO_INITDB_ROOT_PASSWORD: application                # 루트 비밀번호
+      MONGO_INITDB_DATABASE: display                          # 초기 생성 DB명
+    volumes:
+      - ./data/mongodb:/data/db                              # MongoDB 데이터 저장 위치
 
 networks:
   default:
     driver: bridge
-    
