@@ -39,7 +39,7 @@ public enum ErrorType {
     INVALID_COUPON_TYPE(HttpStatus.BAD_REQUEST, "쿠폰 타입이 지정되지 않았습니다."),
     COUPON_ISSUE_FAILED(HttpStatus.BAD_REQUEST, "쿠폰 발급에 실패했습니다."),
     COUPON_ALREADY_FINISHED(HttpStatus.BAD_REQUEST, "이미 발급이 마감된 쿠폰입니다."),
-    COUPON_NO_STOCK(HttpStatus.BAD_REQUEST, "쿠폰 재고가 부족합니다."),
+    COUPON_NO_STOCK(HttpStatus.CONFLICT, "쿠폰 재고가 부족합니다."),
 
     // Order
     ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문이 존재하지 않습니다."),

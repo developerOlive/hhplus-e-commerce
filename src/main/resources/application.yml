@@ -1,25 +1,14 @@
+# 공통 설정
 spring:
   application:
     name: hhplus
-  profiles:
-    active: local
-  datasource:
-    name: HangHaePlusDataSource
-    type: com.zaxxer.hikari.HikariDataSource
-    hikari:
-      maximum-pool-size: 10
-      connection-timeout: 10000
-      max-lifetime: 60000
-    driver-class-name: com.mysql.cj.jdbc.Driver
-  jpa:
-    open-in-view: false
-    generate-ddl: false
-    show-sql: false
-    hibernate:
-      ddl-auto: none
-    properties:
-      hibernate.timezone.default_storage: NORMALIZE_UTC
-      hibernate.jdbc.time_zone: UTC
+
+server:
+  port: 8081
+  tomcat:
+    threads:
+      max: 300
+      min-spare: 30
 
 custom:
   kafka:
@@ -33,6 +22,7 @@ custom:
 
 ---
 
+# Local 환경
 spring.config.activate.on-profile: local
 
 spring:
@@ -40,6 +30,11 @@ spring:
     url: jdbc:mysql://localhost:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
     username: application
     password: application
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 10000
+      idle-timeout: 10000
+      max-lifetime: 30000
   jpa:
     show-sql: true
     hibernate:
@@ -47,34 +42,56 @@ spring:
     properties:
       hibernate:
         format_sql: true
-
   kafka:
-    bootstrap-servers: localhost:9092              # Kafka 브로커 주소
-    producer:
-      client-id: hhplus-producer                   # 프로듀서 클라이언트 아이디
-      key-serializer: org.apache.kafka.common.serialization.StringSerializer
-      value-serializer: org.apache.kafka.common.serialization.StringSerializer
-      retries: 5                                   # 전송 실패 시 최대 재시도 횟수
-    consumer:
-      group-id: order-data-platform-consumer       # 컨슈머 그룹 아이디
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      properties:
-        enable-auto-commit: false                   # 자동 커밋 비활성화 (수동 커밋 권장)
-    listener:
-      concurrency: 2                                # 동시 처리 스레드 수 (성능 향상용)
-      ack-mode: manual                              # 메시지 수신 후 수동으로 커밋 처리
+    bootstrap-servers: localhost:9092
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 redisson:
-  address: redis://127.0.0.1:6379                   # Redis 접속 주소
+  address: redis://localhost:6379
 
 ---
 
+# Docker 환경
+spring.config.activate.on-profile: docker
+
+spring:
+  datasource:
+    url: jdbc:mysql://mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+    username: application
+    password: application
+    hikari:
+      maximum-pool-size: 30
+      connection-timeout: 10000
+      idle-timeout: 10000
+      max-lifetime: 30000
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: none
+    properties:
+      hibernate:
+        format_sql: false
+  kafka:
+    bootstrap-servers: kafka:9092
+  data:
+    redis:
+      host: redis
+      port: 6379
+
+redisson:
+  address: redis://redis:6379
+
+---
+
+# ✅ Test 환경
 spring.config.activate.on-profile: test
 
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
     username: application
     password: application
   jpa:
