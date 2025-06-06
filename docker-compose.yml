@@ -12,18 +12,23 @@ services:
       KAFKA_KRAFT_MODE: "true"                              # Zookeeper 없이 KRaft 모드 활성화
       KAFKA_PROCESS_ROLES: controller,broker                # 컨트롤러 및 브로커 역할 수행
       KAFKA_NODE_ID: 1                                      # 클러스터 내 고유 노드 ID
-      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9093"   # 컨트롤러 후보 노드 주소
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"   # 컨트롤러 후보 노드 주소
       KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,EXTERNAL://localhost:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://kafka:9094
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"              # 자동 토픽 생성 비활성화
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1             # 단일 브로커 복제 팩터 1
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER           # 컨트롤러 리스너 이름 지정
-      KAFKA_LOG_RETENTION_HOURS: 168                         # 로그 보존 7일
+      KAFKA_LOG_RETENTION_HOURS: 168                        # 로그 보존 7일
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0             # 리밸런싱 지연 시간 0
       CLUSTER_ID: "cluster-dev-AD5E4060-FDC3-4A21-950F-8F50FC85D7FA"
     volumes:
       - ./data/kafka:/var/lib/kafka/data                     # Kafka 데이터 저장 위치
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1GB
 
   mysql:
     image: mysql:8.0
@@ -37,6 +42,16 @@ services:
       MYSQL_DATABASE: hhplus                                 # 기본 데이터베이스명
     volumes:
       - ./data/mysql:/var/lib/mysql                          # MySQL 데이터 저장 위치
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2GB
 
   redis:
     image: redis:7.0
@@ -45,6 +60,12 @@ services:
       - "6379:6379"                                          # Redis 기본 포트
     volumes:
       - ./data/redis:/data                                   # Redis 데이터 저장 위치
+    command: ["sh", "-c", "redis-server --appendonly no --daemonize no && redis-cli FLUSHALL && tail -f /dev/null"]
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512MB
 
   mongodb:
     image: mongo:6.0
@@ -54,9 +75,94 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: application                # 루트 사용자명
       MONGO_INITDB_ROOT_PASSWORD: application                # 루트 비밀번호
-      MONGO_INITDB_DATABASE: display                          # 초기 생성 DB명
+      MONGO_INITDB_DATABASE: display                         # 초기 생성 DB명
     volumes:
       - ./data/mongodb:/data/db                              # MongoDB 데이터 저장 위치
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 1GB
+
+  app:
+    build: .
+    container_name: hhplus-ecommerce-app
+    ports:
+      - "8081:8081"
+    environment:
+      JAVA_OPTS: "-Xmx2G -Xms2G"
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/hhplus?characterEncoding=UTF-8&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: application
+      SPRING_DATASOURCE_PASSWORD: application
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      kafka:
+        condition: service_started
+      mongodb:
+        condition: service_started
+    networks:
+      - default
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 6GB
+
+  influxdb:
+    image: influxdb:1.8
+    container_name: influxdb
+    ports:
+      - "8086:8086"                                       # InfluxDB 기본 포트 (K6 결과 저장용)
+    environment:
+      - INFLUXDB_DB=k6                                    # K6 결과 저장할 DB 이름
+    volumes:
+      - ./influxdb-init:/docker-entrypoint-initdb.d
+    networks:
+      - default
+
+  grafana:
+    image: grafana/grafana:9.3.8
+    container_name: grafana
+    ports:
+      - "3000:3000"                                        # Grafana 웹 UI 포트
+    environment:
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin                   # 익명 사용자도 관리자 권한
+      - GF_AUTH_ANONYMOUS_ENABLED=true                     # 익명 로그인 허용
+      - GF_AUTH_BASIC_ENABLED=false                        # 기본 로그인 비활성화
+    volumes:
+      - ./grafana:/etc/grafana/provisioning/               # 대시보드 설정 자동 적용
+    depends_on:
+      - influxdb
+    networks:
+      - default
+
+  k6:
+    image: grafana/k6:latest
+    container_name: k6
+    ports:
+      - "6565:6565"
+    environment:
+      - K6_OUT=influxdb=http://influxdb:8086/k6
+      - BASE_URL=http://app:8081
+      - COUPON_ID=1
+    volumes:
+      - ./k6_scripts:/scripts
+    command: [ "sleep", "3600" ]
+    depends_on:
+      - influxdb
+      - app
+    networks:
+      - default
+
+volumes:
+  influxdb_data:
 
 networks:
   default:
