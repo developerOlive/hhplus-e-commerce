@@ -18,9 +18,4 @@ public class MockDataPlatformExporter implements DataPlatformExporter {
     public void sendOrder(OrderItems orderItems) {
         log.info("[Mock API] Sending order info for orderId={}", orderItems.getOrderId());
     }
-
-    @Override
-    public void sendBatchData(List<OrderItems> orderItemsList) {
-        log.info("[Mock API] Sending batch order info for {} orders", orderItemsList.size());
-    }
 }

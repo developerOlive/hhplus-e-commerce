@@ -2,16 +2,15 @@ package com.hhplusecommerce.infrastructure.popularProduct.ranking;
 
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductSearchCommand;
 import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
-import com.hhplusecommerce.domain.popularProduct.port.PopularProductRankingAggregator;
 import com.hhplusecommerce.domain.product.ProductDataResult;
 import com.hhplusecommerce.infrastructure.popularProduct.cache.ProductCacheAdapter;
-import com.hhplusecommerce.infrastructure.popularProduct.ranking.RedisRankingAggregatorImpl;
 import com.hhplusecommerce.infrastructure.popularProduct.ranking.key.RedisRankingKeyFactory;
 import com.hhplusecommerce.infrastructure.popularProduct.ranking.zset.RankingZSetAdapter;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -20,7 +19,8 @@ import java.time.LocalDate;
 import java.util.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class RedisRankingAggregatorImplTest {

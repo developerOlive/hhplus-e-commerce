@@ -15,11 +15,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class PaymentTest {
 
-    // 공통 상수
     private static final Long ORDER_ID = 1L;
     private static final BigDecimal VALID_PAYMENT_AMOUNT = new BigDecimal("25000");
-    private static final BigDecimal INVALID_PAYMENT_AMOUNT_ZERO = BigDecimal.ZERO;
-    private static final BigDecimal INVALID_PAYMENT_AMOUNT_NEGATIVE = new BigDecimal("-1");
 
     private Payment payment;
 

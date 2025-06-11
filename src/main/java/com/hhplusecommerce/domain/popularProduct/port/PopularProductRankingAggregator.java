@@ -26,7 +26,6 @@ public interface PopularProductRankingAggregator {
      */
     void saveProductsToCache(List<ProductDataResult> productData);
 
-
     /**
      * 상품 판매량 누적 집계
      */

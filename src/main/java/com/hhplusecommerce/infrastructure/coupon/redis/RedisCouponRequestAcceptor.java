@@ -1,8 +1,8 @@
 package com.hhplusecommerce.infrastructure.coupon.redis;
 
 import com.hhplusecommerce.domain.coupon.command.CouponCommand;
-import com.hhplusecommerce.domain.coupon.port.in.CouponRequestAcceptor;
 import com.hhplusecommerce.domain.coupon.port.CouponIssuePort;
+import com.hhplusecommerce.domain.coupon.port.in.CouponRequestAcceptor;
 import com.hhplusecommerce.support.exception.CustomException;
 import com.hhplusecommerce.support.exception.ErrorType;
 import lombok.RequiredArgsConstructor;

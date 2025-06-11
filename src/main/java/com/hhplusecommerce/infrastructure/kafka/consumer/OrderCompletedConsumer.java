@@ -1,8 +1,8 @@
 package com.hhplusecommerce.infrastructure.kafka.consumer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.application.external.DataPlatformExporter;
+import com.hhplusecommerce.domain.order.OrderItems;
 import com.hhplusecommerce.support.notification.SlackNotifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

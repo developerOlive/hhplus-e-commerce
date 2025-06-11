@@ -11,11 +11,6 @@ public class ConcurrencyResult {
         this.errorCount = new AtomicInteger(0);
     }
 
-    public ConcurrencyResult(int success, int error) {
-        this.successCount = new AtomicInteger(success);
-        this.errorCount = new AtomicInteger(error);
-    }
-
     public void success() {
         successCount.incrementAndGet();
     }

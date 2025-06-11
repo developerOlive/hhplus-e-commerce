@@ -28,9 +28,4 @@ public class CouponRepositoryImpl implements CouponRepository {
     public int increaseIssuedQuantityIfNotExceeded(Long couponId) {
         return couponJpaRepository.increaseIssuedQuantityIfNotExceeded(couponId);
     }
-
-    @Override
-    public List<Long> findActiveCouponIds() {
-        return couponJpaRepository.findActiveCouponIds();
-    }
 }

@@ -16,9 +16,4 @@ public class CouponKeyFactory implements CouponKeyProvider {
     public String issuedKey(Long couponId) {
         return PREFIX + ":issued:" + couponId;
     }
-
-    @Override
-    public String stockKey(Long couponId) {
-        return PREFIX + ":stock:" + couponId;
-    }
 }

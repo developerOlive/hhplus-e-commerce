@@ -1,8 +1,11 @@
 package com.hhplusecommerce.application.popularProduct;
 
-import com.hhplusecommerce.domain.order.*;
-import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
+import com.hhplusecommerce.domain.order.Order;
+import com.hhplusecommerce.domain.order.OrderCommand;
+import com.hhplusecommerce.domain.order.OrderItemCommand;
+import com.hhplusecommerce.domain.order.OrderRepository;
 import com.hhplusecommerce.domain.popularProduct.command.PopularProductCommand;
+import com.hhplusecommerce.domain.popularProduct.model.PopularProduct;
 import com.hhplusecommerce.domain.popularProduct.service.ProductSalesStatsService;
 import com.hhplusecommerce.domain.product.Product;
 import com.hhplusecommerce.domain.product.ProductInventory;

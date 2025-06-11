@@ -1,14 +1,13 @@
 package com.hhplusecommerce.integration.product;
 
+import com.hhplusecommerce.domain.product.*;
 import com.hhplusecommerce.support.DbCleaner;
 import com.hhplusecommerce.support.IntegrationTestSupport;
-import com.hhplusecommerce.domain.product.*;
 import org.instancio.Instancio;
 import org.instancio.Select;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

@@ -37,6 +37,7 @@ public abstract class ConcurrencyTestSupport extends IntegrationTestSupport {
         }
 
         latch.await();
+
         return result;
     }
 }
