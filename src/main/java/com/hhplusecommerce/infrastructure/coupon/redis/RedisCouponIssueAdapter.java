@@ -43,13 +43,11 @@ public class RedisCouponIssueAdapter implements CouponIssuePort {
     @Override
     public void addToRequestQueue(String couponRequestKey, String userId, long scoreTimestamp) {
         // 중복 요청 방지 로직
-        Boolean existsInQueue = redisTemplate.opsForZSet().score(couponRequestKey, userId) != null;
-        if (TRUE.equals(existsInQueue)) {
-            // 이미 대기열에 존재하면 재요청으로 간주
+        Boolean added = zSetOps.add(couponRequestKey, userId, scoreTimestamp);
+        if (Boolean.FALSE.equals(added)) {
             throw new CustomException(ErrorType.COUPON_ALREADY_ISSUED);
         }
 
-        zSetOps.add(couponRequestKey, userId, scoreTimestamp);
         redisTemplate.expire(couponRequestKey, REQUEST_QUEUE_TTL);
     }
 

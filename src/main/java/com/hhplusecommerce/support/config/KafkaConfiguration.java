@@ -2,7 +2,6 @@ package com.hhplusecommerce.support.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hhplusecommerce.domain.coupon.command.CouponCommand;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -28,14 +27,16 @@ import java.util.Map;
 @Configuration
 @EnableKafka
 @Slf4j
-@RequiredArgsConstructor
 public class KafkaConfiguration {
 
     @Value("${spring.kafka.bootstrap-servers}")
     private String bootstrapServers;
 
     private final ObjectMapper objectMapper;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+
+    public KafkaConfiguration(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     /**
      * Kafka ProducerFactory 설정
@@ -57,7 +58,6 @@ public class KafkaConfiguration {
         return new KafkaTemplate<>(producerFactory());
     }
 
-
     /**
      * Kafka ConsumerFactory 설정
      */
@@ -74,13 +74,16 @@ public class KafkaConfiguration {
 
     /**
      * Kafka 예외 처리: 3회 재시도 후 DLQ(".DLT")로 전송
+     *
+     * @param kafkaTemplate 주입받는 KafkaTemplate (순환 참조 해결)
+     * @param objectMapper  주입받는 ObjectMapper (순환 참조 해결)
      */
     @Bean
-    public DefaultErrorHandler errorHandler() {
+    public DefaultErrorHandler errorHandler(KafkaTemplate<String, String> kafkaTemplate, ObjectMapper objectMapper) {
         FixedBackOff fixedBackOff = new FixedBackOff(1000L, 3L);
 
         DeadLetterPublishingRecoverer recoverer = new DeadLetterPublishingRecoverer(
-                this.kafkaTemplate,
+                kafkaTemplate,
                 (record, ex) -> {
                     String businessId = "N/A";
                     try {
@@ -121,12 +124,14 @@ public class KafkaConfiguration {
 
     /**
      * KafkaListener 컨테이너 팩토리 설정
+     *
+     * @param errorHandler 주입받는 DefaultErrorHandler (순환 참조 해결)
      */
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory(DefaultErrorHandler errorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
-        factory.setCommonErrorHandler(errorHandler());
+        factory.setCommonErrorHandler(errorHandler);
         factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
 
         return factory;
