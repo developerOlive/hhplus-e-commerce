@@ -28,6 +28,7 @@ erDiagram
         DECIMAL after_balance "변동 후 잔액"
         TEXT description "메모"
         DATETIME created_at "생성일시"
+        DATETIME updated_at "수정일시"
     }
 
     product {
@@ -54,8 +55,6 @@ erDiagram
         DECIMAL total_sales_amount "총 판매 금액"
         DATETIME updated_at "최종 갱신일"
     }
-
-erDiagram
 
     coupon {
         BIGINT id PK "쿠폰 ID"
@@ -128,7 +127,6 @@ erDiagram
     order ||--|| payment : pay
     product ||--|| product_inventory : inventory
     product ||--o{ product_sales_stats : stats
-
 ```
 
 

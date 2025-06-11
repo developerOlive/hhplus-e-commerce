@@ -17,9 +17,9 @@
 
 ### 🟡 VUs: 1,000 기준
 
-![img.png](img_13.png)
+![img.png](images/img_13.png)
 
-![img.png](img_14.png)
+![img.png](images/img_14.png)
 
 <br>
 
@@ -49,9 +49,9 @@
 
 ### 🟡 VUs: 2,000 기준
 
-![img.png](img_15.png)
+![img.png](images/img_15.png)
 
-![img.png](img_16.png)
+![img.png](images/img_16.png)
 
 | 항목                            | 값                   | 해석                                                             |
 | ----------------------------- | ------------------- | -------------------------------------------------------------- |
