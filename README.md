@@ -22,3 +22,6 @@
 | 🧩 [시퀀스 다이어그램](https://github.com/developerOlive/hhplus-e-commerce/blob/main/docs/03_Sequence_Diagram.md)         |
 | 🗂️ [ERD(Entity Relationship Diagram)](https://github.com/developerOlive/hhplus-e-commerce/blob/main/docs/04_ERD.md)       |
 | 🧾 [API 명세서](https://github.com/developerOlive/hhplus-e-commerce/blob/main/docs/05_ApiDocument.md)                     |
+
+
+![image](https://github.com/user-attachments/assets/b3a4a8e9-1904-43b4-85b5-bc6f0de60dbb)
